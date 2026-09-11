@@ -2,14 +2,15 @@ const express = require('express')
 const app = express()
 
 
-app.get("/", (req,res)=>{
+app.get("/", (req, res) => {
     console.log("Our Group Project SwapSkills")
 })
 
-app.get("/skill",(req,res)=>{
+app.get("/skill", (req, res) => {
     console.log("skills is starting")
+    console.log("skills featues crud")
 })
 const PORT = 3007;
-app.listen(PORT, ()=>{
+app.listen(PORT, () => {
     console.log(`app is listening on PORT ${PORT}`)
 })

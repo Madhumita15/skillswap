@@ -143,6 +143,7 @@ class UserController {
       return res.status(httpStatusCode.OK).json({
         status: true,
         message: "Email verified successfully!",
+        accessToken: accessToken,
         data: {
           _id: user._id,
           name: user.name,
@@ -191,7 +192,7 @@ class UserController {
       if (!isMatch) {
         return res.status(httpStatusCode.BAD_REQUEST).json({
           status: false,
-          message: "Invalid credemtials",
+          message: "Invalid credentials",
         });
       }
 
@@ -233,6 +234,7 @@ class UserController {
       return res.status(httpStatusCode.OK).json({
         status: true,
         message: "Login successfully!",
+        accessToken: accessToken,
         data: {
           _id: data._id,
           name: data.name,

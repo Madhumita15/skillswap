@@ -3,11 +3,13 @@ const cloudinary = require("../../config/cloudinary");
 
 class SkillController {
 
+    // CREATE SKILL
     async createSkill(req, res) {
         try {
 
             const { name, description, status } = req.body;
 
+            // Validation
             if (!name || !description) {
                 return res.status(400).json({
                     success: false,
@@ -15,6 +17,7 @@ class SkillController {
                 });
             }
 
+            // Check duplicate skill
             const existingSkill = await Skill.findOne({
                 name: name.trim()
             });
@@ -29,37 +32,17 @@ class SkillController {
             let skill_logo = "";
             let skill_logo_public_id = "";
 
-            // If image exists
+            // Image is already uploaded to Cloudinary
+            // by multer-storage-cloudinary
             if (req.file) {
-
-                const result = await new Promise((resolve, reject) => {
-
-                    const uploadStream = cloudinary.uploader.upload_stream(
-                        {
-                            folder: "skills"
-                        },
-                        (error, result) => {
-
-                            if (error) {
-                                reject(error);
-                            } else {
-                                resolve(result);
-                            }
-
-                        }
-                    );
-
-                    uploadStream.end(req.file.buffer);
-
-                });
-
-                skill_logo = result.secure_url;
-                skill_logo_public_id = result.public_id;
+                skill_logo = req.file.path;
+                skill_logo_public_id = req.file.filename;
             }
 
+            // Create skill
             const skill = await Skill.create({
-                name,
-                description,
+                name: name.trim(),
+                description: description.trim(),
                 skill_logo,
                 skill_logo_public_id,
                 status: status || "active"
@@ -78,8 +61,10 @@ class SkillController {
                 message: error.message
             });
         }
-    };
+    }
 
+
+    // GET ALL SKILLS
     async getAllSkills(req, res) {
         try {
 
@@ -100,8 +85,10 @@ class SkillController {
                 message: error.message
             });
         }
-    };
+    }
 
+
+    // GET SKILL BY ID
     async getSkillById(req, res) {
         try {
 
@@ -126,13 +113,16 @@ class SkillController {
                 message: error.message
             });
         }
-    };
+    }
 
+
+    // UPDATE SKILL
     async updateSkill(req, res) {
         try {
 
             const { name, description, status } = req.body;
 
+            // Find skill
             const skill = await Skill.findById(req.params.id);
 
             if (!skill) {
@@ -142,14 +132,38 @@ class SkillController {
                 });
             }
 
-            skill.name = name || skill.name;
-            skill.description = description || skill.description;
-            skill.status = status || skill.status;
+            // Check duplicate name
+            if (name) {
 
-            // If new logo uploaded
+                const existingSkill = await Skill.findOne({
+                    name: name.trim(),
+                    _id: { $ne: req.params.id }
+                });
+
+                if (existingSkill) {
+                    return res.status(400).json({
+                        success: false,
+                        message: "Skill already exists"
+                    });
+                }
+
+                skill.name = name.trim();
+            }
+
+            // Update fields
+            if (description) {
+                skill.description = description.trim();
+            }
+
+            if (status) {
+                skill.status = status;
+            }
+
+
+            // If new logo is uploaded
             if (req.file) {
 
-                // Delete old logo from Cloudinary
+                // Delete old image from Cloudinary
                 if (skill.skill_logo_public_id) {
 
                     await cloudinary.uploader.destroy(
@@ -157,30 +171,12 @@ class SkillController {
                     );
                 }
 
-                const result = await new Promise((resolve, reject) => {
-
-                    const uploadStream = cloudinary.uploader.upload_stream(
-                        {
-                            folder: "skills"
-                        },
-                        (error, result) => {
-
-                            if (error) {
-                                reject(error);
-                            } else {
-                                resolve(result);
-                            }
-
-                        }
-                    );
-
-                    uploadStream.end(req.file.buffer);
-
-                });
-
-                skill.skill_logo = result.secure_url;
-                skill.skill_logo_public_id = result.public_id;
+                // New image is already uploaded
+                // by multer-storage-cloudinary
+                skill.skill_logo = req.file.path;
+                skill.skill_logo_public_id = req.file.filename;
             }
+
 
             await skill.save();
 
@@ -197,8 +193,10 @@ class SkillController {
                 message: error.message
             });
         }
-    };
+    }
 
+
+    // DELETE SKILL
     async deleteSkill(req, res) {
         try {
 
@@ -211,6 +209,7 @@ class SkillController {
                 });
             }
 
+            // Soft delete
             skill.status = "inactive";
 
             await skill.save();
@@ -228,8 +227,10 @@ class SkillController {
                 message: error.message
             });
         }
-    };
+    }
 
+
+    // GET ACTIVE SKILLS
     async getActiveSkills(req, res) {
         try {
 
@@ -252,8 +253,9 @@ class SkillController {
                 message: error.message
             });
         }
-    };
+    }
 
 }
+
 
 module.exports = new SkillController();

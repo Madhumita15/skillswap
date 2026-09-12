@@ -1,16 +1,32 @@
-const express = require('express')
-const app = express()
+const express = require("express");
+const dotenv = require("dotenv");
+const cors = require("cors");
+
+const connectDB = require("./src/config/db");
+
+dotenv.config();
+
+const app = express();
+
+connectDB();
+
+app.use(cors());
+
+app.use(express.json());
+
+app.use(express.urlencoded({
+    extended: true
+}));
+
+const userRoutes = require("./src/router/api/userRoutes");
+const adminRoutes=require("./src/router/api/adminRoutes")
+
+app.use("/api/skills", userRoutes);
+app.use("/admin/api",adminRoutes);
 
 
-app.get("/", (req, res) => {
-    console.log("Our Group Project SwapSkills")
-})
+const PORT = process.env.PORT || 3009;
 
-app.get("/skill", (req, res) => {
-    console.log("skills is starting")
-    console.log("skills featues crud")
-})
-const PORT = 3007;
 app.listen(PORT, () => {
-    console.log(`app is listening on PORT ${PORT}`)
-})
+    console.log(`Server running on port ${PORT}`);
+});

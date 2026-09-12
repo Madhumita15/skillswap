@@ -1,5 +1,6 @@
 const Skill = require("../../models/skill.model");
 const cloudinary = require("../../config/cloudinary");
+const StatusCode = require("../../utils/statusCode")
 
 class SkillController {
 
@@ -11,7 +12,7 @@ class SkillController {
 
             // Validation
             if (!name || !description) {
-                return res.status(400).json({
+                return res.status(StatusCode.BAD_REQUEST).json({
                     success: false,
                     message: "Name and description are required"
                 });
@@ -23,7 +24,7 @@ class SkillController {
             });
 
             if (existingSkill) {
-                return res.status(400).json({
+                return res.status(StatusCode.BAD_REQUEST).json({
                     success: false,
                     message: "Skill already exists"
                 });
@@ -48,7 +49,7 @@ class SkillController {
                 status: status || "active"
             });
 
-            res.status(201).json({
+            res.status(StatusCode.CREATED).json({
                 success: true,
                 message: "Skill created successfully",
                 data: skill
@@ -56,7 +57,7 @@ class SkillController {
 
         } catch (error) {
 
-            res.status(500).json({
+            res.status(StatusCode.SERVER_ERROR).json({
                 success: false,
                 message: error.message
             });
@@ -72,7 +73,7 @@ class SkillController {
                 createdAt: -1
             });
 
-            res.status(200).json({
+            res.status(StatusCode.OK).json({
                 success: true,
                 count: skills.length,
                 data: skills
@@ -80,7 +81,7 @@ class SkillController {
 
         } catch (error) {
 
-            res.status(500).json({
+            res.status(StatusCode.SERVER_ERROR).json({
                 success: false,
                 message: error.message
             });
@@ -95,20 +96,20 @@ class SkillController {
             const skill = await Skill.findById(req.params.id);
 
             if (!skill) {
-                return res.status(404).json({
+                return res.status(StatusCode.NOT_FOUND).json({
                     success: false,
                     message: "Skill not found"
                 });
             }
 
-            res.status(200).json({
+            res.status(StatusCode.OK).json({
                 success: true,
                 data: skill
             });
 
         } catch (error) {
 
-            res.status(500).json({
+            res.status(StatusCode.SERVER_ERROR).json({
                 success: false,
                 message: error.message
             });
@@ -126,7 +127,7 @@ class SkillController {
             const skill = await Skill.findById(req.params.id);
 
             if (!skill) {
-                return res.status(404).json({
+                return res.status(StatusCode.NOT_FOUND).json({
                     success: false,
                     message: "Skill not found"
                 });
@@ -141,7 +142,7 @@ class SkillController {
                 });
 
                 if (existingSkill) {
-                    return res.status(400).json({
+                    return res.status(StatusCode.BAD_REQUEST).json({
                         success: false,
                         message: "Skill already exists"
                     });
@@ -180,7 +181,7 @@ class SkillController {
 
             await skill.save();
 
-            res.status(200).json({
+            res.status(StatusCode.OK).json({
                 success: true,
                 message: "Skill updated successfully",
                 data: skill
@@ -188,7 +189,7 @@ class SkillController {
 
         } catch (error) {
 
-            res.status(500).json({
+            res.status(StatusCode.SERVER_ERROR).json({
                 success: false,
                 message: error.message
             });
@@ -203,7 +204,7 @@ class SkillController {
             const skill = await Skill.findById(req.params.id);
 
             if (!skill) {
-                return res.status(404).json({
+                return res.status(StatusCode.NOT_FOUND).json({
                     success: false,
                     message: "Skill not found"
                 });
@@ -214,7 +215,7 @@ class SkillController {
 
             await skill.save();
 
-            res.status(200).json({
+            res.status(StatusCode.OK).json({
                 success: true,
                 message: "Skill marked as inactive",
                 data: skill
@@ -222,7 +223,7 @@ class SkillController {
 
         } catch (error) {
 
-            res.status(500).json({
+            res.status(StatusCode.SERVER_ERROR).json({
                 success: false,
                 message: error.message
             });
@@ -240,7 +241,7 @@ class SkillController {
                 name: 1
             });
 
-            res.status(200).json({
+            res.status(StatusCode.OK).json({
                 success: true,
                 count: skills.length,
                 data: skills
@@ -248,7 +249,7 @@ class SkillController {
 
         } catch (error) {
 
-            res.status(500).json({
+            res.status(StatusCode.SERVER_ERROR).json({
                 success: false,
                 message: error.message
             });

@@ -5,6 +5,7 @@ const User = require("../models/user.model");
 class AuthMiddleware {
   static async verifyToken(req, res, next) {
     try {
+      console.log("crash1")
       const accessToken = req.headers.authorization;
       if (!accessToken || !accessToken.startsWith("Bearer ")) {
         return res.status(httpStatusCode.UNAUTHORIZED).json({
@@ -12,9 +13,12 @@ class AuthMiddleware {
           message: "Token not provided",
         });
       }
+       console.log("crash2")
 
       const cleanToken = accessToken.split(" ")[1];
       const decode = jwt.verify(cleanToken, process.env.JWT_ACCESS_SECRET_KEY);
+
+       console.log("crash3")
 
       const user = await User.findById(decode._id);
 

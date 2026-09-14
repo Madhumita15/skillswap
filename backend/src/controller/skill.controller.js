@@ -7,23 +7,17 @@ class SkillController {
   async createSkill(req, res) {
     try {
       const { name, description } = req.body;
-
-      // Validation
-      if (!name || !description) {
-        return res.status(httpstatusCode.BAD_REQUEST).json({
-          success: false,
-          message: "Name and description are required",
-        });
-      }
-
       // Check duplicate skill
       const existingSkill = await Skill.findOne({
-        name: name.trim(),
+        name: name,
       });
 
       if (existingSkill) {
+        if (req.file) {
+          await cloudinary.uploader.destroy(existingSkill.skill_logo_public_id);
+        }
         return res.status(httpstatusCode.BAD_REQUEST).json({
-          success: false,
+          status: false,
           message: "Skill already exists",
         });
       }
@@ -40,20 +34,28 @@ class SkillController {
 
       // Create skill
       const skill = await Skill.create({
-        name: name.trim(),
-        description: description.trim(),
+        name: name,
+        description: description,
         skill_logo,
         skill_logo_public_id,
       });
 
-      res.status(httpstatusCode.CREATED).json({
-        success: true,
-        message: "Skill created successfully",
-        data: skill,
-      });
+      if (!skill) {
+        return res.status(httpstatusCode.BAD_REQUEST).json({
+          status: false,
+          message: "Skill not created",
+          data: null,
+        });
+      } else {
+        return res.status(httpstatusCode.CREATED).json({
+          status: true,
+          message: "Skill created successfully",
+          data: skill,
+        });
+      }
     } catch (error) {
-      res.status(httpstatusCode.SERVER_ERROR).json({
-        success: false,
+      return res.status(httpstatusCode.SERVER_ERROR).json({
+        status: false,
         message: error.message,
       });
     }
@@ -62,18 +64,36 @@ class SkillController {
   // GET ALL SKILLS
   async getAllSkills(req, res) {
     try {
-      const skills = await Skill.find().sort({
-        createdAt: -1,
-      });
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 5;
+      const skip = (page - 1) * limit;
+      const skills = await Skill.find()
+        .sort({
+          createdAt: -1,
+        })
+        .skip(skip)
+        .limit(limit);
 
-      res.status(httpstatusCode.OK).json({
-        success: true,
-        count: skills.length,
-        data: skills,
-      });
+      const totalSkills = await Skill.countDocuments();
+      if (!skills) {
+        return res.status(httpstatusCode.OK).json({
+          status: false,
+          message: "skills not found",
+          data: [],
+        });
+      } else {
+        return res.status(httpstatusCode.OK).json({
+          status: true,
+          message: "Skill fetched successfully!",
+          data: skills,
+          totalSkills: totalSkills,
+          totalPages: Math.ceil(totalSkills / limit),
+          currentPage: page,
+        });
+      }
     } catch (error) {
-      res.status(httpstatusCode.SERVER_ERROR).json({
-        success: false,
+      return res.status(httpstatusCode.SERVER_ERROR).json({
+        status: false,
         message: error.message,
       });
     }
@@ -86,18 +106,20 @@ class SkillController {
 
       if (!skill) {
         return res.status(httpstatusCode.NOT_FOUND).json({
-          success: false,
+          status: false,
           message: "Skill not found",
+          data: null,
+        });
+      } else {
+        return res.status(httpstatusCode.OK).json({
+          success: true,
+          message: "skill gets successfully!",
+          data: skill,
         });
       }
-
-      res.status(httpstatusCode.OK).json({
-        success: true,
-        data: skill,
-      });
     } catch (error) {
-      res.status(httpstatusCode.SERVER_ERROR).json({
-        success: false,
+      return res.status(httpstatusCode.SERVER_ERROR).json({
+        status: false,
         message: error.message,
       });
     }
@@ -106,7 +128,7 @@ class SkillController {
   // UPDATE SKILL
   async updateSkill(req, res) {
     try {
-      const { name, description, status } = req.body;
+      const { name, description } = req.body;
 
       // Find skill
       const skill = await Skill.findById(req.params.id);
@@ -121,28 +143,28 @@ class SkillController {
       // Check duplicate name
       if (name) {
         const existingSkill = await Skill.findOne({
-          name: name.trim(),
+          name: name,
           _id: { $ne: req.params.id },
         });
 
         if (existingSkill) {
+          if(req.file){
+            await cloudinary.uploader.destroy(req.file.filename);
+          }
           return res.status(httpstatusCode.BAD_REQUEST).json({
             success: false,
             message: "Skill already exists",
           });
         }
 
-        skill.name = name.trim();
+        skill.name = name;
       }
 
       // Update fields
       if (description) {
-        skill.description = description.trim();
+        skill.description = description;
       }
 
-      if (status) {
-        skill.status = status;
-      }
 
       // If new logo is uploaded
       if (req.file) {
@@ -150,36 +172,33 @@ class SkillController {
         if (skill.skill_logo_public_id) {
           await cloudinary.uploader.destroy(skill.skill_logo_public_id);
         }
-
-        // New image is already uploaded
-        // by multer-storage-cloudinary
         skill.skill_logo = req.file.path;
         skill.skill_logo_public_id = req.file.filename;
       }
 
       await skill.save();
 
-      res.status(httpstatusCode.OK).json({
-        success: true,
+     return res.status(httpstatusCode.OK).json({
+        status: true,
         message: "Skill updated successfully",
         data: skill,
       });
     } catch (error) {
-      res.status(httpstatusCode.SERVER_ERROR).json({
-        success: false,
+     return res.status(httpstatusCode.SERVER_ERROR).json({
+        status: false,
         message: error.message,
       });
     }
   }
 
   // DELETE SKILL
-  async deleteSkill(req, res) {
+  async inactiveSkill(req, res) {
     try {
       const skill = await Skill.findById(req.params.id);
 
       if (!skill) {
         return res.status(httpstatusCode.NOT_FOUND).json({
-          success: false,
+          status: false,
           message: "Skill not found",
         });
       }
@@ -189,13 +208,13 @@ class SkillController {
 
       await skill.save();
 
-      res.status(httpstatusCode.OK).json({
+     return res.status(httpstatusCode.OK).json({
         success: true,
         message: "Skill marked as inactive",
         data: skill,
       });
     } catch (error) {
-      res.status(httpstatusCode.SERVER_ERROR).json({
+     return res.status(httpstatusCode.SERVER_ERROR).json({
         success: false,
         message: error.message,
       });
@@ -211,14 +230,13 @@ class SkillController {
         name: 1,
       });
 
-      res.status(httpstatusCode.OK).json({
-        success: true,
-        count: skills.length,
+    return res.status(httpstatusCode.OK).json({
+        status: true,
         data: skills,
       });
     } catch (error) {
-      res.status(httpstatusCode.SERVER_ERROR).json({
-        success: false,
+     return res.status(httpstatusCode.SERVER_ERROR).json({
+        status: false,
         message: error.message,
       });
     }

@@ -4,15 +4,15 @@ const skillSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
+      trim: true,
       unique: true,
-      trim: [true, "Name is required"],
+      required: [true, "Name is required"],
     },
 
     description: {
       type: String,
-      required: true,
-      trim: [true, "Description is required"],
+      trim: true,
+      required: [true, "Description is required"],
     },
 
     skill_logo: {

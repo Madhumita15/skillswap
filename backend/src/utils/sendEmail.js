@@ -2,7 +2,7 @@ const transporter = require("../config/mailConfig");
 const Otp = require("../models/otp.model");
 
 class SendEmail {
-  static async verifyEmail(req, user) {
+  static async verifyEmail(user) {
     try {
       const otp = Math.floor(1000 * Math.random() + 9000).toString();
       const newOtp = new Otp({

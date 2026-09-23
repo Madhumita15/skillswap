@@ -17,7 +17,7 @@ class SkillController {
           await cloudinary.uploader.destroy(existingSkill.skill_logo_public_id);
         }
         return res.status(httpstatusCode.BAD_REQUEST).json({
-          status: false,
+          success: false,
           message: "Skill already exists",
         });
       }
@@ -42,20 +42,20 @@ class SkillController {
 
       if (!skill) {
         return res.status(httpstatusCode.BAD_REQUEST).json({
-          status: false,
+          success: false,
           message: "Skill not created",
           data: null,
         });
       } else {
         return res.status(httpstatusCode.CREATED).json({
-          status: true,
+          success: true,
           message: "Skill created successfully",
           data: skill,
         });
       }
     } catch (error) {
       return res.status(httpstatusCode.SERVER_ERROR).json({
-        status: false,
+        success: false,
         message: error.message,
       });
     }
@@ -77,7 +77,7 @@ class SkillController {
       const totalSkills = await Skill.countDocuments();
       if (!skills) {
         return res.status(httpstatusCode.OK).json({
-          status: false,
+          success: false,
           message: "skills not found",
           data: [],
         });
@@ -93,7 +93,7 @@ class SkillController {
       }
     } catch (error) {
       return res.status(httpstatusCode.SERVER_ERROR).json({
-        status: false,
+        success: false,
         message: error.message,
       });
     }
@@ -106,7 +106,7 @@ class SkillController {
 
       if (!skill) {
         return res.status(httpstatusCode.NOT_FOUND).json({
-          status: false,
+          success: false,
           message: "Skill not found",
           data: null,
         });
@@ -119,7 +119,7 @@ class SkillController {
       }
     } catch (error) {
       return res.status(httpstatusCode.SERVER_ERROR).json({
-        status: false,
+        success: false,
         message: error.message,
       });
     }
@@ -148,7 +148,7 @@ class SkillController {
         });
 
         if (existingSkill) {
-          if(req.file){
+          if (req.file) {
             await cloudinary.uploader.destroy(req.file.filename);
           }
           return res.status(httpstatusCode.BAD_REQUEST).json({
@@ -165,7 +165,6 @@ class SkillController {
         skill.description = description;
       }
 
-
       // If new logo is uploaded
       if (req.file) {
         // Delete old image from Cloudinary
@@ -178,14 +177,14 @@ class SkillController {
 
       await skill.save();
 
-     return res.status(httpstatusCode.OK).json({
-        status: true,
+      return res.status(httpstatusCode.OK).json({
+        success: true,
         message: "Skill updated successfully",
         data: skill,
       });
     } catch (error) {
-     return res.status(httpstatusCode.SERVER_ERROR).json({
-        status: false,
+      return res.status(httpstatusCode.SERVER_ERROR).json({
+        success: false,
         message: error.message,
       });
     }
@@ -198,7 +197,7 @@ class SkillController {
 
       if (!skill) {
         return res.status(httpstatusCode.NOT_FOUND).json({
-          status: false,
+          success: false,
           message: "Skill not found",
         });
       }
@@ -208,13 +207,13 @@ class SkillController {
 
       await skill.save();
 
-     return res.status(httpstatusCode.OK).json({
+      return res.status(httpstatusCode.OK).json({
         success: true,
         message: "Skill marked as inactive",
         data: skill,
       });
     } catch (error) {
-     return res.status(httpstatusCode.SERVER_ERROR).json({
+      return res.status(httpstatusCode.SERVER_ERROR).json({
         success: false,
         message: error.message,
       });
@@ -230,13 +229,13 @@ class SkillController {
         name: 1,
       });
 
-    return res.status(httpstatusCode.OK).json({
-        status: true,
+      return res.status(httpstatusCode.OK).json({
+        success: true,
         data: skills,
       });
     } catch (error) {
-     return res.status(httpstatusCode.SERVER_ERROR).json({
-        status: false,
+      return res.status(httpstatusCode.SERVER_ERROR).json({
+        success: false,
         message: error.message,
       });
     }

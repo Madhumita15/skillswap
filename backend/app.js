@@ -6,7 +6,9 @@ require('dotenv').config()
 const express = require('express');
 const dbCon = require('./src/config/dbCon');
 const app = express()
-const router = require('./src/router/index')
+const router = require('./src/router/index');
+const errorHandler = require("./src/middleware/errorHandeler.middleware");
+const cookieParser = require("cookie-parser")
 
 
 dbCon()
@@ -14,7 +16,13 @@ dbCon()
 
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))
+app.use(cookieParser())
+
+
 app.use(router)
+
+
+app.use(errorHandler)
 
 
 const PORT = 3007;

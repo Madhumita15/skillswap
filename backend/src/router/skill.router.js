@@ -10,7 +10,7 @@ const uploadImageMiddleware = (req, res, next) => {
   upload.single("skill_logo")(req, res, (err) => {
     if (err) {
       return res.status(httpStatusCode.BAD_REQUEST).json({
-        status: false,
+        success: false,
         message: err.message,
       });
     }
@@ -18,7 +18,7 @@ const uploadImageMiddleware = (req, res, next) => {
   });
 };
 
-router.get("/skills", SkillController.getActiveSkills);
+router.get("/skills",  SkillController.getActiveSkills);
 
 router.post(
   "/skills",

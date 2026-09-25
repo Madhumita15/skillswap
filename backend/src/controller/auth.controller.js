@@ -1,8 +1,10 @@
 const httpStatusCode = require("../utils/httpStatusCode");
+const User = require('../models/user.model')
 const {
   registerService,
   mailVerifyService,
   loginService,
+  refreshTokenService,
   logoutService,
 } = require("../services/auth.service");
 
@@ -85,6 +87,59 @@ class AuthController {
       },
     });
   }
+
+
+async refreshToken(req, res) {
+  
+    const refreshToken = req.cookies?.refreshToken;
+
+    const {
+      newAccessToken,
+      newRefreshToken,
+      user,
+    } = await refreshTokenService({
+      refreshToken,
+    });
+
+    // Set new access token cookie
+    res.cookie("accessToken", newAccessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite:
+        process.env.NODE_ENV === "production"
+          ? "none"
+          : "strict",
+      maxAge: 1 * 24 * 60 * 60 * 1000,
+    });
+
+    // Set new refresh token cookie
+    res.cookie("refreshToken", newRefreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite:
+        process.env.NODE_ENV === "production"
+          ? "none"
+          : "strict",
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.status(httpStatusCode.OK).json({
+      success: true,
+      message: "Token refreshed successfully",
+      data: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        avatar_image: user.avatar_image,
+        isEmailVerified: user.isEmailVerified,
+        isOnboardingComplete: user.isOnboardingComplete,
+        role: user.role,
+        status: user.status,
+      },
+    });
+  } 
+
 
   async logout(req, res) {
     const id = req.user._id;

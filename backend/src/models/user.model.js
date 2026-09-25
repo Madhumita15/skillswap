@@ -26,45 +26,57 @@ const userSchema = new Schema(
     },
     teachingSkills: {
       type: [Schema.Types.ObjectId],
-      ref: "skill",
+      ref: "Skill",
     },
     learningSkills: {
       type: [Schema.Types.ObjectId],
-      ref: "skill",
+      ref: "Skill",
     },
     experience: {
-      type: String
-
+      type: String,
+      trim: true,
+      default: "",
     },
+
     bio: {
       type: String,
+      trim: true,
+      default: "",
     },
+
     avatar_image: {
       type: String,
       default:
         "https://plus.unsplash.com/premium_photo-1739786996022-5ed5b56834e2?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YXZhdGFyJTIwY2FydG9vbnxlbnwwfHwwfHx8MA%3D%3D",
     },
+
     avatar_public_id: {
       type: String,
+      default: null,
     },
+
     isEmailVerified: {
       type: Boolean,
       default: false
     },
+
     status: {
       type: String,
       enum: ["active", "blocked"],
       default: "active",
     },
+
     role: {
       type: String,
       enum: ["user", "admin"],
       default: "user",
     },
+
     isOnboardingComplete: {
       type: Boolean,
       default: false
     },
+
     refreshToken: {
       type: String,
       default: null

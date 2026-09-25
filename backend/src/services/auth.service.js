@@ -1,5 +1,6 @@
 const User = require("../models/user.model");
 const cloudinary = require("../config/cloudinaryConfig");
+const jwt = require("jsonwebtoken");
 const bcryptjs = require("bcryptjs");
 const Otp = require("../models/otp.model");
 const httpStatusCode = require('../utils/httpStatusCode')
@@ -127,6 +128,89 @@ const mailVerifyService = async ({ email, otp }) => {
 };
 };
 
+
+const refreshTokenService = async ({ refreshToken }) => {
+ 
+  // check refreshToken present or not
+  if (!refreshToken) {
+    const error = new Error("Refresh token not provided");
+    error.statusCode = httpStatusCode.UNAUTHORIZED;
+    throw error;
+  }
+
+  // 2. Verify refresh token
+  let decoded;
+
+  try {
+    decoded = jwt.verify(
+      refreshToken,
+      process.env.JWT_REFRESH_SECRET_KEY
+    );
+  } catch (error) {
+    const newError = new Error("Invalid or expired refresh token");
+    newError.statusCode = httpStatusCode.UNAUTHORIZED;
+    throw newError;
+  }
+
+  // 3. Find user
+  const user = await User.findById(decoded._id);
+
+  if (!user) {
+    const error = new Error("User not found");
+    error.statusCode = httpStatusCode.NOT_FOUND;
+    throw error;
+  }
+
+  // 4. Check whether refresh token matches stored token
+  if (user.refreshToken !== refreshToken) {
+    const error = new Error("Invalid refresh token");
+    error.statusCode = httpStatusCode.UNAUTHORIZED;
+    throw error;
+  }
+
+  // 5. Check account status
+  if (user.status === "blocked") {
+    const error = new Error("Your account is blocked");
+    error.statusCode = httpStatusCode.FORBIDDEN;
+    throw error;
+  }
+
+  // 6. Generate new access token
+  const newAccessToken = jwt.sign(
+    {
+      _id: user._id,
+      role: user.role,
+    },
+    process.env.JWT_ACCESS_SECRET_KEY,
+    {
+      expiresIn: "1d",
+    }
+  );
+
+  // 7. Generate new refresh token
+  const newRefreshToken = jwt.sign(
+    {
+      _id: user._id,
+      role: user.role,
+    },
+    process.env.JWT_REFRESH_SECRET_KEY,
+    {
+      expiresIn: "30d",
+    }
+  );
+
+  // 8. Save new refresh token
+  user.refreshToken = newRefreshToken;
+  await user.save();
+
+  return {
+    newAccessToken,
+    newRefreshToken,
+    user,
+  };
+};
+
+
 const logoutService = async (id) => {
   const user = await User.findById(id);
   if (!user) {
@@ -140,4 +224,4 @@ const logoutService = async (id) => {
   return user
 };
 
-module.exports = { registerService, loginService, mailVerifyService, logoutService };
+module.exports = { registerService, loginService, mailVerifyService, refreshTokenService,logoutService };

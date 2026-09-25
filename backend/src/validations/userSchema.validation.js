@@ -56,95 +56,79 @@ class UserSchemaValidation {
     }),
   });
 
- 
-  //Complete Onboarding Validation 
-   static completeOnboardingSchema = joi.object({ 
+  //Complete Onboarding Validation
+  static completeOnboardingSchema = joi.object({
+    teachingSkills: joi
+      .array()
+      .items(
+        joi.string().trim().required().messages({
+          "string.empty": "Teaching skill cannot be empty",
+          "any.required": "Teaching skill is required",
+        }),
+      )
+      .min(1)
+      .required()
+      .messages({
+        "array.base": "Teaching skills must be an array",
+        "array.min": "Please select at least one teaching skill",
+        "any.required": "Teaching skills are required",
+      }),
 
-    teachingSkills: joi.array() 
-    .items( joi.string() 
-    .trim() 
-    .required() 
-    .messages({ 
-      "string.empty": "Teaching skill cannot be empty", 
-      "any.required": "Teaching skill is required", 
-    }) 
-  ) 
-  .min(1) 
-  .required() 
-  .messages({ "array.base": "Teaching skills must be an array", 
-    "array.min": "Please select at least one teaching skill", 
-    "any.required": "Teaching skills are required", }),
+    learningSkills: joi
+      .array()
+      .items(
+        joi.string().trim().required().messages({
+          "string.empty": "Learning skill cannot be empty",
+          "any.required": "Learning skill is required",
+        }),
+      )
+      .min(1)
+      .required()
+      .messages({
+        "array.base": "Learning skills must be an array",
+        "array.min": "Please select at least one learning skill",
+        "any.required": "Learning skills are required",
+      }),
 
-   learningSkills: joi.array() 
-   .items( joi.string() 
-   .trim() 
-   .required() 
-   .messages({ 
-    "string.empty": "Learning skill cannot be empty", 
-    "any.required": "Learning skill is required", 
-  }) 
-) 
-.min(1) 
-.required() 
-.messages({ 
-  "array.base": "Learning skills must be an array", 
-  "array.min": "Please select at least one learning skill", 
-  "any.required": "Learning skills are required",
- }), 
-
- experience: joi.string() 
- .trim() 
- .min(10) 
- .max(1000) 
- .required() 
- .messages({ 
-  "string.empty": "Experience is required", 
-  "string.min": "Experience must be at least 10 characters", 
-  "string.max": "Experience cannot exceed 1000 characters", 
-  "any.required": "Experience is required", }), 
-  
-  bio: joi.string() 
-  .trim() 
-  .min(10) 
-  .max(1000) 
-  .required() 
-  .messages({ 
-    "string.empty": "Bio is required", 
-    "string.min": "Bio must be at least 10 characters", 
-    "string.max": "Bio cannot exceed 1000 characters", 
-    "any.required": "Bio is required", }), });
-
-}
-
-
-//updateProfileSchema
-const updateProfileSchema = joi.object({
-  name: joi.string()
-    .trim()
-    .min(2)
-    .max(50)
-    .messages({
-      "string.base": "Name must be a string",
-      "string.empty": "Name cannot be empty",
-      "string.min": "Name must be at least 2 characters",
-      "string.max": "Name cannot exceed 50 characters",
+    experience: joi.string().trim().min(10).max(1000).required().messages({
+      "string.empty": "Experience is required",
+      "string.min": "Experience must be at least 10 characters",
+      "string.max": "Experience cannot exceed 1000 characters",
+      "any.required": "Experience is required",
     }),
 
-  phone: joi.string()
-    .trim()
-    .pattern(/^[0-9]{10}$/)
-    .messages({
-      "string.base": "Phone number must be a string",
-      "string.empty": "Phone number cannot be empty",
-      "string.pattern.base":
-        "Phone number must contain exactly 10 digits",
+    bio: joi.string().trim().min(10).max(1000).required().messages({
+      "string.empty": "Bio is required",
+      "string.min": "Bio must be at least 10 characters",
+      "string.max": "Bio cannot exceed 1000 characters",
+      "any.required": "Bio is required",
     }),
-})
-  .min(1)
-  .messages({
-    "object.min": "At least one field is required to update the profile",
   });
 
+  //updateProfileSchema
+  static updateProfileSchema = joi
+    .object({
+      name: joi.string().trim().min(2).max(50).messages({
+        "string.base": "Name must be a string",
+        "string.empty": "Name cannot be empty",
+        "string.min": "Name must be at least 2 characters",
+        "string.max": "Name cannot exceed 50 characters",
+      }),
 
+      phone: joi
+        .string()
+        .trim()
+        .pattern(/^[0-9]{10}$/)
+        .messages({
+          "string.base": "Phone number must be a string",
+          "string.empty": "Phone number cannot be empty",
+          "string.pattern.base": "Phone number must contain exactly 10 digits",
+        }),
+    })
+    .min(1)
+    .messages({
+      "object.min": "At least one field is required to update the profile",
+    });
+}
 
 module.exports = UserSchemaValidation;

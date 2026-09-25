@@ -2,9 +2,9 @@ const express = require("express");
 const router = express.Router(); 
 const reviewController = require("../controller/review.controller"); 
 const authMiddleware = require("../middleware/auth.middleware"); 
-const asyncHandler = require("../middleware/asyncHandler"); 
+const asyncHandler = require("../middleware/asyncHandeler.middleware"); 
 const validation = require('../validations/index')
- const { createReviewSchema, } = require("../validation/review.validation"); 
+ const { createReviewSchema } = require("../validations/reviewSchema.validation"); 
 
   // =====================================================
  // CREATE REVIEW 

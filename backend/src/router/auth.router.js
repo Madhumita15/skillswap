@@ -24,14 +24,7 @@ const uploadImageMiddleware = (req, res, next)=>{
 router.post("/register",uploadImageMiddleware, validation.validate(userSchemaValidation.register), asyncHandeler(userController.register))
 router.post("/verify-email", validation.validate(userSchemaValidation.verifyEmail),asyncHandeler(userController.mailVerify))
 router.post("/login", validation.validate(userSchemaValidation.login), asyncHandeler(userController.login))
-router.post("/logout", (req, res, next)=> {
-   console.log("🔥 LOGOUT ROUTE HIT");
-    next();
-
-}, authMiddleware.verifyToken, (req, res, next)=> {
-   console.log("🔥 LOGOUT ROUTE HIT2");
-    next();
-}, asyncHandeler(userController.logout))
+router.post("/logout", authMiddleware.verifyToken,asyncHandeler(userController.logout))
 
 
 module.exports = router

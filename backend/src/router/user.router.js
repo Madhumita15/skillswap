@@ -38,7 +38,7 @@ router.put(
   "/profile",
   authMiddleware,
   upload.single("avatar_image"),
-  validation.validate(updateProfileSchema),
+  validation.validate(userSchemaValidation.updateProfileSchema),
   asyncHandler(userController.updateProfile)
   
 );

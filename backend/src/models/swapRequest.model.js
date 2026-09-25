@@ -34,5 +34,5 @@ const swapRequestSchema = new Schema(
     timestamps: true,
   },
 );
-const swapRequestModel = mongoose.model("swap", swapRequestSchema);
+const swapRequestModel = mongoose.model("swapRequest", swapRequestSchema);
 module.exports = swapRequestModel;

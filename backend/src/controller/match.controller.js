@@ -6,9 +6,10 @@ const httpStatusCode = require("../utils/httpStatusCode");
 
 class MatchController {
   async getAllUser(req, res) {
+    const userId = req.user._id
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 5;
-    const { data, totalUsers } = await getAllUserService({ page, limit });
+    const { data, totalUsers } = await getAllUserService({ page, limit, userId });
     return res.status(httpStatusCode.OK).json({
       success: true,
       message: "All users fetched successfully!",

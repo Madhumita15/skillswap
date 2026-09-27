@@ -9,10 +9,15 @@ const app = express()
 const router = require('./src/router/index');
 const errorHandler = require("./src/middleware/errorHandeler.middleware");
 const cookieParser = require("cookie-parser")
+const cors = require('cors')
 
 
 dbCon()
 
+app.use(cors({
+    origin: "http://localhost:3000",
+    credentials: true
+}))
 
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))

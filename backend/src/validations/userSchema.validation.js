@@ -90,9 +90,8 @@ class UserSchemaValidation {
         "any.required": "Learning skills are required",
       }),
 
-    experience: joi.string().trim().min(10).max(1000).required().messages({
+    experience: joi.string().trim().max(1000).required().messages({
       "string.empty": "Experience is required",
-      "string.min": "Experience must be at least 10 characters",
       "string.max": "Experience cannot exceed 1000 characters",
       "any.required": "Experience is required",
     }),

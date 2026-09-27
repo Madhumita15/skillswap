@@ -214,7 +214,7 @@ const cancelSwapService = async ({ userId, swapId }) => {
   }
 
   swapData.status = "cancelled";
-  swapData.completedDate = new Date();
+  swapData.cancelledDate = new Date();
   await swapData.save();
   return swapData;
 };

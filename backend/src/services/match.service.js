@@ -1,11 +1,11 @@
 const User = require("../models/user.model");
 const httpstatusCode = require("../utils/httpStatusCode");
 
-const getAllUserService = async ({ page, limit }) => {
+const getAllUserService = async ({ page, limit, userId }) => {
   const skip = (page - 1) * limit;
   const users = await User.aggregate([
     {
-      $match: { role: { $ne: "admin" }, status: "active" },
+      $match: { role: { $ne: "admin" }, status: "active", _id: {$ne: userId} },
     },
     {
       $lookup: {
@@ -89,7 +89,7 @@ const getMyMatchService = async (userId) => {
 
   if (!logedInUserData) {
     const error = new Error("User not found");
-    error.statusCode = httpStatusCode.NOT_FOUND;
+    error.statusCode = httpstatusCode.NOT_FOUND;
     throw error;
   }
 
@@ -186,7 +186,7 @@ const getMyMatchService = async (userId) => {
         learningScore: 1,
         teachingScore: 1,
 
-        teachingSkills: 1,
+        "teachingSkills._id": 1,
         "teachingSkills.name": 1,
         "teachingSkills.description": 1,
         "teachingSkills.skill_logo": 1,

@@ -43,7 +43,7 @@ class SendEmail {
 
             <!-- Header -->
             <div style="
-              background-color: #4f46e5;
+              background-color: #F97316;
               padding: 25px;
               text-align: center;
             ">
@@ -97,7 +97,7 @@ class SendEmail {
                   font-size: 30px;
                   font-weight: bold;
                   letter-spacing: 8px;
-                  color: #4f46e5;
+                  color: #F97316;
                 ">
                   ${otp}
                 </div>

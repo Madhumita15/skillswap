@@ -9,8 +9,8 @@ const {
   generateRefreshToken,
 } = require("../utils/generateToken");
 
-// ===================================================== 
-// GET PROFILE 
+// =====================================================
+// GET PROFILE
 // =====================================================
 const getProfileService = async ({ id }) => {
   const user = await User.findById(id)
@@ -27,16 +27,16 @@ const getProfileService = async ({ id }) => {
   return user;
 };
 
-// ===================================================== 
+// =====================================================
 // COMPLETE ONBOARDING
 // =====================================================
 const completeOnBoardingService = async ({
-    id,
+  id,
   teachingSkills,
   learningSkills,
   experience,
   bio,
-  avatar_image, 
+  avatar_image,
   avatar_public_id,
 }) => {
   const user = await User.findById(id);
@@ -57,42 +57,40 @@ const completeOnBoardingService = async ({
   }
 
   // Validate teaching skills
-  if (
-    (!Array.isArray(teachingSkills)) ||
-    teachingSkills.length === 0
-  ) {
+  if (!Array.isArray(teachingSkills) || teachingSkills.length === 0) {
     const error = new Error("Select at least one Teaching Skill");
     error.statusCode = httpStatusCode.BAD_REQUEST;
     throw error;
   }
 
   // Validate learning skills
-  if (
-    (!Array.isArray(learningSkills)) ||
-    learningSkills.length === 0
-  ) {
+  if (!Array.isArray(learningSkills) || learningSkills.length === 0) {
     const error = new Error("Select at least one Learning Skill");
     error.statusCode = httpStatusCode.BAD_REQUEST;
     throw error;
   }
 
   /// Validate skill IDs
-  const Skill = require("../models/skill.model"); 
-  const allSkillIds = [ ...teachingSkills, ...learningSkills, ]; 
+  const Skill = require("../models/skill.model");
+  const allSkillIds = [...teachingSkills, ...learningSkills];
 
-  // Remove duplicate skill IDs 
-    const uniqueSkillIds = [ ...new Set(allSkillIds.map(String)), ]; 
+  // Remove duplicate skill IDs
+  const uniqueSkillIds = [...new Set(allSkillIds.map(String))];
 
-    const skills = await Skill.find({ _id: { $in: uniqueSkillIds, }, 
-            status: "active", }).select("_id"); 
+  const skills = await Skill.find({
+    _id: { $in: uniqueSkillIds },
+    status: "active",
+  }).select("_id");
 
-            if (skills.length !== uniqueSkillIds.length) 
-                { const error = new Error( "One or more selected skills are invalid or inactive" ); 
-                    error.statusCode = httpStatusCode.BAD_REQUEST; 
-                    throw error; 
-                }
+  if (skills.length !== uniqueSkillIds.length) {
+    const error = new Error(
+      "One or more selected skills are invalid or inactive",
+    );
+    error.statusCode = httpStatusCode.BAD_REQUEST;
+    throw error;
+  }
 
-   // Update user fields             
+  // Update user fields
   if (teachingSkills) {
     user.teachingSkills = teachingSkills;
   }
@@ -111,10 +109,10 @@ const completeOnBoardingService = async ({
 
   // Profile image
 
-  if (avatar_image) { 
+  if (avatar_image) {
     user.avatar_image = avatar_image;
-     user.avatar_public_id = avatar_public_id || null;
-   }
+    user.avatar_public_id = avatar_public_id || null;
+  }
 
   // Mark onboarding complete
   user.isOnboardingComplete = true;
@@ -131,51 +129,61 @@ const completeOnBoardingService = async ({
   return updateUser;
 };
 
-
-// ===================================================== 
-// UPDATE PROFILE 
 // =====================================================
-const updateProfileService = async ({ id, name, phone, avatar_image, avatar_public_id, }) => { 
+// UPDATE PROFILE
+// =====================================================
+const updateProfileService = async ({
+  id,
+  name,
+  phone,
+  avatar_image,
+  avatar_public_id,
+}) => {
+  const user = await User.findById(id);
 
-    const user = await User.findById(id); 
+  if (!user) {
+    const error = new Error("User not found");
+    error.statusCode = httpStatusCode.NOT_FOUND;
+    throw error;
+  }
 
-    if (!user) { 
-        const error = new Error("User not found"); 
-        error.statusCode = httpStatusCode.NOT_FOUND; 
-        throw error; } 
+  // Update basic profile information
+  if (name !== undefined) {
+    user.name = name;
+  }
 
-    // Update basic profile information 
-     if (name !== undefined) 
-        { user.name = name; } 
+  if (phone !== undefined) {
+    user.phone = phone;
+  }
 
-     if (phone !== undefined) 
-        { user.phone = phone; } 
-     
-     // Replace profile image
-      if (avatar_image) { 
-        
-        // Delete old Cloudinary image 
-        if (user.avatar_public_id) { 
-            try { 
-                await cloudinary.uploader.destroy( user.avatar_public_id ); 
-            } catch (error) { 
-                console.log( "Old avatar deletion failed:", error.message ); 
-            } 
-        } 
-        // Save new image 
-        user.avatar_image = avatar_image; 
-        user.avatar_public_id = avatar_public_id || ""; 
-    } 
-     // Save changes 
-       await user.save(); 
+  // Replace profile image
+  if (avatar_image) {
+    // Delete old Cloudinary image
+    if (user.avatar_public_id) {
+      try {
+        await cloudinary.uploader.destroy(user.avatar_public_id);
+      } catch (error) {
+        console.log("Old avatar deletion failed:", error.message);
+      }
+    }
+    // Save new image
+    user.avatar_image = avatar_image;
+    user.avatar_public_id = avatar_public_id || "";
+  }
+  // Save changes
+  await user.save();
 
-      // Return updated profile
-       const updatedUser = await User.findById(id) 
-       .select("-password -refreshToken") 
-       .populate("teachingSkills") 
-       .populate("learningSkills");
+  // Return updated profile
+  const updatedUser = await User.findById(id)
+    .select("-password -refreshToken")
+    .populate("teachingSkills")
+    .populate("learningSkills");
 
-        return updatedUser; 
+  return updatedUser;
 };
 
-module.exports = { getProfileService, completeOnBoardingService, updateProfileService };
+module.exports = {
+  getProfileService,
+  completeOnBoardingService,
+  updateProfileService,
+};

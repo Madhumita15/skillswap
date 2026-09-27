@@ -42,4 +42,4 @@ const createReviewSchema = Joi.object({
 
 });
 
-module.exports = { createReviewSchema, };
+module.exports = { createReviewSchema };

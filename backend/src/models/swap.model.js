@@ -27,6 +27,10 @@ const swapSchema = new Schema(
       type: Date,
       default: null,
     },
+     cancelledDate: {
+      type: Date,
+      default: null,
+    },
     status: {
       type: String,
       enum: ["active", "completed", "cancelled"],

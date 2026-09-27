@@ -1,38 +1,58 @@
-const mongoose = require('mongoose')
+
+const mongoose = require("mongoose");
 
 const reportSchema = new mongoose.Schema(
   {
     reporterId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'user',
+      ref: "user",
       required: true,
     },
+
     reportedUserId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'user',
+      ref: "user",
       required: true,
     },
+
     reason: {
       type: String,
       required: true,
-      enum: ['spam', 'harassment', 'inappropriate_content', 'scam', 'other'], 
+      enum: [
+        "spam",
+        "harassment",
+        "inappropriate_content",
+        "scam",
+        "other",
+      ],
     },
+
     description: {
       type: String,
       required: true,
       trim: true,
     },
+
     status: {
       type: String,
-      enum: ['pending', 'under_review', 'resolved', 'dismissed'], 
-      default: 'pending',
+      enum: [
+        "pending",
+        "under_review",
+        "resolved",
+        "dismissed",
+      ],
+      default: "pending",
     },
   },
   {
-    timestamps: true, // Automatically generates and manages createdAt and updatedAt
+    timestamps: true,
   }
 );
 
-const Report = mongoose.model('report', reportSchema);
+reportSchema.index({ status: 1 });
+reportSchema.index({ reportedUserId: 1 });
+reportSchema.index({ reporterId: 1 });
 
-module.exports =Report;
+const Report = mongoose.model("report", reportSchema);
+
+module.exports = Report;

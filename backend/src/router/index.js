@@ -10,6 +10,7 @@ const swap = require("./swap.router")
 const dashboardRouter = require("./dashboard.router")
 const match = require('./match.router')
 
+const reportRouter = require("./report.router");
 
 router.use("/api/auth", authRouter)
 router.use("/api", skillRouter)
@@ -19,6 +20,6 @@ router.use("/api", usersRouter)
 router.use("/api", swap)
 router.use("/api/dashboard", dashboardRouter);
 router.use("/api", match)
-
+router.use("/api", reportRouter)
 
 module.exports = router

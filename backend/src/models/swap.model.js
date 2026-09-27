@@ -13,11 +13,11 @@ const swapSchema = new Schema(
     },
     teachingSkill: {
       type: Schema.Types.ObjectId,
-      ref: "skill",
+      ref: "Skill",
     },
     learningSkill: {
       type: Schema.Types.ObjectId,
-      ref: "skill",
+      ref: "Skill",
     },
     startDate: {
       type: Date,

@@ -4,5 +4,8 @@ export const ENDPOINT = {
         register: "/auth/register",
         logout: "/auth/logout",
         verifyEmail: "/auth/verify-email"
+    },
+    user: {
+        profile: "/profile"
     }
 }

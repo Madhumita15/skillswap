@@ -3,7 +3,6 @@
 import { verifyEmailSchema } from "@/services/validation/auth.validation";
 import { VerifyEmailType } from "@/typescript/type/auth.type";
 import { yupResolver } from "@hookform/resolvers/yup";
-import React from "react";
 import { useForm } from "react-hook-form";
 
 import {
@@ -23,10 +22,7 @@ import DynamicInput from "@/components/DynamicInput";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 
-import {
-  useAppDispatch,
-  useAppSeletor,
-} from "@/services/helper/redux";
+import { useAppDispatch, useAppSeletor } from "@/services/helper/redux";
 
 import { verifyEmailUser } from "@/store/slices/auth.slice";
 import { toast } from "sonner";
@@ -61,13 +57,16 @@ const VerifyEmail = () => {
 
       if (response?.payload?.success === true) {
         toast.success(response?.payload?.message);
+        if (response?.payload?.data?.role === "admin") {
+          router.push("/admin/dashboard");
+        } else {
+          router.push("/user/dashboard");
+        }
 
         reset({
           email: "",
           otp: "",
         });
-
-        // router.push("/login");
       }
     } catch (error) {
       console.log("error from catch", error);
@@ -78,7 +77,6 @@ const VerifyEmail = () => {
     <>
       <div className="h-screen overflow-hidden bg-[#0B0804] px-4 py-4 md:py-6">
         <div className="mx-auto grid h-full w-full max-w-6xl grid-cols-1 overflow-hidden rounded-3xl border border-[#6B3515] bg-[#140B05] shadow-2xl md:grid-cols-2">
-
           {/* LEFT SIDE */}
           <div className="relative flex min-h-0 items-center justify-center overflow-hidden bg-[#1A0D04]">
             <div className="absolute left-10 h-40 w-40 rounded-full bg-[#F97316]/10 blur-3xl" />
@@ -110,7 +108,6 @@ const VerifyEmail = () => {
               "
             >
               <CardHeader className="space-y-2">
-
                 <CardTitle className="text-2xl font-semibold text-[#FFF7ED]">
                   Verify your email
                 </CardTitle>
@@ -127,16 +124,11 @@ const VerifyEmail = () => {
                     Go Back
                   </Link>
                 </CardAction>
-
               </CardHeader>
 
               <CardContent>
-                <form
-                  onSubmit={handleSubmit(onSubmit)}
-                  className="space-y-6"
-                >
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                   <div className="flex flex-col gap-5">
-
                     {verifyEmailData.map((input) => (
                       <DynamicInput<VerifyEmailType>
                         key={input.name}
@@ -151,7 +143,6 @@ const VerifyEmail = () => {
                         Icon={input.icon}
                       />
                     ))}
-
                   </div>
 
                   {error.verifyEmail && (
@@ -176,12 +167,10 @@ const VerifyEmail = () => {
                   >
                     {loading.verifyEmail ? <Spinner /> : "Verify"}
                   </Button>
-
                 </form>
               </CardContent>
             </Card>
           </div>
-
         </div>
       </div>
     </>

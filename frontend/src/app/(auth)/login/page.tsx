@@ -17,11 +17,20 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Image from "next/image";
+import { useAppDispatch, useAppSeletor } from "@/services/helper/redux";
+import { loginUser } from "@/store/slices/auth.slice";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { Spinner } from "@/components/ui/spinner";
 
 const Login = () => {
+  const dispatch = useAppDispatch();
+  const { loading, error } = useAppSeletor((state) => state.auth);
+  const router = useRouter();
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<LoginType>({
     resolver: yupResolver(loginSchema),
@@ -32,7 +41,24 @@ const Login = () => {
   });
 
   const onSubmit = async (data: LoginType) => {
-    console.log(data);
+    try {
+      const response = await dispatch(loginUser(data));
+      console.log("response from register page", response);
+      if (response?.payload?.success === true) {
+        toast.success(response?.payload?.message);
+        if (response?.payload?.data?.role === "admin") {
+          router.push("/admin/dashboard");
+        } else {
+          router.push("/user/dashboard");
+        }
+        reset({
+          email: "",
+          password: "",
+        });
+      }
+    } catch (error) {
+      console.log("error from catch", error);
+    }
   };
 
   return (
@@ -53,7 +79,6 @@ const Login = () => {
             />
           </div>
         </div>
-
 
         <div className="flex min-h-0 items-center justify-center overflow-hidden bg-[#0F0804] p-5 md:p-8 lg:p-10">
           <Card
@@ -97,19 +122,25 @@ const Login = () => {
                       name={input.name}
                       placeholder={input.placeholder}
                       type={input.type}
-                      loading={false}
+                      loading={loading.login}
                       error={errors[input.name]?.message}
                       required={input.required}
-                       Icon={input.icon}
+                      Icon={input.icon}
                     />
                   ))}
                 </div>
+
+                {error.login && (
+                  <p className="text-center text-orange-200 text-md">
+                    {error.login}
+                  </p>
+                )}
 
                 <Button
                   type="submit"
                   className="h-12 w-full cursor-pointer bg-[#E59A0B] font-semibold text-white transition-all duration-200 hover:bg-[#C77D05] "
                 >
-                  Login
+                  {loading.verifyEmail ? <Spinner /> : "Login"}
                 </Button>
               </form>
 

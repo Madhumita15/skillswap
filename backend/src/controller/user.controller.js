@@ -24,7 +24,23 @@ class UserController {
     return res.status(httpStatusCode.OK).json({
       success: true,
       message: "Profile fetched successfully",
-      data: user,
+      data: {
+        _id: user._id,
+        email: user.email,
+        name: user.name,
+        avatar_image: user.avatar_image,
+        phone: user.phone,
+        bio: user.bio,
+        experience: user.experience,
+        learningSkills: user.learningSkills,
+        teachingSkills: user.teachingSkills,
+        status: user.status,
+        isEmailVerified: user.isEmailVerified,
+        isOnboardingComplete: user.isOnboardingComplete,
+        role: user.role
+
+
+      },
     });
   }
 

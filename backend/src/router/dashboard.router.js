@@ -6,7 +6,7 @@ const router = express.Router();
 const dashboardController = require("../controller/dashboard.controller");
 const authMiddleware = require("../middleware/auth.middleware");
 const roleMiddleware = require("../middleware/role.middleware");
-const asyncHandler = require("../middleware/asyncHandler");
+const asyncHandler = require("../middleware/asyncHandeler.middleware");
 
 // User dashboard
 router.get(

@@ -6,7 +6,12 @@ const Otp = require("../models/otp.model");
 const httpStatusCode = require('../utils/httpStatusCode')
 const SendEmail = require("../utils/sendEmail");
 const { generateAccessToken, generateRefreshToken } = require("../utils/generateToken");
+const ResetPassword = require("../models/resetPassword.model");
+const crypto = require('crypto')
 
+//===========================================================================
+//RegisterService
+//===========================================================================
 const registerService = async ({ name, email, password, phone, file }) => {
   try {
     const existingEmail = await User.findOne({ email: email });
@@ -38,6 +43,9 @@ const registerService = async ({ name, email, password, phone, file }) => {
   }
 };
 
+//=====================================================
+//LoginService
+//=====================================================
 const loginService = async ({ email, password }) => {
   const user = await User.findOne({ email: email });
   if (!user) {
@@ -78,6 +86,9 @@ const loginService = async ({ email, password }) => {
 };
 };
 
+//=======================================================
+//mailVerifyService
+//=======================================================
 const mailVerifyService = async ({ email, otp }) => {
   const user = await User.findOne({ email: email });
   if (!user) {
@@ -128,7 +139,9 @@ const mailVerifyService = async ({ email, otp }) => {
 };
 };
 
-
+//==========================================================
+//refreshToken
+//==========================================================
 const refreshTokenService = async ({ refreshToken }) => {
  
   // check refreshToken present or not
@@ -210,7 +223,101 @@ const refreshTokenService = async ({ refreshToken }) => {
   };
 };
 
+//=====================================================
+//forgotPasswordService
+//=====================================================
+const forgotPasswordService = async (email) => {
+  const user = await User.findOne({ email });
 
+  // Don't reveal whether the email exists
+  if (!user) {
+    return {
+      success: true,
+      message:
+        "If that email address is in our database, we sent a password reset link to it.",
+    };
+  }
+
+  // Generate plain reset token
+  const resetToken = crypto.randomBytes(32).toString("hex");
+
+  // Hash token before storing in DB
+  const tokenHash = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  // Token expires after 15 minutes
+  await ResetPassword.create({
+  userId: user._id,
+  tokenHash: tokenHash,
+});
+  try {
+    // Use the method from your SendEmail class
+    await SendEmail.forgotPasswordLink(user, resetToken);
+
+    return {
+      success: true,
+      message: "Password reset link has been sent to your email.",
+    };
+  } catch (error) {
+    console.error("FORGOT PASSWORD EMAIL ERROR:", error);
+
+    // Remove reset token if email failed
+    // user.resetPasswordToken = undefined;
+    // user.resetPasswordExpires = undefined;
+
+    // await user.save();
+
+    throw new Error("Email could not be sent. Please try again later.");
+  }
+};
+
+//===============================================================
+//resetPasswordService
+//===============================================================
+ const resetPasswordService = async (token, password) => {
+  const tokenHash = crypto
+    .createHash("sha256")
+    .update(token)
+    .digest("hex");
+
+  const resetData = await ResetPassword.findOne({
+    tokenHash,
+  });
+
+  if (!resetData) {
+    throw new Error("Invalid or expired password reset token.");
+  }
+
+  const user = await User.findById(resetData.userId);
+
+  if (!user) {
+    throw new Error("User not found.");
+  }
+
+  const salt = await bcryptjs.genSalt(10);
+
+  user.password = await bcryptjs.hash(password, salt);
+
+  await user.save();
+
+  // Delete the token after successful password reset
+  await ResetPassword.deleteOne({
+    _id: resetData._id,
+  });
+
+  return {
+    success: true,
+    message:
+      "Password reset successfully. You can now login with your new password.",
+  };
+};
+
+
+//=========================================
+//LogoutService
+//=========================================
 const logoutService = async (id) => {
   const user = await User.findById(id);
   if (!user) {
@@ -224,4 +331,4 @@ const logoutService = async (id) => {
   return user
 };
 
-module.exports = { registerService, loginService, mailVerifyService, refreshTokenService,logoutService };
+module.exports = { registerService, loginService, mailVerifyService, refreshTokenService, logoutService, forgotPasswordService, resetPasswordService };

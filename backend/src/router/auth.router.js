@@ -24,6 +24,8 @@ const uploadImageMiddleware = (req, res, next)=>{
 router.post("/register",uploadImageMiddleware, validation.validate(userSchemaValidation.register), asyncHandeler(userController.register))
 router.post("/verify-email", validation.validate(userSchemaValidation.verifyEmail),asyncHandeler(userController.mailVerify))
 router.post("/login", validation.validate(userSchemaValidation.login), asyncHandeler(userController.login))
+router.post("/forgot-password", validation.validate(userSchemaValidation.forgotPasswordSchema), asyncHandeler(userController.forgotPassword));
+router.post("/reset-password", validation.validate(userSchemaValidation.resetPasswordSchema), asyncHandeler(userController.resetPassword));
 router.post("/logout", authMiddleware.verifyToken,asyncHandeler(userController.logout))
 
 

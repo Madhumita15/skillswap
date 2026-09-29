@@ -154,5 +154,164 @@ class SendEmail {
       throw error;
     }
   }
+
+  static async forgotPasswordLink(user, resetToken) {
+  try {
+    const resetLink = `${process.env.FRONTEND_HOST}/reset-password?token=${resetToken}`;
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_FROM,
+      to: user.email,
+      subject: "Reset Your SkillSwap Password",
+      html: `
+        <!DOCTYPE html>
+        <html lang="en">
+
+        <head>
+          <meta charset="UTF-8" />
+          <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+          />
+
+          <title>Reset Your Password</title>
+        </head>
+
+        <body style="
+          margin: 0;
+          padding: 0;
+          background-color: #f4f6f8;
+          font-family: Arial, Helvetica, sans-serif;
+          color: #333333;
+        ">
+
+          <div style="
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+          ">
+
+            <!-- Header -->
+            <div style="
+              background-color: #F97316;
+              padding: 25px;
+              text-align: center;
+            ">
+
+              <h1 style="
+                margin: 0;
+                color: #ffffff;
+                font-size: 24px;
+              ">
+                Reset Your Password
+              </h1>
+
+            </div>
+
+            <!-- Content -->
+            <div style="padding: 35px;">
+
+              <h2 style="
+                margin-top: 0;
+                color: #222222;
+              ">
+                Hello ${user.name},
+              </h2>
+
+              <p style="
+                font-size: 16px;
+                line-height: 1.6;
+              ">
+                We received a request to reset the password
+                for your SkillSwap account.
+              </p>
+
+              <p style="
+                font-size: 16px;
+                line-height: 1.6;
+              ">
+                Click the button below to create a new password.
+              </p>
+
+              <!-- Reset Button -->
+              <div style="
+                margin: 30px 0;
+                text-align: center;
+              ">
+
+                <a
+                  href="${resetLink}"
+                  style="
+                    display: inline-block;
+                    padding: 14px 28px;
+                    background-color: #F97316;
+                    color: #ffffff;
+                    text-decoration: none;
+                    border-radius: 8px;
+                    font-size: 16px;
+                    font-weight: bold;
+                  "
+                >
+                  Reset Password
+                </a>
+
+              </div>
+
+              <p style="
+                font-size: 15px;
+                line-height: 1.6;
+                color: #555555;
+              ">
+                This password reset link will expire after
+                15 minutes.
+              </p>
+
+              <p style="
+                font-size: 15px;
+                line-height: 1.6;
+                color: #555555;
+              ">
+                If you did not request a password reset,
+                you can safely ignore this email.
+              </p>
+
+              <p style="
+                margin-top: 30px;
+                font-size: 15px;
+              ">
+                Thank you,<br />
+                <strong>SkillSwap Team</strong>
+              </p>
+
+            </div>
+
+            <!-- Footer -->
+            <div style="
+              background-color: #f8f9fa;
+              padding: 20px;
+              text-align: center;
+              color: #888888;
+              font-size: 12px;
+            ">
+
+              <p style="margin: 0;">
+                This is an automated email. Please do not reply.
+              </p>
+
+            </div>
+
+          </div>
+
+        </body>
+        </html>
+      `,
+    });
+  } catch (error) {
+    throw error;
+  }
+}
 }
 module.exports = SendEmail;

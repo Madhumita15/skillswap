@@ -52,23 +52,32 @@ const VerifyEmail = () => {
   });
 
   const onSubmit = async (data: VerifyEmailType) => {
-    console.log(data);
+      console.log("1. FORM DATA:", data);
 
     try {
-      const response = await dispatch(verifyEmailUser(data));
+      const response = await dispatch(verifyEmailUser(data)).unwrap();
 
-      console.log("response from verify email page", response);
+      console.log("2. RESPONSE FROM VERIFY:", response);
+    console.log("3. RESPONSE SUCCESS:", response?.success);
+    console.log("4. SUCCESS TYPE:", typeof response?.success);
 
-      if (response?.payload?.success === true) {
-        toast.success(response?.payload?.message);
 
-        reset({
+      if (response && response?.success === true) {
+        console.log("5. SUCCESS CONDITION PASSED");
+
+       toast.success(
+        response?.message || "Email verified successfully!",
+      );
+      reset({
           email: "",
           otp: "",
-        });
+      });
 
-        // router.push("/login");
-      }
+        console.log("REDIRECTING TO ONBOARDING...");
+        router.push("/onBoarding");
+      } else {
+      console.log("4. SUCCESS CONDITION FAILED");
+    }
     } catch (error) {
       console.log("error from catch", error);
     }

@@ -6,6 +6,8 @@ const {
   loginService,
   refreshTokenService,
   logoutService,
+  forgotPasswordService,
+  resetPasswordService,
 } = require("../services/auth.service");
 
 class AuthController {
@@ -50,6 +52,7 @@ class AuthController {
         avatar_image: user.avatar_image,
         isEmailVerified: user.isEmailVerified,
         isOnboardingComplete: user.isOnboardingComplete,
+        accessToken: user.accessToken,
       },
     });
   }
@@ -140,6 +143,33 @@ async refreshToken(req, res) {
     });
   } 
 
+  async forgotPassword (req, res) {
+  const result = await forgotPasswordService(req.body.email);
+  return res.status(httpStatusCode.OK).json(result);
+};
+
+async resetPassword (req, res) {
+  const { token, password } = req.body;
+
+  console.log("RESET PASSWORD BODY:", req.body);
+
+  if (!token) {
+    return res.status(httpStatusCode.BAD_REQUEST).json({
+      success: false,
+      message: "Reset token is required .",
+    });
+  }
+
+  if (!password) {
+    return res.status(httpStatusCode.BAD_REQUEST).json({
+      success: false,
+      message: "Password is required.",
+    });
+  }
+
+  const result = await resetPasswordService(token, password);
+  return res.status(httpStatusCode.OK).json(result);
+};
 
   async logout(req, res) {
     const id = req.user._id;

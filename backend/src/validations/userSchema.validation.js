@@ -58,6 +58,20 @@ class UserSchemaValidation {
 
   //Complete Onboarding Validation
   static completeOnboardingSchema = joi.object({
+    name: joi.string().trim().required().messages({
+      "string.empty": "Name is required",
+      "any.required": "Name is required",
+    }),
+     phone: joi
+      .string()
+      .trim()
+      .pattern(/^[6-9]\d{9}$/)
+      .required()
+      .messages({
+        "string.empty": "Phone No is required",
+        "string.pattern.base": "Phone Number must be 10 digit",
+        "any.required": "Phone No required",
+      }),
     teachingSkills: joi
       .array()
       .items(
@@ -128,6 +142,43 @@ class UserSchemaValidation {
     .messages({
       "object.min": "At least one field is required to update the profile",
     });
+
+  //forgot-password  schema
+  static forgotPasswordSchema = joi.object({
+    email: joi.string().trim().email().required().messages({
+      "string.empty": "Email is required.",
+      "string.email": "Please provide a valid email address.",
+      "any.required": "Email is required.",
+    }),
+  });
+
+  //reset-password schema
+  static resetPasswordSchema = joi.object({
+  token: joi
+    .string()
+    .trim()
+    .required()
+    .messages({
+      "string.empty": "Reset token is required.",
+      "any.required": "Reset token is required.",
+    }),
+
+  password: joi
+    .string()
+    .trim()
+    .min(6)
+    .max(15)
+    .pattern(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]+$/)
+    .required()
+    .messages({
+      "string.empty": "Password is required.",
+      "string.min": "Password must be at least 6 characters.",
+      "string.max": "Password cannot exceed 15 characters.",
+      "string.pattern.base":
+        "Password must contain at least one letter, one digit, and one special character.",
+      "any.required": "Password is required.",
+    }),
+});
 }
 
 module.exports = UserSchemaValidation;

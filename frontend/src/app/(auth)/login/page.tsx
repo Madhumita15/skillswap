@@ -1,11 +1,18 @@
 "use client";
 
+import { axiosInstance } from "@/lib/axiosInstance";
+import { toast } from "sonner";
+import axios from "axios";
+
+
 import { LoginType } from "@/typescript/type/auth.type";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { loginSchema } from "@/services/validation/auth.validation";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+
 import { loginInputData } from "@/services/json/inputsData/auth.input";
 import DynamicInput from "@/components/DynamicInput";
 import {
@@ -19,6 +26,8 @@ import {
 import Image from "next/image";
 
 const Login = () => {
+    const router = useRouter();
+
   const {
     register,
     handleSubmit,
@@ -31,9 +40,47 @@ const Login = () => {
     },
   });
 
+
   const onSubmit = async (data: LoginType) => {
-    console.log(data);
-  };
+  try {
+    const response = await axiosInstance.post("/auth/login", {
+      email: data.email,
+      password: data.password,
+    });
+
+    console.log("LOGIN RESPONSE:", response.data);
+
+    if (!response.data.success) {
+      throw new Error(response.data.message || "Login failed");
+    }
+
+    const user = response.data.data;
+
+    toast.success(response.data.message || "Login successful");
+
+    // Redirect according to onboarding status
+    if (user.isOnboardingComplete) {
+      router.push("/user/dashboard");
+    } else {
+      router.push("/onBoarding");
+    }
+  } catch (error) {
+    console.error("LOGIN ERROR:", error);
+
+    if (axios.isAxiosError(error)) {
+      console.error("STATUS:", error.response?.status);
+      console.error("SERVER ERROR:", error.response?.data);
+
+      toast.error(
+        error.response?.data?.message || "Unable to login",
+      );
+    } else {
+      toast.error(
+        error instanceof Error ? error.message : "Unable to login",
+      );
+    }
+  }
+};
 
   return (
     <div className="h-screen overflow-hidden bg-[#0B0804] px-4 py-4 md:py-6">
@@ -115,7 +162,7 @@ const Login = () => {
 
               <div className="mt-5 text-center">
                 <Link
-                  href="/forgotPasswordLink"
+                  href="/forgot-password"
                   className="text-sm text-[#A8A29E] transition-colors hover:text-[#D99A18]"
                 >
                   Forgot your Password?

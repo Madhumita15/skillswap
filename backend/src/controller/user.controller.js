@@ -1,4 +1,3 @@
-
 const {
   getProfileService,
   completeOnBoardingService,
@@ -8,7 +7,6 @@ const {
 const httpStatusCode = require("../utils/httpStatusCode");
 
 class UserController {
-  
   // =====================================================
   // GET PROFILE
   // GET /api/users/profile
@@ -36,23 +34,17 @@ class UserController {
   async completeOnBoarding(req, res) {
     const id = req.user._id;
 
-    const {
-      teachingSkills,
-      learningSkills,
-      experience,
-      bio,
-    } = req.body;
+    const { name, phone, teachingSkills, learningSkills, experience, bio } =
+      req.body;
 
-    const avatar_image = req.file
-      ? req.file.path
-      : undefined;
+    const avatar_image = req.file ? req.file.path : undefined;
 
-    const avatar_public_id = req.file
-      ? req.file.filename
-      : undefined;
+    const avatar_public_id = req.file ? req.file.filename : undefined;
 
     const user = await completeOnBoardingService({
       id,
+      name,
+      phone,
       teachingSkills,
       learningSkills,
       experience,
@@ -76,18 +68,11 @@ class UserController {
   async updateProfile(req, res) {
     const id = req.user._id;
 
-    const {
-      name,
-      phone,
-    } = req.body;
+    const { name, phone } = req.body;
 
-    const avatar_image = req.file
-      ? req.file.path
-      : undefined;
+    const avatar_image = req.file ? req.file.path : undefined;
 
-    const avatar_public_id = req.file
-      ? req.file.filename
-      : undefined;
+    const avatar_public_id = req.file ? req.file.filename : undefined;
 
     const user = await updateProfileService({
       id,

@@ -104,17 +104,17 @@ const Register = () => {
         <div className="flex min-h-screen items-center justify-center bg-[#0B0804] px-6 py-8 md:px-8 lg:px-12 xl:px-16">
           <Card
             className="
-      w-full
-      max-w-2xl
-      border-[#482613]
-      bg-[#1C1008]
-      p-5
-      shadow-2xl
-      md:p-6
-      lg:p-7
-      xl:p-8
-      [&_input]:h-12
-    "
+              w-full
+              max-w-2xl
+              border-[#482613]
+              bg-[#1C1008]
+              p-5
+              shadow-2xl
+              md:p-6
+              lg:p-7
+              xl:p-8
+              [&_input]:h-12
+            "
           >
             <CardHeader className="px-0 pb-5">
               <div className="mb-3 flex items-center justify-center md:hidden">

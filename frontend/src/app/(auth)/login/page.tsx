@@ -1,11 +1,14 @@
 "use client";
 
+import { toast } from "sonner";
 import { LoginType } from "@/typescript/type/auth.type";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { loginSchema } from "@/services/validation/auth.validation";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+
 import { loginInputData } from "@/services/json/inputsData/auth.input";
 import DynamicInput from "@/components/DynamicInput";
 import {
@@ -19,11 +22,10 @@ import {
 import Image from "next/image";
 import { useAppDispatch, useAppSeletor } from "@/services/helper/redux";
 import { loginUser } from "@/store/slices/auth.slice";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { Spinner } from "@/components/ui/spinner";
 
 const Login = () => {
+
   const dispatch = useAppDispatch();
   const { loading, error } = useAppSeletor((state) => state.auth);
   const router = useRouter();
@@ -40,27 +42,83 @@ const Login = () => {
     },
   });
 
-  const onSubmit = async (data: LoginType) => {
+
+//   const onSubmit = async (data: LoginType) => {
+
+//   try {
+//     const response = await axiosInstance.post("/auth/login", {
+//       email: data.email,
+//       password: data.password,
+//     });
+
+//     console.log("LOGIN RESPONSE:", response.data);
+
+//     if (!response.data.success) {
+//       throw new Error(response.data.message || "Login failed");
+//     }
+
+//     const user = response.data.data;
+
+//     toast.success(response.data.message || "Login successful");
+
+//     // Redirect according to onboarding status
+//     if (user.isOnboardingComplete) {
+//       router.push("/user/dashboard");
+//     } else {
+//       router.push("/onBoarding");
+//     }
+//   } catch (error) {
+//     console.error("LOGIN ERROR:", error);
+
+//     if (axios.isAxiosError(error)) {
+//       console.error("STATUS:", error.response?.status);
+//       console.error("SERVER ERROR:", error.response?.data);
+
+//       toast.error(
+//         error.response?.data?.message || "Unable to login",
+//       );
+//     } else {
+//       toast.error(
+//         error instanceof Error ? error.message : "Unable to login",
+//       );
+//     }
+//   }
+// };
+
+const onSubmit = async (data: LoginType) => {
     try {
-      const response = await dispatch(loginUser(data));
-      console.log("response from register page", response);
-      if (response?.payload?.success === true) {
-        toast.success(response?.payload?.message);
-        if (response?.payload?.data?.role === "admin") {
+      const response = await dispatch(loginUser(data)).unwrap();
+
+      console.log("LOGIN RESPONSE:", response);
+
+      if (response?.success === true) {
+        const user = response?.data;
+
+        toast.success(response?.message || "Login successful");
+
+        if (user?.role === "admin") {
           router.push("/admin/dashboard");
-        } else {
+        } else if (user?.isOnboardingComplete) {
           router.push("/user/dashboard");
+        } else {
+          router.push("/onBoarding");
         }
+
         reset({
           email: "",
           password: "",
         });
       }
-    } catch (error) {
-      console.log("error from catch", error);
+    } catch (err) {
+      console.error("LOGIN ERROR:", err);
+
+      toast.error(
+        typeof err === "string"
+          ? err
+          : "Unable to login"
+      );
     }
   };
-
   return (
     <div className="h-screen overflow-hidden bg-[#0B0804] px-4 py-4 md:py-6">
       <div className="mx-auto grid h-full w-full max-w-6xl grid-cols-1 overflow-hidden rounded-3xl border border-[#6B3515] bg-[#140B05] shadow-2xl md:grid-cols-2">
@@ -75,6 +133,7 @@ const Login = () => {
               alt="SkillSwap skill exchange"
               fill
               priority
+              sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover"
             />
           </div>
@@ -140,13 +199,13 @@ const Login = () => {
                   type="submit"
                   className="h-12 w-full cursor-pointer bg-[#E59A0B] font-semibold text-white transition-all duration-200 hover:bg-[#C77D05] "
                 >
-                  {loading.verifyEmail ? <Spinner /> : "Login"}
+                  {loading.login ? <Spinner /> : "Login"}
                 </Button>
               </form>
 
               <div className="mt-5 text-center">
                 <Link
-                  href="/forgotPasswordLink"
+                  href="/forgot-password"
                   className="text-sm text-[#A8A29E] transition-colors hover:text-[#D99A18]"
                 >
                   Forgot your Password?

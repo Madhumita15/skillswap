@@ -20,31 +20,44 @@ const uploadImageMiddleware = (req, res, next) => {
   });
 };
 
-const arrayConvertMiddleware = (req, res, next) => {
-  if (typeof req.body.teachingSkills === "string") {
-    req.body.teachingSkills = JSON.parse(req.body.teachingSkills);
+// const arrayConvertMiddleware = (req, res, next) => {
+//   if (typeof req.body.teachingSkills === "string") {
+//     req.body.teachingSkills = JSON.parse(req.body.teachingSkills);
+//   }
+
+//   if (typeof req.body.learningSkills === "string") {
+//     req.body.learningSkills = JSON.parse(req.body.learningSkills);
+//   }
+//   next();
+// };
+
+const normalizeSkillArrays = (req, res, next) => {
+  if (req.body.teachingSkills) {
+    req.body.teachingSkills = Array.isArray(req.body.teachingSkills)
+      ? req.body.teachingSkills
+      : [req.body.teachingSkills];
   }
 
-  if (typeof req.body.learningSkills === "string") {
-    req.body.learningSkills = JSON.parse(req.body.learningSkills);
+  if (req.body.learningSkills) {
+    req.body.learningSkills = Array.isArray(req.body.learningSkills)
+      ? req.body.learningSkills
+      : [req.body.learningSkills];
   }
+
   next();
 };
-
 router.get("/profile", authMiddleware.verifyToken, userController.getProfile);
 router.get("/user/:id", authMiddleware.verifyToken, userController.getUserById);
 router.patch(
   "/onboarding",
-  authMiddleware.verifyToken,
-  uploadImageMiddleware,
-  arrayConvertMiddleware,
+  authMiddleware.verifyToken, uploadImageMiddleware, normalizeSkillArrays,
   validation.validate(userSchemaValidation.completeOnboardingSchema),
   asyncHandler(userController.completeOnBoarding),
 );
 
 router.put(
   "/profile",
-  authMiddleware,
+  authMiddleware.verifyToken,
   upload.single("avatar_image"),
   validation.validate(userSchemaValidation.updateProfileSchema),
   asyncHandler(userController.updateProfile),

@@ -25,8 +25,113 @@ const getProfileService = async ({ id }) => {
 // =====================================================
 // COMPLETE ONBOARDING
 // =====================================================
+// const completeOnBoardingService = async ({
+//   id,
+//   teachingSkills,
+//   learningSkills,
+//   experience,
+//   bio,
+//   avatar_image,
+//   avatar_public_id,
+// }) => {
+//   const user = await User.findById(id);
+
+//   if (!user) {
+//     const error = new Error("User not found");
+//     error.statusCode = httpStatusCode.NOT_FOUND;
+//     throw error;
+//   }
+
+//   // Check email verification
+//   if (!user.isEmailVerified) {
+//     const error = new Error(
+//       "Please Verify your Email before completing your OnBoarding",
+//     );
+//     error.statusCode = httpStatusCode.FORBIDDEN;
+//     throw error;
+//   }
+
+//   // Validate teaching skills
+//   if (!Array.isArray(teachingSkills) || teachingSkills.length === 0) {
+//     const error = new Error("Select at least one Teaching Skill");
+//     error.statusCode = httpStatusCode.BAD_REQUEST;
+//     throw error;
+//   }
+
+//   // Validate learning skills
+//   if (!Array.isArray(learningSkills) || learningSkills.length === 0) {
+//     const error = new Error("Select at least one Learning Skill");
+//     error.statusCode = httpStatusCode.BAD_REQUEST;
+//     throw error;
+//   }
+
+//   /// Validate skill IDs
+//   const Skill = require("../models/skill.model");
+//   const allSkillIds = [...teachingSkills, ...learningSkills];
+
+//   // Remove duplicate skill IDs
+//   const uniqueSkillIds = [...new Set(allSkillIds.map(String))];
+
+//   const skills = await Skill.find({
+//     _id: { $in: uniqueSkillIds },
+//     status: "active",
+//   }).select("_id");
+
+//   if (skills.length !== uniqueSkillIds.length) {
+//     const error = new Error(
+//       "One or more selected skills are invalid or inactive",
+//     );
+//     error.statusCode = httpStatusCode.BAD_REQUEST;
+//     throw error;
+//   }
+
+//   // Update user fields
+//   if (teachingSkills) {
+//     user.teachingSkills = teachingSkills;
+//   }
+
+//   if (learningSkills) {
+//     user.learningSkills = learningSkills;
+//   }
+
+//   if (experience !== undefined) {
+//     user.experience = experience;
+//   }
+
+//   if (bio !== undefined) {
+//     user.bio = bio;
+//   }
+
+//   // Profile image
+
+//   if (avatar_image) {
+//     user.avatar_image = avatar_image;
+//     user.avatar_public_id = avatar_public_id || null;
+//   }
+
+//   // Mark onboarding complete
+//   user.isOnboardingComplete = true;
+
+//   // Save user
+//   await user.save();
+
+//   // Return updated user
+//   const updateUser = await User.findById(id)
+//     .select("-password -refreshToken")
+//     .populate("teachingSkills")
+//     .populate("learningSkills");
+
+//   return updateUser;
+//  };
+
+// =====================================================
+// COMPLETE ONBOARDING
+// =====================================================
+
 const completeOnBoardingService = async ({
   id,
+  name,
+  phone,
   teachingSkills,
   learningSkills,
   experience,
@@ -42,35 +147,70 @@ const completeOnBoardingService = async ({
     throw error;
   }
 
+  // -----------------------------------------------------
   // Check email verification
+  // -----------------------------------------------------
+
   if (!user.isEmailVerified) {
     const error = new Error(
       "Please Verify your Email before completing your OnBoarding",
     );
+
     error.statusCode = httpStatusCode.FORBIDDEN;
     throw error;
   }
 
+  // -----------------------------------------------------
+  // Normalize FormData skill values
+  // -----------------------------------------------------
+
+  const teachingSkillIds = Array.isArray(teachingSkills)
+    ? teachingSkills
+    : teachingSkills
+      ? [teachingSkills]
+      : [];
+
+  const learningSkillIds = Array.isArray(learningSkills)
+    ? learningSkills
+    : learningSkills
+      ? [learningSkills]
+      : [];
+
+  // -----------------------------------------------------
   // Validate teaching skills
-  if (!Array.isArray(teachingSkills) || teachingSkills.length === 0) {
+  // -----------------------------------------------------
+
+  if (teachingSkillIds.length === 0) {
     const error = new Error("Select at least one Teaching Skill");
     error.statusCode = httpStatusCode.BAD_REQUEST;
     throw error;
   }
 
+  // -----------------------------------------------------
   // Validate learning skills
-  if (!Array.isArray(learningSkills) || learningSkills.length === 0) {
+  // -----------------------------------------------------
+
+  if (learningSkillIds.length === 0) {
     const error = new Error("Select at least one Learning Skill");
     error.statusCode = httpStatusCode.BAD_REQUEST;
     throw error;
   }
 
-  /// Validate skill IDs
+  // -----------------------------------------------------
+  // Validate skill IDs
+  // -----------------------------------------------------
+
   const Skill = require("../models/skill.model");
-  const allSkillIds = [...teachingSkills, ...learningSkills];
+
+  const allSkillIds = [
+    ...teachingSkillIds,
+    ...learningSkillIds,
+  ];
 
   // Remove duplicate skill IDs
-  const uniqueSkillIds = [...new Set(allSkillIds.map(String))];
+  const uniqueSkillIds = [
+    ...new Set(allSkillIds.map(String)),
+  ];
 
   const skills = await Skill.find({
     _id: { $in: uniqueSkillIds },
@@ -81,18 +221,25 @@ const completeOnBoardingService = async ({
     const error = new Error(
       "One or more selected skills are invalid or inactive",
     );
+
     error.statusCode = httpStatusCode.BAD_REQUEST;
     throw error;
   }
 
+  // -----------------------------------------------------
   // Update user fields
-  if (teachingSkills) {
-    user.teachingSkills = teachingSkills;
-  }
+  // -----------------------------------------------------
 
-  if (learningSkills) {
-    user.learningSkills = learningSkills;
-  }
+  user.teachingSkills = teachingSkillIds;
+  user.learningSkills = learningSkillIds;
+
+  if (name !== undefined) {
+  user.name = name;
+}
+
+if (phone !== undefined) {
+  user.phone = phone;
+}
 
   if (experience !== undefined) {
     user.experience = experience;
@@ -102,26 +249,37 @@ const completeOnBoardingService = async ({
     user.bio = bio;
   }
 
+  // -----------------------------------------------------
   // Profile image
+  // -----------------------------------------------------
 
   if (avatar_image) {
     user.avatar_image = avatar_image;
     user.avatar_public_id = avatar_public_id || null;
   }
 
+  // -----------------------------------------------------
   // Mark onboarding complete
+  // -----------------------------------------------------
+
   user.isOnboardingComplete = true;
 
+  // -----------------------------------------------------
   // Save user
+  // -----------------------------------------------------
+
   await user.save();
 
+  // -----------------------------------------------------
   // Return updated user
-  const updateUser = await User.findById(id)
+  // -----------------------------------------------------
+
+  const updatedUser = await User.findById(id)
     .select("-password -refreshToken")
     .populate("teachingSkills")
     .populate("learningSkills");
 
-  return updateUser;
+  return updatedUser;
 };
 
 // =====================================================

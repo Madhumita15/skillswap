@@ -1,5 +1,11 @@
-import { LoginType, RegisterType, VerifyEmailType } from "@/typescript/type/auth.type";
+import { LoginType, 
+      RegisterType, 
+      VerifyEmailType, 
+      ForgotPasswordType, 
+      ResetPasswordType } from "@/typescript/type/auth.type";
+
 import { InputType } from "@/typescript/type/input.type";
+
 import { LockKeyhole, Mail, Phone, ShieldCheck, UserRound } from "lucide-react";
 
 export const registerInputData:InputType<RegisterType>[] = [
@@ -38,8 +44,6 @@ export const registerInputData:InputType<RegisterType>[] = [
 ];
 
 
-
-
 export const loginInputData:InputType<LoginType>[] = [
   {
     name: "email",
@@ -61,8 +65,6 @@ export const loginInputData:InputType<LoginType>[] = [
 ];
 
 
-
-
 export const verifyEmailData:InputType<VerifyEmailType>[] = [
   {
     name: "email",
@@ -81,4 +83,27 @@ export const verifyEmailData:InputType<VerifyEmailType>[] = [
     icon: ShieldCheck
 
   }
+];
+
+export const forgotPasswordInputData: InputType<ForgotPasswordType>[] = [
+  {
+    name: "email",
+    label: "Email",
+    type: "text",
+    required: true,
+    placeholder: "Enter your registered email",
+    icon: Mail,
+  },
+];
+
+
+export const resetPasswordInputData: InputType<ResetPasswordType>[] = [
+  {
+    name: "password",
+    label: "New Password",
+    type: "password",
+    required: true,
+    placeholder: "Enter your new password",
+    icon: LockKeyhole,
+  },
 ];

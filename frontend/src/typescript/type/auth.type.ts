@@ -19,4 +19,11 @@ export type VerifyEmailType = {
     
 }
 
+export interface ForgotPasswordType {
+  email: string;
+}
+
+export interface ResetPasswordType {
+  password: string;
+}
 

@@ -20,6 +20,10 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "gemini.google.com"
+      },
+      {
+        protocol: "https",
+        hostname: "plus.unsplash.com"
       }
     ]
   }

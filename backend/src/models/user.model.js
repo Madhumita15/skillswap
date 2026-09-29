@@ -35,6 +35,7 @@ const userSchema = new Schema(
     experience: {
       type: String,
       trim: true,
+      enum: ["Beginner", "Intermediate", "Advanced", "Expert"],
       default: "",
     },
 
@@ -57,7 +58,7 @@ const userSchema = new Schema(
 
     isEmailVerified: {
       type: Boolean,
-      default: false
+      default: false,
     },
 
     status: {
@@ -74,13 +75,13 @@ const userSchema = new Schema(
 
     isOnboardingComplete: {
       type: Boolean,
-      default: false
+      default: false,
     },
 
     refreshToken: {
       type: String,
-      default: null
-    }
+      default: null,
+    },
   },
   {
     timestamps: true,

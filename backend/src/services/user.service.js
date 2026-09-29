@@ -1,13 +1,8 @@
 const User = require("../models/user.model");
 const cloudinary = require("../config/cloudinaryConfig");
-const bcryptjs = require("bcryptjs");
-const Otp = require("../models/otp.model");
 const httpStatusCode = require("../utils/httpStatusCode");
-const SendEmail = require("../utils/sendEmail");
-const {
-  generateAccessToken,
-  generateRefreshToken,
-} = require("../utils/generateToken");
+const mongoose = require('mongoose')
+
 
 // =====================================================
 // GET PROFILE
@@ -340,8 +335,76 @@ const updateProfileService = async ({
   return updatedUser;
 };
 
+
+const getUserByIdService = async(id)=> {
+
+  if(!mongoose.Types.ObjectId.isValid(id)){
+    const error = new Error("Invalid user id")
+    error.statusCode = httpStatusCode.BAD_REQUEST
+    throw error
+  }
+  const user = await User.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(id)
+      }
+    },
+    {
+      $lookup: {
+        from: "skills",
+        localField: "learningSkills",
+        foreignField: "_id",
+        as: "learningSkills"
+      }
+    },
+    {
+      $lookup: {
+        from: "skills",
+        localField: "teachingSkills",
+        foreignField: "_id",
+        as: "teachingSkills"
+      }
+    },
+    {
+      $project: {
+        _id: 1,
+        name: 1,
+        email: 1,
+        role: 1,
+        status: 1,
+        bio: 1,
+        experience: 1,
+        isEmailVerified: 1,
+        isOnboardingComplete: 1,
+        phone: 1,
+        avatar_image: 1,
+        "teachingSkills._id": 1,
+        "teachingSkills.skill_logo": 1,
+        "teachingSkills.name": 1,
+        "teachingSkills.description":1,
+
+        "learningSkills._id": 1,
+        "learningSkills.skill_logo": 1,
+        "learningSkills.name": 1,
+        "learningSkills.description":1,
+      }
+    }
+
+  ])
+  if(user.length === 0){
+    const error = new Error("User not found")
+    error.statusCode = httpStatusCode.NOT_FOUND
+    throw error
+
+  }
+
+  return user
+  
+}
+
 module.exports = {
   getProfileService,
   completeOnBoardingService,
+  getUserByIdService,
   updateProfileService,
 };

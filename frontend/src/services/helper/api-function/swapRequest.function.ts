@@ -2,25 +2,28 @@ import { axiosInstance } from "@/lib/axiosInstance"
 import { getErrorMessage } from "../global.helper"
 import { ENDPOINT } from "../endPoint"
 
-export const getProfile= async()=>{
+export const getSentRequest = async()=>{
     try {
-        const profile = await axiosInstance.get(`${ENDPOINT.user.profile}`)
-        return profile.data
+        const response = await axiosInstance.get(`${ENDPOINT.swapRequest.sent}`)
+        return response.data
         
     } catch (error) {
         throw getErrorMessage(error)
         
     }
+
 }
 
 
-export const getUserById = async(id: string | undefined)=>{
+
+export const getReceivedRequest = async()=>{
     try {
-        const user = await axiosInstance.get(`${ENDPOINT.user.userById}/${id}`)
-        return user
+        const response = await axiosInstance.get(`${ENDPOINT.swapRequest.received}`)
+        return response.data
         
     } catch (error) {
         throw getErrorMessage(error)
         
     }
+
 }

@@ -61,7 +61,13 @@ const Register = () => {
       console.log("response from register page", response);
       if (response?.payload?.success === true) {
         toast.success(response?.payload?.message);
-        reset();
+        reset({
+          email: "",
+          password: "",
+          name: "",
+          phone: "",
+          avatar_image: null,
+        });
         setPreviewImage("");
         router.push("/verify-email");
       }

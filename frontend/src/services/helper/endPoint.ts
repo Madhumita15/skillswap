@@ -7,5 +7,9 @@ export const ENDPOINT = {
         forgotPassword: "/auth/forgot-password",
         resetPassword: "/auth/reset-password"
 
+    },
+    user: {
+        profile: "/profile"
+
     }
 }

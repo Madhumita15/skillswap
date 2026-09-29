@@ -32,6 +32,7 @@ const arrayConvertMiddleware = (req, res, next) => {
 };
 
 router.get("/profile", authMiddleware.verifyToken, userController.getProfile);
+router.get("/user/:id", authMiddleware.verifyToken, userController.getUserById);
 router.patch(
   "/onboarding",
   authMiddleware.verifyToken,

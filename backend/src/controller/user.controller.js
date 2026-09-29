@@ -3,6 +3,7 @@ const {
   getProfileService,
   completeOnBoardingService,
   updateProfileService,
+  getUserByIdService
 } = require("../services/user.service");
 
 const httpStatusCode = require("../utils/httpStatusCode");
@@ -118,6 +119,20 @@ class UserController {
       message: "Profile updated successfully",
       data: user,
     });
+  }
+
+
+  async getUserById(req, res){
+    const id = req.params.id
+   const user =  await getUserByIdService(id)
+   return res.status(httpStatusCode.OK).json({
+    status: true,
+    message: "User gets successfully!",
+    data: user
+   })
+
+    
+
   }
 }
 

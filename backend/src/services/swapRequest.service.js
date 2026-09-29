@@ -104,17 +104,14 @@ const getSendingRequestsService = async (userId) => {
         "receiverUser._id": 1,
         "receiverUser.name": 1,
         "receiverUser.email": 1,
-        "receiverUser.avata_image": 1,
+        "receiverUser.status": 1,
+        "receiverUser.avatar_image": 1,
         "receiverUser.bio": 1,
         "receiverUser.experience": 1,
       },
     },
   ]);
-  if (sendingRequests.length === 0) {
-    const error = new Error("sendingRequests not found");
-    error.statusCode = httpStatusCode.NOT_FOUND;
-    throw error;
-  }
+  
 
   return sendingRequests;
 };
@@ -180,16 +177,13 @@ const getReceivedRequestsService = async (userId) => {
           "senderUser.email": 1,
           "senderUser.avata_image": 1,
           "senderUser.bio": 1,
+          "senderUser.status": 1,
           "senderUser.experience": 1,
         },
       },
     ],
   ]);
-  if (receivedRequests.length === 0) {
-    const error = new Error("Received request not found");
-    error.statusCode = httpStatusCode.NOT_FOUND;
-    throw error;
-  }
+  
 
   return receivedRequests;
 };

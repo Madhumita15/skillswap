@@ -36,7 +36,6 @@ const userSchema = new Schema(
       type: String,
       trim: true,
       enum: ["Beginner", "Intermediate", "Advanced", "Expert"],
-      default: "",
     },
 
     bio: {

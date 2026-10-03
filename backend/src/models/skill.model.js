@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-
+ 
 const skillSchema = new mongoose.Schema(
   {
     name: {
@@ -13,6 +13,12 @@ const skillSchema = new mongoose.Schema(
       type: String,
       trim: true,
       required: [true, "Description is required"],
+    },
+
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "SkillCategory",
+      required: [true, "Category is required"],
     },
 
     skill_logo: {
@@ -29,6 +35,7 @@ const skillSchema = new mongoose.Schema(
       default: "active",
     },
   },
+
   {
     timestamps: true,
   },

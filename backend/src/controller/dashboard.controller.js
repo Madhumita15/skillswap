@@ -30,6 +30,7 @@ class DashboardController {
       data: dashboard,
     });
   }
+
 }
 
 module.exports = new DashboardController();

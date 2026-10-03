@@ -3,7 +3,7 @@ const {
   getActiveSwapService,
   cancelSwapService,
   completeSwapService,
-  getAllSwapervice,
+  getAllSwapService,
 } = require("../services/swap.service");
 const httpStatusCode = require("../utils/httpStatusCode");
 
@@ -64,7 +64,7 @@ class SwapController {
       const page = Number(req.query.page) || 1;
       const limit = Number(req.query.limit) || 5;
   
-      const {totalSwap, data} = await getAllSwapervice({ page, limit });
+      const {totalSwap, data} = await getAllSwapService({ page, limit });
       return res.status(httpStatusCode.OK).json({
         success: true,
         message: "All swaps fetched successfully!",

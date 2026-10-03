@@ -28,6 +28,7 @@ export const ENDPOINT = {
     },
     admin: {
         swapReuest: "/admin/swap-requests",
-        swaps: "/admin/swaps"
+        swaps: "/admin/swaps",
+        dashboard: "/dashboard/admin",
     }
 }

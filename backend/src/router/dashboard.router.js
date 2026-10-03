@@ -4,23 +4,23 @@ const express = require("express");
 const router = express.Router();
 
 const dashboardController = require("../controller/dashboard.controller");
-const authMiddleware = require("../middleware/auth.middleware");
-const roleMiddleware = require("../middleware/role.middleware");
+const AuthMiddleware = require("../middleware/auth.middleware");
+
 const asyncHandler = require("../middleware/asyncHandeler.middleware");
 
 // User dashboard
 router.get(
   "/user",
-  authMiddleware,
-  roleMiddleware("user"),
+  AuthMiddleware.verifyToken,
+  AuthMiddleware.roleCheck("user"),
   asyncHandler(dashboardController.getUserDashboard)
 );
 
-// Admin dashboard
+//Admin dashboard
 router.get(
   "/admin",
-  authMiddleware,
-  roleMiddleware("admin"),
+  AuthMiddleware.verifyToken,
+  AuthMiddleware.roleCheck("admin"),
   asyncHandler(dashboardController.getAdminDashboard)
 );
 

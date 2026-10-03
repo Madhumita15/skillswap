@@ -238,7 +238,7 @@ const completeSwapService = async ({ userId, swapId }) => {
   return swapData;
 };
 
-const getAllSwapervice = async ({ page, limit }) => {
+const getAllSwapService = async ({ page, limit }) => {
   const skip = (page - 1) * limit;
   const swap = await Swap.aggregate([
     {
@@ -287,6 +287,11 @@ const getAllSwapervice = async ({ page, limit }) => {
       $unwind: "$learningSkills",
     },
     {
+      $sort: {
+        createdAt: -1,
+      }
+    },
+    {
       $facet: {
         data: [
           {
@@ -308,20 +313,21 @@ const getAllSwapervice = async ({ page, limit }) => {
               "learningSkills.name": 1,
               "learningSkills.skill_logo": 1,
               "learningSkills.description": 1,
-              startAt: 1,
-              completedAt: 1,
+              startDate: 1,
+              completedDate: 1,
+              cancelledDate: 1,
 
               "senderUser._id": 1,
               "senderUser.name": 1,
               "senderUser.email": 1,
-              "senderUser.avata_image": 1,
+              "senderUser.avatar_image": 1,
               "senderUser.bio": 1,
               "senderUser.experience": 1,
 
               "receiverUser._id": 1,
               "receiverUser.name": 1,
               "receiverUser.email": 1,
-              "receiverUser.avata_image": 1,
+              "receiverUser.avatar_image": 1,
               "receiverUser.bio": 1,
               "receiverUser.experience": 1,
             },
@@ -345,5 +351,5 @@ module.exports = {
   cancelSwapService,
   completeSwapService,
   getHistorySwapService,
-  getAllSwapervice,
+  getAllSwapService,
 };

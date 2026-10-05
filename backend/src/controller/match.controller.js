@@ -9,7 +9,9 @@ class MatchController {
     const userId = req.user._id
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 5;
-    const { data, totalUsers } = await getAllUserService({ page, limit, userId });
+    const {name, experience, teachingSkills, learningSkills} = req.query
+  
+    const { data, totalUsers } = await getAllUserService({ page, limit, userId, name, experience, teachingSkills, learningSkills });
     return res.status(httpStatusCode.OK).json({
       success: true,
       message: "All users fetched successfully!",

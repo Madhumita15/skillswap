@@ -18,26 +18,16 @@ const httpStatusCode = require("../utils/httpStatusCode");
 // ======================================================
 
 const createReport = async (req, res) => {
-  const { error, value } = createReportSchema.validate(
-    req.body
-  );
 
-  if (error) {
-    const validationError = new Error(
-      error.details[0].message
-    );
+  const {reportedUserId, reason, description} = req.body
 
-    validationError.statusCode =
-      httpStatusCode.BAD_REQUEST;
-
-    throw validationError;
-  }
+  const id = req.user._id
 
   const report = await createReportService({
-    reporterId: req.user._id,
-    reportedUserId: value.reportedUserId,
-    reason: value.reason,
-    description: value.description,
+    reporterId: id,
+    reportedUserId: reportedUserId,
+    reason: reason,
+    description: description,
   });
 
   return res.status(httpStatusCode.CREATED).json({
@@ -52,14 +42,11 @@ const createReport = async (req, res) => {
 // ======================================================
 
 const getReports = async (req, res) => {
-  const {
-    status,
-    page = 1,
-    limit = 10,
-  } = req.query;
+ 
+  const page = Number(req.query.page) || 1
+  const limit = Number(req.query.limit) || 5
 
   const result = await getReportsService({
-    status,
     page,
     limit,
   });
@@ -92,27 +79,12 @@ const getReportById = async (req, res) => {
 // ======================================================
 
 const updateReportStatus = async (req, res) => {
-  const { error, value } =
-    updateReportStatusSchema.validate(req.body);
-
-  if (error) {
-    const validationError = new Error(
-      error.details[0].message
-    );
-
-    validationError.statusCode =
-      httpStatusCode.BAD_REQUEST;
-
-    throw validationError;
-  }
-
   const { id } = req.params;
-
+  const {status} = req.body
   const report = await updateReportStatusService({
     reportId: id,
-    status: value.status,
+    status: status,
   });
-
   return res.status(httpStatusCode.OK).json({
     success: true,
     message: "Report status updated successfully",

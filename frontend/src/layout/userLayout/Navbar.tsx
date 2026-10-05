@@ -375,7 +375,7 @@ const Navbar = ({ setMobileOpen }: NavbarProps) => {
               "
             >
 
-              <Image src={data?.data?.avatar_image ?? "https://plus.unsplash.com/premium_photo-1739786996022-5ed5b56834e2?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8Y2FydG9vbiUyMHBlcnNvbnxlbnwwfHwwfHx8MA%3D%3D"} className="object-cover h-8 w-8 rounded-full" width={20} height={20} alt="alter"/>
+              <Image src={data?.data[0].avatar_image ?? "https://plus.unsplash.com/premium_photo-1739786996022-5ed5b56834e2?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8Y2FydG9vbiUyMHBlcnNvbnxlbnwwfHwwfHx8MA%3D%3D"} className="object-cover h-8 w-8 rounded-full" width={20} height={20} alt="alter"/>
             </div>
 
             {/* User name */}
@@ -389,7 +389,7 @@ const Navbar = ({ setMobileOpen }: NavbarProps) => {
                   text-[#FFF7ED]
                 "
               >
-               {data?.data?.name ?? "user"}
+               {data?.data[0].name ?? "user"}
               </p>
 
               <p className="text-[9px] text-[#78716C]">

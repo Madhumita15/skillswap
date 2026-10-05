@@ -1,24 +1,8 @@
-import { OnBoardingStep1Type, OnBoardingStep4Type, OnboardingFieldConfig } from "@/typescript/type/user.type";
-import { UserRound, Phone, Briefcase, FileText } from "lucide-react";
+import { InputType } from "@/typescript/type/input.type";
+import {  OnBoardingStep4Type, OnboardingFieldConfig, UpdateProfileInputDataType } from "@/typescript/type/user.type";
+import {  Briefcase, FileText, Mail, Phone, UserRound } from "lucide-react";
 
-export const step1InputData: OnboardingFieldConfig<OnBoardingStep1Type>[] = [
-  {
-    name: "name",
-    label: "Full Name",
-    type: "text",
-    required: true,
-    placeholder: "Enter your full name",
-    Icon: UserRound,
-  },
-  {
-    name: "phone",
-    label: "Phone No",
-    type: "text",
-    required: false,
-    placeholder: "e.g. +1234567890",
-    Icon: Phone,
-  },
-];
+
 
 export const step4InputData: OnboardingFieldConfig<OnBoardingStep4Type>[] = [
   {
@@ -26,7 +10,7 @@ export const step4InputData: OnboardingFieldConfig<OnBoardingStep4Type>[] = [
     label: "Experience",
     type: "text",
     required: true,
-    placeholder: "e.g. 2 years of web development",
+    placeholder: "e.g. Beginner, Intermediate",
     Icon: Briefcase,
   },
   {
@@ -38,3 +22,30 @@ export const step4InputData: OnboardingFieldConfig<OnBoardingStep4Type>[] = [
     Icon: FileText,
   },
 ];
+
+
+
+
+
+
+
+export const updateProfileInputData:InputType<UpdateProfileInputDataType>[] = [
+   {
+    name: "name",
+    label: "Name",
+    type: "text",
+    required: true,
+    placeholder: "Enter your name",
+    icon: UserRound
+  },
+  
+  {
+    name: "phone",
+    label: "Phone No",
+    type: "text",
+    required: true,
+    placeholder: "Enter your valid Phone no",
+    icon: Phone
+  }
+
+]

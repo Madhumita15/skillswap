@@ -16,8 +16,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Image from "next/image";
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useAppDispatch, useAppSeletor } from "@/services/helper/redux";
 import { registerUser } from "@/store/slices/auth.slice";
@@ -25,14 +23,12 @@ import { Spinner } from "@/components/ui/spinner";
 import { useRouter } from "next/navigation";
 
 const Register = () => {
-  const [previewImage, setPreviewImage] = useState("");
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { loading, error } = useAppSeletor((state) => state.auth);
   const {
     register,
     handleSubmit,
-    setValue,
     reset,
     formState: { errors },
   } = useForm<RegisterType>({
@@ -42,22 +38,13 @@ const Register = () => {
       password: "",
       name: "",
       phone: "",
-      avatar_image: null,
     },
   });
 
-  console.log("error from page", error);
   const onSubmit = async (data: RegisterType) => {
-    const formData = new FormData();
-    formData.append("name", data.name);
-    formData.append("password", data.password);
-    formData.append("phone", data.phone);
-    formData.append("email", data.email);
-    if (data.avatar_image) {
-      formData.append("avatar_image", data.avatar_image);
-    }
+    console.log(data)
     try {
-      const response = await dispatch(registerUser({ data: formData }));
+      const response = await dispatch(registerUser(data));
       console.log("response from register page", response);
       if (response?.payload?.success === true) {
         toast.success(response?.payload?.message);
@@ -66,9 +53,7 @@ const Register = () => {
           password: "",
           name: "",
           phone: "",
-          avatar_image: null,
         });
-        setPreviewImage("");
         router.push("/verify-email");
       }
     } catch (error) {
@@ -172,56 +157,7 @@ const Register = () => {
                   ))}
                 </div>
 
-                {previewImage && (
-                  <div className="flex justify-center pt-1">
-                    <Image
-                      src={previewImage}
-                      alt="Profile preview"
-                      width={100}
-                      height={100}
-                      className="h-36 w-36 rounded-full border-4 border-[#F97316] object-cover"
-                    />
-                  </div>
-                )}
-
-                <div className="pt-1">
-                  <Input
-                    disabled={loading.register}
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0] || null;
-
-                      if (file) {
-                        if ((file?.size as number) > 1 * 1024 * 1024) {
-                          toast.success("File size must be less than 1mb");
-                          return;
-                        }
-                        setValue("avatar_image", file, {
-                          shouldValidate: true,
-                        });
-
-                        setPreviewImage(URL.createObjectURL(file));
-                      }
-                    }}
-                    className="
-              h-12
-              cursor-pointer
-              border-[#6B3515]
-              bg-[#28130c]
-              text-[#A8A29E]
-              file:mr-4
-              file:border-0
-              file:bg-[#E59A0B]
-              file:px-4
-              file:rounded-md
-              file:py-2
-              file:font-medium
-              file:text-[#1C1008]
-              hover:border-[#F97316]
-            "
-                  />
-                </div>
+               
 
                 {error.register && (
                   <p className="text-center text-orange-200 text-md">

@@ -1,5 +1,5 @@
 const httpStatusCode = require("../utils/httpStatusCode");
-const User = require('../models/user.model')
+
 const {
   registerService,
   mailVerifyService,
@@ -13,7 +13,7 @@ const {
 class AuthController {
   async register(req, res) {
     const { name, email, password, phone } = req.body;
-    await registerService({ name, email, password, phone, file: req.file });
+    await registerService({ name, email, password, phone });
     return res.status(httpStatusCode.CREATED).json({
       success: true,
       message: "User Registered successfully! and otp send to your email",

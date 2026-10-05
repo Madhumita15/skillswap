@@ -1,6 +1,8 @@
 const SwapRequest = require("../models/swapRequest.model");
 const httpStatusCode = require("../utils/httpStatusCode");
 const Swap = require("../models/swap.model");
+const User = require('../models/user.model')
+
 
 const createSwapRequestService = async ({
   message,
@@ -9,6 +11,7 @@ const createSwapRequestService = async ({
   teachingSkill,
   learningSkill,
 }) => {
+  
   const existingRequest = await SwapRequest.findOne({
     $or: [
       {
@@ -20,17 +23,59 @@ const createSwapRequestService = async ({
         receiverId: senderId,
       },
     ],
-    status: {
-      $in: ["pending", "accepted"],
-    },
+    status: "pending"
   });
+
   if (existingRequest) {
     const error = new Error(
-      "A swap request already exists between these users",
+      "you already send request to this user",
     );
     error.statusCode = httpStatusCode.BAD_REQUEST;
     throw error;
   }
+
+
+  const activeSwap = await Swap.findOne({
+    $or: [
+      {
+        senderId: senderId,
+        receiverId: receiverId,
+      },
+      {
+        senderId: receiverId,
+        receiverId: senderId,
+      },
+    ],
+    status: "active"
+
+  })
+
+
+  if (activeSwap) {
+    const error = new Error(
+      "User is already is on active swap",
+    );
+    error.statusCode = httpStatusCode.BAD_REQUEST;
+    throw error;
+  }
+
+  const receiverUser = await User.findById(receiverId);
+  const isLearningSkillValid = receiverUser.learningSkills.some((skillId) =>
+    skillId.equals(teachingSkill),
+  );
+
+  const isTeachingSkillValid = receiverUser.teachingSkills.some((skillId) =>
+    skillId.equals(learningSkill),
+  );
+
+  if (!isLearningSkillValid || !isTeachingSkillValid) {
+    const error = new Error(
+      "Your request skills do not match the receiver's skills",
+    );
+    error.statusCode = httpStatusCode.BAD_REQUEST;
+    throw error;
+  }
+
 
   const newRequest = new SwapRequest({
     message: message,
@@ -39,6 +84,7 @@ const createSwapRequestService = async ({
     teachingSkill: teachingSkill,
     learningSkill: learningSkill,
   });
+ 
 
   const swapRequest = await newRequest.save();
 
@@ -89,6 +135,7 @@ const getSendingRequestsService = async (userId) => {
         _id: 1,
         message: 1,
         status: 1,
+        senderId: 1,
         "teachingSkills._id": 1,
         "teachingSkills.name": 1,
         "teachingSkills.skill_logo": 1,
@@ -111,7 +158,6 @@ const getSendingRequestsService = async (userId) => {
       },
     },
   ]);
-  
 
   return sendingRequests;
 };
@@ -161,6 +207,7 @@ const getReceivedRequestsService = async (userId) => {
           _id: 1,
           message: 1,
           status: 1,
+          receiverId: 1,
           "teachingSkills._id": 1,
           "teachingSkills.name": 1,
           "teachingSkills.skill_logo": 1,
@@ -175,7 +222,7 @@ const getReceivedRequestsService = async (userId) => {
           "senderUser._id": 1,
           "senderUser.name": 1,
           "senderUser.email": 1,
-          "senderUser.avata_image": 1,
+          "senderUser.avatar_image": 1,
           "senderUser.bio": 1,
           "senderUser.status": 1,
           "senderUser.experience": 1,
@@ -183,7 +230,6 @@ const getReceivedRequestsService = async (userId) => {
       },
     ],
   ]);
-  
 
   return receivedRequests;
 };

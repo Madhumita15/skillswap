@@ -1,51 +1,14 @@
+import { useGetActiveSkillByUser } from "@/hooks/useSkills";
+import { Skill } from "@/typescript/interface/skill.interface";
 import { motion } from "framer-motion";
-import {
-  Code2,
-  Database,
-  Palette,
-  Languages,
-  Server,
-  PenTool,
-} from "lucide-react";
-
-const skills = [
-  {
-    title: "React.js",
-    description: "Build modern and interactive web interfaces.",
-    icon: Code2,
-  },
-  {
-    title: "Node.js",
-    description: "Learn backend development and REST APIs.",
-    icon: Server,
-  },
-  {
-    title: "MongoDB",
-    description: "Master databases and data management.",
-    icon: Database,
-  },
-  {
-    title: "UI / UX",
-    description: "Create beautiful and user-friendly designs.",
-    icon: Palette,
-  },
-  {
-    title: "Graphic Design",
-    description: "Share your creative design skills.",
-    icon: PenTool,
-  },
-  {
-    title: "Languages",
-    description: "Learn and exchange language skills.",
-    icon: Languages,
-  },
-];
+import Image from "next/image";
 
 const DiscoverSkills = () => {
+  const { data } = useGetActiveSkillByUser();
+  const skills = data?.data || [];
   return (
     <section className="overflow-hidden bg-[#0B0804] px-6 py-24">
       <div className="mx-auto max-w-7xl">
-
         {/* Heading comes from bottom */}
         <motion.div
           initial={{ opacity: 0, y: 60 }}
@@ -63,23 +26,20 @@ const DiscoverSkills = () => {
           </h2>
 
           <p className="mx-auto mt-4 max-w-2xl text-[#A8A29E]">
-            Find people who can teach what you want to learn,
-            while learning something they want to know.
+            Find people who can teach what you want to learn, while learning
+            something they want to know.
           </p>
         </motion.div>
 
         {/* Skills */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-
-          {skills.map((skill, index) => {
-            const Icon = skill.icon;
-
+          {skills.map((skill: Skill, index: number) => {
             // Alternating left/right entrance
             const fromLeft = index % 2 === 0;
 
             return (
               <motion.div
-                key={skill.title}
+                key={skill.name}
                 initial={{
                   opacity: 0,
                   x: fromLeft ? -100 : 100,
@@ -103,12 +63,20 @@ const DiscoverSkills = () => {
                 }}
                 className="group rounded-2xl border border-[#52291A] bg-[#1C1008] p-6 transition-colors duration-300 hover:border-[#F97316]"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#F97316]/10">
-                  <Icon className="h-6 w-6 text-[#F97316]" />
-                </div>
+                {skill.skill_logo && (
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#F97316]/10">
+                    <Image
+                      src={skill.skill_logo}
+                      alt={skill.name}
+                      width={28}
+                      height={28}
+                      className="object-contain"
+                    />
+                  </div>
+                )}
 
                 <h3 className="mt-5 text-xl font-semibold text-[#FFF7ED]">
-                  {skill.title}
+                  {skill.name}
                 </h3>
 
                 <p className="mt-2 text-sm leading-6 text-[#A8A29E]">

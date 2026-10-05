@@ -9,10 +9,10 @@ const {
   getReportById,
   updateReportStatus,
 } = require("../controller/report.controller");
-
 const authMiddleware = require("../middleware/auth.middleware");
-const roleMiddleware = require("../middleware/role.middleware");
 const asyncHandler = require("../middleware/asyncHandeler.middleware");
+const validation = require('../validations/index')
+const {createReportSchema, updateReportStatusSchema} = require('../validations/reportSchema.validation')
 
 // ======================================================
 // USER - CREATE REPORT
@@ -21,8 +21,9 @@ const asyncHandler = require("../middleware/asyncHandeler.middleware");
 
 router.post(
   "/reports",
-  authMiddleware,
-  roleMiddleware("user"),
+  authMiddleware.verifyToken,
+  authMiddleware.roleCheck("user"),
+  validation.validate(createReportSchema),
   asyncHandler(createReport)
 );
 
@@ -33,8 +34,8 @@ router.post(
 
 router.get(
   "/reports",
-  authMiddleware,
-  roleMiddleware("admin"),
+  authMiddleware.verifyToken,
+ authMiddleware.roleCheck("admin"),
   asyncHandler(getReports)
 );
 
@@ -45,8 +46,8 @@ router.get(
 
 router.get(
   "/reports/:id",
-  authMiddleware,
-  roleMiddleware("admin"),
+  authMiddleware.verifyToken,
+  authMiddleware.roleCheck("admin"),
   asyncHandler(getReportById)
 );
 
@@ -57,8 +58,9 @@ router.get(
 
 router.put(
   "/reports/:id",
-  authMiddleware,
-  roleMiddleware("admin"),
+  authMiddleware.verifyToken,
+  authMiddleware.roleCheck("admin"),
+  validation.validate(updateReportStatusSchema),
   asyncHandler(updateReportStatus)
 );
 

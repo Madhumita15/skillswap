@@ -1,33 +1,46 @@
 export const ENDPOINT = {
-    auth: {
-        login: "/auth/login",
-        register: "/auth/register",
-        logout: "/auth/logout",
-        verifyEmail: "/auth/verify-email",
-        forgotPassword: "/auth/forgot-password",
-        resetPassword: "/auth/reset-password"
+  auth: {
+    login: "/auth/login",
+    register: "/auth/register",
+    logout: "/auth/logout",
+    verifyEmail: "/auth/verify-email",
+    forgotPassword: "/auth/forgot-password",
+    resetPassword: "/auth/reset-password",
+  },
+  user: {
+    profile: "/profile",
+    discover: "/users/discover",
+    match: "/users/match",
+    userById: "/user",
+  },
+  swapRequest: {
+    post: "/swap-requests",
+    sent: "/swap-requests/sent",
+    received: "/swap-requests/received",
+  },
+  swaps: {
+    history: "/swaps/history",
+    active: "/swaps/active",
+    post: "/swaps",
+  },
+  admin: {
+    swapReuest: "/admin/swap-requests",
+    swaps: "/admin/swaps",
+  },
+  skills: {
+    get: "/skills",
+  },
+  report: {
+    post: "/reports",
+  },
+  dashboard: {
+    user: "/user/dashboard/dashboard",
+    admin: "/admin/dashboard",
+  },
+  reviews: {
+    create: "/reviews",
+    received: "/reviews/received",
+    given: "/reviews/given"
 
-    },
-    user: {
-        profile: "/profile",
-        discover: "/users/discover",
-        match: "/users/match",
-        userById: "/user"
-    },
-    swapRequest: {
-        post: "/swap-requests",
-        sent: "/swap-requests/sent",
-        received: "/swap-requests/received"
-    },
-    swaps: {
-        history: "/swaps/history",
-        active: "/swaps/active",
-        post: "/swaps"
-
-
-    },
-    admin: {
-        swapReuest: "/admin/swap-requests",
-        swaps: "/admin/swaps"
-    }
-}
+  }
+};

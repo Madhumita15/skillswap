@@ -6,10 +6,18 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Menu, X, ChevronRight } from "lucide-react";
+import useIsClinet from "@/components/UseIsClient";
+import { useProfile } from "@/hooks/useProfile";
+import { useAppDispatch } from "@/services/helper/redux";
+import { logout } from "@/store/slices/auth.slice";
+import { toast } from "sonner";
 
 const Navbar = () => {
   const pathname = usePathname();
   const router = useRouter();
+  const { data } = useProfile();
+  const dispatch = useAppDispatch();
+  const profile = data?.data[0];
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -23,6 +31,22 @@ const Navbar = () => {
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [pathname]);
+
+  const handleLogout = async () => {
+    try {
+      const response = await dispatch(logout()).unwrap();
+      console.log("response", response);
+      if (response?.success === true) {
+        toast.success(response?.message);
+        router.push("/login");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const isClient = useIsClinet();
+  if (!isClient) return null;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-[#52291A]/60 bg-[#0B0804]/95 shadow-lg shadow-black/20 backdrop-blur-md">
@@ -84,11 +108,11 @@ const Navbar = () => {
           })}
         </nav>
 
-        <div className="hidden items-center gap-3 md:flex">
+        {profile ? (
           <Button
             type="button"
             variant="outline"
-            onClick={() => router.push("/login")}
+            onClick={handleLogout}
             className="
               h-10 cursor-pointer rounded-lg border-[#6B3515]
               bg-transparent px-5 font-semibold text-[#FFF7ED]
@@ -100,13 +124,32 @@ const Navbar = () => {
               hover:shadow-lg hover:shadow-[#F97316]/10
             "
           >
-            Login
+            Logout
           </Button>
+        ) : (
+          <div className="hidden items-center gap-3 md:flex">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push("/login")}
+              className="
+              h-10 cursor-pointer rounded-lg border-[#6B3515]
+              bg-transparent px-5 font-semibold text-[#FFF7ED]
+              transition-all duration-300
+              hover:-translate-y-0.5
+              hover:border-[#F97316]
+              hover:bg-[#F97316]/10
+              hover:text-[#F97316]
+              hover:shadow-lg hover:shadow-[#F97316]/10
+            "
+            >
+              Login
+            </Button>
 
-          <Button
-            type="button"
-            onClick={() => router.push("/register")}
-            className="
+            <Button
+              type="button"
+              onClick={() => router.push("/register")}
+              className="
               h-10 cursor-pointer rounded-lg border-0
               bg-linear-to-r from-[#F97316] to-[#E59A0B]
               px-5 font-bold text-[#1C1008]
@@ -117,10 +160,11 @@ const Navbar = () => {
               hover:shadow-lg hover:shadow-[#F97316]/20
               active:translate-y-0
             "
-          >
-            Get Started
-          </Button>
-        </div>
+            >
+              Get Started
+            </Button>
+          </div>
+        )}
 
         <button
           type="button"
@@ -233,12 +277,12 @@ const Navbar = () => {
             </Button>
 
             <Button
-  type="button"
-  onClick={() => {
-    setMobileMenuOpen(false);
-    router.push("/register");
-  }}
-  className="
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                router.push("/register");
+              }}
+              className="
     group relative h-11 cursor-pointer overflow-hidden
     border-0
     bg-linear-to-r from-[#F97316] to-[#E59A0B]
@@ -253,23 +297,23 @@ const Navbar = () => {
     focus:ring-offset-2
     focus:ring-offset-[#0B0804]
   "
->
-  {/* Left → Right */}
-  <span
-    className="
+            >
+              {/* Left → Right */}
+              <span
+                className="
       pointer-events-none absolute inset-y-0 left-0 w-full
       -translate-x-full
       bg-linear-to-r from-[#52291A] to-[#1A0D04]
       transition-transform duration-500 ease-out
       group-hover:translate-x-0
     "
-  />
+              />
 
-  {/* Text */}
-  <span className="relative z-10 transition-colors duration-300 group-hover:text-[#FFF7ED]">
-    Get Started
-  </span>
-</Button>
+              {/* Text */}
+              <span className="relative z-10 transition-colors duration-300 group-hover:text-[#FFF7ED]">
+                Get Started
+              </span>
+            </Button>
           </div>
         </div>
       </div>

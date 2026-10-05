@@ -58,20 +58,6 @@ class UserSchemaValidation {
 
   //Complete Onboarding Validation
   static completeOnboardingSchema = joi.object({
-    name: joi.string().trim().required().messages({
-      "string.empty": "Name is required",
-      "any.required": "Name is required",
-    }),
-     phone: joi
-      .string()
-      .trim()
-      .pattern(/^[6-9]\d{9}$/)
-      .required()
-      .messages({
-        "string.empty": "Phone No is required",
-        "string.pattern.base": "Phone Number must be 10 digit",
-        "any.required": "Phone No required",
-      }),
     teachingSkills: joi
       .array()
       .items(
@@ -104,11 +90,17 @@ class UserSchemaValidation {
         "any.required": "Learning skills are required",
       }),
 
-    experience: joi.string().trim().valid("Beginner", "Intermediate","Advanced","Expert").required().messages({
-      "string.empty": "Experience is required",
-      "any.valid": "Experience must be one of Beginner, Intermediate, Advanced, Expert",
-      "any.required": "Experience is required",
-    }),
+    experience: joi
+      .string()
+      .trim()
+      .valid("Beginner", "Intermediate", "Advanced", "Expert")
+      .required()
+      .messages({
+        "string.empty": "Experience is required",
+        "any.valid":
+          "Experience must be one of Beginner, Intermediate, Advanced, Expert",
+        "any.required": "Experience is required",
+      }),
 
     bio: joi.string().trim().min(10).max(1000).required().messages({
       "string.empty": "Bio is required",
@@ -119,29 +111,75 @@ class UserSchemaValidation {
   });
 
   //updateProfileSchema
-  static updateProfileSchema = joi
-    .object({
-      name: joi.string().trim().min(2).max(50).messages({
-        "string.base": "Name must be a string",
-        "string.empty": "Name cannot be empty",
-        "string.min": "Name must be at least 2 characters",
-        "string.max": "Name cannot exceed 50 characters",
+  static updateProfileSchema = joi.object({
+    name: joi.string().trim().min(2).max(50).messages({
+      "string.base": "Name must be a string",
+      "string.empty": "Name cannot be empty",
+      "string.min": "Name must be at least 2 characters",
+      "string.max": "Name cannot exceed 50 characters",
+    }),
+
+    phone: joi
+      .string()
+      .trim()
+      .pattern(/^[0-9]{10}$/)
+      .messages({
+        "string.base": "Phone number must be a string",
+        "string.empty": "Phone number cannot be empty",
+        "string.pattern.base": "Phone number must contain exactly 10 digits",
       }),
 
-      phone: joi
-        .string()
-        .trim()
-        .pattern(/^[0-9]{10}$/)
-        .messages({
-          "string.base": "Phone number must be a string",
-          "string.empty": "Phone number cannot be empty",
-          "string.pattern.base": "Phone number must contain exactly 10 digits",
+    teachingSkills: joi
+      .array()
+      .items(
+        joi.string().trim().required().messages({
+          "string.empty": "Teaching skill cannot be empty",
+          "any.required": "Teaching skill is required",
         }),
-    })
-    .min(1)
-    .messages({
-      "object.min": "At least one field is required to update the profile",
-    });
+      )
+      .min(1)
+      .required()
+      .messages({
+        "array.base": "Teaching skills must be an array",
+        "array.min": "Please select at least one teaching skill",
+        "any.required": "Teaching skills are required",
+      }),
+
+    learningSkills: joi
+      .array()
+      .items(
+        joi.string().trim().required().messages({
+          "string.empty": "Learning skill cannot be empty",
+          "any.required": "Learning skill is required",
+        }),
+      )
+      .min(1)
+      .required()
+      .messages({
+        "array.base": "Learning skills must be an array",
+        "array.min": "Please select at least one learning skill",
+        "any.required": "Learning skills are required",
+      }),
+
+    experience: joi
+      .string()
+      .trim()
+      .valid("Beginner", "Intermediate", "Advanced", "Expert")
+      .required()
+      .messages({
+        "string.empty": "Experience is required",
+        "any.valid":
+          "Experience must be one of Beginner, Intermediate, Advanced, Expert",
+        "any.required": "Experience is required",
+      }),
+
+    bio: joi.string().trim().min(10).max(1000).required().messages({
+      "string.empty": "Bio is required",
+      "string.min": "Bio must be at least 10 characters",
+      "string.max": "Bio cannot exceed 1000 characters",
+      "any.required": "Bio is required",
+    }),
+  });
 
   //forgot-password  schema
   static forgotPasswordSchema = joi.object({
@@ -154,31 +192,27 @@ class UserSchemaValidation {
 
   //reset-password schema
   static resetPasswordSchema = joi.object({
-  token: joi
-    .string()
-    .trim()
-    .required()
-    .messages({
+    token: joi.string().trim().required().messages({
       "string.empty": "Reset token is required.",
       "any.required": "Reset token is required.",
     }),
 
-  password: joi
-    .string()
-    .trim()
-    .min(6)
-    .max(15)
-    .pattern(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]+$/)
-    .required()
-    .messages({
-      "string.empty": "Password is required.",
-      "string.min": "Password must be at least 6 characters.",
-      "string.max": "Password cannot exceed 15 characters.",
-      "string.pattern.base":
-        "Password must contain at least one letter, one digit, and one special character.",
-      "any.required": "Password is required.",
-    }),
-});
+    password: joi
+      .string()
+      .trim()
+      .min(6)
+      .max(15)
+      .pattern(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]+$/)
+      .required()
+      .messages({
+        "string.empty": "Password is required.",
+        "string.min": "Password must be at least 6 characters.",
+        "string.max": "Password cannot exceed 15 characters.",
+        "string.pattern.base":
+          "Password must contain at least one letter, one digit, and one special character.",
+        "any.required": "Password is required.",
+      }),
+  });
 }
 
 module.exports = UserSchemaValidation;

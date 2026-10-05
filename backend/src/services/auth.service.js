@@ -12,33 +12,41 @@ const crypto = require('crypto')
 //===========================================================================
 //RegisterService
 //===========================================================================
-const registerService = async ({ name, email, password, phone, file }) => {
+const registerService = async ({ name, email, password, phone }) => {
   try {
-    const existingEmail = await User.findOne({ email: email });
+ 
+
+    const existingEmail = await User.findOne({ email });
+
     if (existingEmail) {
       const error = new Error("Email already exist");
       error.statusCode = httpStatusCode.BAD_REQUEST;
       throw error;
     }
-    const salt = 10;
-    const hashPassword = await bcryptjs.hash(password, salt);
+
+  
+
+    const hashPassword = await bcryptjs.hash(password, 10);
+
     const newUser = new User({
-      name: name,
-      email: email,
+      name,
+      email,
       password: hashPassword,
-      phone: phone,
+      phone,
     });
-    if (file) {
-      ((newUser.avatar_image = file.path),
-        (newUser.avatar_public_id = file.filename));
-    }
+
+ 
+
     const user = await newUser.save();
+
+   
+
     await SendEmail.verifyEmail(user);
+
+
     return user;
   } catch (error) {
-    if (file) {
-      await cloudinary.uploader.destroy(file.filename);
-    }
+
     throw error;
   }
 };

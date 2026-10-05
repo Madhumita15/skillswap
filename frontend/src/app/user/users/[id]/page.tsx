@@ -1,11 +1,12 @@
 "use client";
 
-import { useUserGetById } from "@/hooks/useProfile";
+import { useProfile, useUserGetById } from "@/hooks/useProfile";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import {
   ArrowLeft,
   BookOpen,
+  Flag,
   GraduationCap,
   Mail,
   Phone,
@@ -18,17 +19,52 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { Skill } from "@/typescript/interface/skill.interface";
+import { useState } from "react";
+import SendRequestDialog from "@/components/SendRequestDialog";
+import { useGetReceivedRequest, useGetSentRequest } from "@/hooks/useSwapRequest";
+import { useGetSwapHistory } from "@/hooks/useSwaps";
+import { SwapInterface } from "@/typescript/interface/swap.interface";
+import ReportDialog from "@/components/ReportDialog";
 
 const UserById = () => {
   const { id } = useParams();
-
+  const [open, setOpen] = useState(false);
   const userId = Array.isArray(id) ? id[0] : id;
-
   const { data, isLoading, isError, error } = useUserGetById({ id: userId });
-
   const user = data?.data?.data[0];
+  const [reportOpen, setReportOpen] = useState(false)
 
-//   console.log("user", user);
+  const { data: sendRequestData } = useGetSentRequest();
+  const { data: profileData } = useProfile();
+  const { data: swapHistoryData } = useGetSwapHistory({ page: 0, limit: 0 });
+  const { data: receivedRequestData } = useGetReceivedRequest();
+
+  const relatedRequests = [
+    ...(sendRequestData?.data ?? []),
+    ...(receivedRequestData?.data ?? []),
+  ];
+
+  const userRequests = relatedRequests?.filter(
+    (request) =>
+      (String(request.senderId) === profileData?.data[0]._id &&
+        request.receiverUser._id === id) ||
+      (String(request.receiverId) === profileData?.data[0]._id &&
+        request.senderUser._id === id),
+  );
+
+  const hasPendingRequest = userRequests.some(
+    (request) => request.status === "pending",
+  );
+
+  const userSwaps = swapHistoryData?.data?.filter(
+    (swap:SwapInterface) =>
+      swap.senderUser._id === profileData?.data[0]._id &&
+      swap.receiverUser._id === id,
+  );
+
+  const hasActiveSwap = userSwaps?.some((swap:SwapInterface) => swap.status === "active");
+
+  const requestCheck = hasPendingRequest || hasActiveSwap;
 
   return (
     <div className="min-h-screen bg-[#0B0804] px-4 py-6 sm:px-6 lg:px-8">
@@ -54,7 +90,10 @@ const UserById = () => {
             variant="outline"
             className="w-fit border-[#52291A] bg-[#1C1008] text-[#FFF7ED] hover:border-[#F97316] hover:bg-[#24140A] hover:text-[#F97316]"
           >
-            <Link href="/user/discovery" className="flex flex-row cursor-pointer">
+            <Link
+              href="/user/discovery"
+              className="flex flex-row cursor-pointer"
+            >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Discovery
             </Link>
@@ -204,9 +243,45 @@ const UserById = () => {
                   )}
                 </div>
 
-                <Button className="w-full cursor-pointer bg-linear-to-r from-[#F97316] to-[#E59A0B] font-semibold text-[#1C1008] transition-all duration-300 hover:scale-[1.01] hover:opacity-90">
-                  Send Swap Request
-                </Button>
+                <div className="space-y-2.5">
+  <Button
+    disabled={requestCheck}
+    onClick={() => setOpen(true)}
+    className="w-full cursor-pointer bg-linear-to-r from-[#F97316] to-[#E59A0B] font-semibold text-[#1C1008] transition-all duration-300 hover:scale-[1.01] hover:opacity-90"
+  >
+    {requestCheck ? "Request Sent" : "Send Request"}
+  </Button>
+
+  <Button
+    type="button"
+    variant="outline"
+    onClick={() => setReportOpen(true)}
+    className="
+      w-full
+      cursor-pointer
+      border-[#52291A]/70
+      bg-transparent
+      text-[#A8A29E]
+      transition-all
+      duration-200
+      hover:border-red-500/40
+      hover:bg-red-500/5
+      hover:text-red-400
+    "
+  >
+    <Flag className="mr-2 h-4 w-4" />
+    Report User
+  </Button>
+  <ReportDialog open={reportOpen} setOpen={setReportOpen} reportedUserId={user._id}/>
+</div>
+
+                <SendRequestDialog
+                  learningSkills={user.learningSkills}
+                  teachingSkills={user.teachingSkills}
+                  open={open}
+                  setOpen={setOpen}
+                  receiverId={user._id}
+                />
               </CardContent>
             </Card>
 

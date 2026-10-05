@@ -26,19 +26,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MatchedUser } from "@/typescript/interface/skill.interface";
+import { MatchedUser, Skill } from "@/typescript/interface/skill.interface";
+import { useGetActiveSkillByUser } from "@/hooks/useSkills";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const experienceOptions = ["Beginner", "Intermediate", "Advanced", "Expert"];
 
 const Discovery = () => {
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(5);
+  const [limit, setLimit] = useState(6);
+  const [search, setSearch] = useState("");
+  const [experience, setExperience] = useState("");
+  const [teachingSkill, setTeachingSkill] = useState("");
+  const [learningSkill, setLearningSkill] = useState("");
   const { data, isLoading, isError, error, refetch } = useGetDiscovery({
     page,
     limit,
+    search,
+    experience,
+    learningSkill,
+    teachingSkill,
   });
+  const { data: skillData } = useGetActiveSkillByUser();
 
   const users = data?.data ?? [];
+  const skills = skillData?.data ?? [];
 
   const getPaginationPages = (currentPage: number, totalPages: number) => {
     const pages: (number | "...")[] = [];
@@ -68,8 +81,15 @@ const Discovery = () => {
 
     return pages;
   };
-
   const paginationPages = getPaginationPages(page, data?.totalPages);
+
+  const handleClearFilters = () => {
+    setSearch("");
+    setLearningSkill("");
+    setTeachingSkill("");
+    setExperience("");
+  };
+
   return (
     <div className="min-h-full bg-[#0B0804] text-[#FFF7ED]">
       {/* ===================================================== */}
@@ -151,6 +171,10 @@ const Discovery = () => {
                   <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#A8A29E]" />
 
                   <Input
+                    onChange={(e) => {
+                      setPage(1);
+                      setSearch(e.target.value);
+                    }}
                     placeholder="Search by name..."
                     className="
                       h-10
@@ -169,155 +193,177 @@ const Discovery = () => {
 
               {/* Experience */}
 
+              {/* Experience */}
               <div className="mt-6">
                 <label className="mb-3 block text-xs font-semibold text-[#FFF7ED]">
                   Experience
                 </label>
 
-                <div className="space-y-2">
-                  {experienceOptions.map((experience) => (
-                    <button
-                      key={experience}
-                      type="button"
-                      className="
-                        flex w-full items-center gap-3
-                        rounded-lg
-                        border border-transparent
-                        px-3 py-2.5
-                        text-left text-xs
-                        text-[#A8A29E]
-                        transition-all duration-200
-                        hover:border-[#52291A]
-                        hover:bg-[#24140A]
-                        hover:text-[#FFF7ED]
-                      "
-                    >
-                      <span className="h-3.5 w-3.5 rounded-full border border-[#6F625B]" />
+                <RadioGroup
+                  value={experience}
+                  onValueChange={(value) => {
+                    setPage(1);
+                    setExperience(value);
+                  }}
+                  className="space-y-1.5"
+                >
+                  {experienceOptions.map((exp) => {
+                    const isSelected = experience === exp;
 
-                      {experience}
-                    </button>
-                  ))}
-                </div>
+                    return (
+                      <div
+                        key={exp}
+                        className={`
+            flex items-center gap-3 rounded-lg px-3 py-2
+            transition-all duration-200
+            ${
+              isSelected
+                ? "bg-[#F97316]/10"
+                : "bg-transparent hover:bg-[#F97316]/5"
+            }
+          `}
+                      >
+                        <RadioGroupItem
+                          value={exp}
+                          id={`experience-${exp}`}
+                          className={`
+              h-4 w-4
+              border-[#6F4A38]
+              data-[state=checked]:border-[#F97316]
+              data-[state=checked]:bg-[#F97316]
+              data-[state=checked]:text-[#1C1008]
+            `}
+                        />
+
+                        <Label
+                          htmlFor={`experience-${exp}`}
+                          className={`
+              cursor-pointer text-sm transition-colors
+              ${
+                isSelected
+                  ? "font-semibold text-[#FFF7ED]"
+                  : "font-medium text-[#A8A29E]"
+              }
+            `}
+                        >
+                          {exp}
+                        </Label>
+                      </div>
+                    );
+                  })}
+                </RadioGroup>
               </div>
 
               {/* Teaching Skills */}
-
               <div className="mt-6">
                 <label className="mb-3 flex items-center gap-2 text-xs font-semibold text-[#FFF7ED]">
                   <GraduationCap className="h-4 w-4 text-[#F97316]" />
                   Teaching skills
                 </label>
 
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    className="
-                      rounded-full
-                      border border-[#52291A]
-                      bg-[#100905]
-                      px-2.5 py-1.5
-                      text-[11px]
-                      font-medium
-                      text-[#A8A29E]
-                      transition-all
-                      hover:border-[#F97316]/60
-                      hover:text-[#FFF7ED]
-                    "
-                  >
-                    React.js
-                  </button>
+                <RadioGroup
+                  value={teachingSkill}
+                  onValueChange={(value) => {
+                    setPage(1);
+                    setTeachingSkill(value);
+                  }}
+                  className="flex flex-wrap gap-x-2 gap-y-1"
+                >
+                  {skills?.map((skill: Skill) => {
+                    const isSelected = teachingSkill === skill._id;
 
-                  <button
-                    type="button"
-                    className="
-                      rounded-full
-                      border border-[#52291A]
-                      bg-[#100905]
-                      px-2.5 py-1.5
-                      text-[11px]
-                      font-medium
-                      text-[#A8A29E]
-                      transition-all
-                      hover:border-[#F97316]/60
-                      hover:text-[#FFF7ED]
-                    "
-                  >
-                    Node.js
-                  </button>
+                    return (
+                      <div key={skill._id}>
+                        <RadioGroupItem
+                          value={skill._id}
+                          id={`teaching-${skill._id}`}
+                          className="sr-only"
+                        />
 
-                  <button
-                    type="button"
-                    className="
-                      rounded-full
-                      border border-[#52291A]
-                      bg-[#100905]
-                      px-2.5 py-1.5
-                      text-[11px]
-                      font-medium
-                      text-[#A8A29E]
-                      transition-all
-                      hover:border-[#F97316]/60
-                      hover:text-[#FFF7ED]
-                    "
-                  >
-                    MongoDB
-                  </button>
-                </div>
+                        <Label
+                          htmlFor={`teaching-${skill._id}`}
+                          className={`
+            inline-flex cursor-pointer items-center
+            rounded-full
+            border
+            px-2.5 py-1.5
+            text-[11px] font-medium
+            transition-all duration-200
+
+            ${
+              isSelected
+                ? "border-[#F97316] bg-[#F97316] font-semibold text-[#1C1008]"
+                : "border-[#52291A] bg-[#100905] text-[#A8A29E] hover:border-[#F97316]/60 hover:text-[#FFF7ED]"
+            }
+          `}
+                        >
+                          {skill.name}
+                        </Label>
+                      </div>
+                    );
+                  })}
+                </RadioGroup>
               </div>
 
               {/* Learning Skills */}
-
               <div className="mt-6">
                 <label className="mb-3 flex items-center gap-2 text-xs font-semibold text-[#FFF7ED]">
                   <BookOpen className="h-4 w-4 text-[#E59A0B]" />
                   Learning skills
                 </label>
 
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    className="
-                      rounded-full
-                      border border-[#52291A]
-                      bg-[#100905]
-                      px-2.5 py-1.5
-                      text-[11px]
-                      font-medium
-                      text-[#A8A29E]
-                      transition-all
-                      hover:border-[#E59A0B]/60
-                      hover:text-[#FFF7ED]
-                    "
-                  >
-                    Next.js
-                  </button>
+                <RadioGroup
+                  value={learningSkill}
+                  onValueChange={(value) => {
+                    setPage(1);
+                    setLearningSkill(value);
+                  }}
+                  className="flex flex-wrap gap-x-2 gap-y-1"
+                >
+                  {skills?.map((skill: Skill) => {
+                    const isSelected = learningSkill === skill._id;
 
-                  <button
-                    type="button"
-                    className="
-                      rounded-full
-                      border border-[#52291A]
-                      bg-[#100905]
-                      px-2.5 py-1.5
-                      text-[11px]
-                      font-medium
-                      text-[#A8A29E]
-                      transition-all
-                      hover:border-[#E59A0B]/60
-                      hover:text-[#FFF7ED]
-                    "
-                  >
-                    Python
-                  </button>
-                </div>
+                    return (
+                      <div key={skill._id}>
+                        <RadioGroupItem
+                          value={skill._id}
+                          id={`learning-${skill._id}`}
+                          className="sr-only"
+                        />
+
+                        <Label
+                          htmlFor={`learning-${skill._id}`}
+                          className={`
+            inline-flex cursor-pointer items-center
+            rounded-full
+            border
+            px-2.5 py-1.5
+            text-[11px] font-medium
+            transition-all duration-200
+
+            ${
+              isSelected
+                ? "border-[#F97316] bg-[#F97316] font-semibold text-[#1C1008]"
+                : "border-[#52291A] bg-[#100905] text-[#A8A29E] hover:border-[#F97316]/60 hover:text-[#FFF7ED]"
+            }
+          `}
+                        >
+                          {skill.name}
+                        </Label>
+                      </div>
+                    );
+                  })}
+                </RadioGroup>
               </div>
 
               {/* Reset */}
 
               <Button
+                onClick={handleClearFilters}
                 variant="outline"
                 className="
                   mt-6
+                  cursor-pointer
                   w-full
                   border-[#52291A]
                   bg-transparent
@@ -455,7 +501,6 @@ const Discovery = () => {
             {/* PAGINATION UI */}
             {/* ================================================= */}
 
-           
             <div className="mt-8 flex flex-col gap-4 border-t border-[#52291A]/50 pt-6 sm:flex-row sm:items-center sm:justify-between">
               {/* Result information */}
 
@@ -487,11 +532,12 @@ const Discovery = () => {
                   </SelectTrigger>
 
                   <SelectContent className="border-[#52291A] bg-[#1C1008] text-[#FFF7ED]">
-                    <SelectItem value="5">5</SelectItem>
-                    <SelectItem value="10">10</SelectItem>
-                    <SelectItem value="15">15</SelectItem>
-                    <SelectItem value="20">20</SelectItem>
+                    <SelectItem value="6">6</SelectItem>
+                    <SelectItem value="12">12</SelectItem>
+                    <SelectItem value="18">18</SelectItem>
+                    <SelectItem value="24">24</SelectItem>
                     <SelectItem value="30">30</SelectItem>
+                    <SelectItem value="36">36</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -560,7 +606,6 @@ const Discovery = () => {
                 </Button>
               </div>
             </div>
-           
           </main>
         </div>
       </section>

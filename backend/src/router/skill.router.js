@@ -1,10 +1,11 @@
-const express = require("express");
+const express = require('express')
 const router = express.Router();
 const SkillController = require("../controller/skill.controller");
 const upload = require("../utils/cloudinary");
 const validation = require("../validations/index");
 const skillSchemaValidation = require("../validations/skillSchema.validation");
 const authMiddleware = require("../middleware/auth.middleware");
+const httpStatusCode = require('../utils/httpStatusCode')
 
 const uploadImageMiddleware = (req, res, next) => {
   upload.single("skill_logo")(req, res, (err) => {
@@ -30,7 +31,7 @@ router.post(
 );
 
 router.get(
-  "/skills",
+  "/admin/skills",
   authMiddleware.verifyToken,
   authMiddleware.roleCheck("admin"),
   SkillController.getAllSkills,

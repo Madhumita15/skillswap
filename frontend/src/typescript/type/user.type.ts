@@ -10,26 +10,20 @@ export interface Skill {
 
 // Form Values Interface
 export interface OnBoardingFormValues {
-  userInfo: {
-    name: string;
-    phone?: string;
-  };
   learningSkills: string[];
   teachingSkills: string[];
   experience: string;
   bio: string;
-  avatarImage: File | null;
+  avatar_image: File | null;
 }
 
 // JSON Payload Interface for Backend API
 export interface OnBoardingPayload {
-  name: string;
-  phone?: string;
   teachingSkills: string[];
   learningSkills: string[];
   experience: string;
   bio: string;
-  avatar_image?: File;
+  avatar_image: File;
 }
 
 // Sub-step Interfaces for Data Configuration
@@ -51,4 +45,23 @@ export interface OnboardingFieldConfig<T> {
   required: boolean;
   placeholder: string;
   Icon?: LucideIcon;
+}
+
+
+export type UpdateProfileInputDataType = {
+  name: string;
+  phone: string;
+}
+
+
+
+export type UpdateProfileInputType = {
+  name: string;
+  phone: string;
+  bio: string;
+  experience: string;
+  teachingSkills: string[]
+  learningSkills: string[]
+  avatar_image?: File | null | undefined
+
 }

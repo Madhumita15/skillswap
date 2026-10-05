@@ -1,5 +1,9 @@
 "use client";
-import { useGetActiveSwap } from "@/hooks/useSwaps";
+import {
+  useCancelSwap,
+  useCompleteSwap,
+  useGetActiveSwap,
+} from "@/hooks/useSwaps";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -32,12 +36,24 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useProfile } from "@/hooks/useProfile";
+import { Spinner } from "@/components/ui/spinner";
+import { useState } from "react";
+import ReviewDialog from "@/components/ReviewDialog";
 
 const ActiveSwap = () => {
-  const { data, isLoading, isError, error } =
-    useGetActiveSwap();
-
-  console.log("data", data);
+  const { data, isLoading, isError, error } = useGetActiveSwap();
+  const { data: profileData } = useProfile();
+  const { mutateAsync: completeSwapMutate, isPending: completeSwapIsPending } =
+    useCompleteSwap();
+  const { mutate: cancelSwapMutate, isPending: cancelSwapIsPending } =
+    useCancelSwap();
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [completeDialogOpen, setCompleteDialogOpen] = useState(false);
+  const [reviewData, setReviewData] = useState<{
+    swapId: string;
+    reviewedUserId: string;
+  } | null>(null);
 
   const swap = data?.data?.[0];
 
@@ -63,35 +79,52 @@ const ActiveSwap = () => {
     });
   };
 
-  
-  const handleCancelSwap = async () => {
-    console.log("Cancel swap:", swap?._id);
-  };
-
   const handleCompleteSwap = async () => {
-    console.log("Complete swap:", swap?._id);
+    if (!swap) return;
+
+     const reviewedUserId =
+  profileData?.data[0]._id === swap.senderUser._id
+    ? swap.receiverUser._id
+    : swap.senderUser._id;
+
+
+    try {
+      // Save these BEFORE active swap disappears
+      setReviewData({
+        swapId: swap._id,
+        reviewedUserId: reviewedUserId,
+      });
+
+      await completeSwapMutate(swap._id);
+
+      setCompleteDialogOpen(false);
+      setReviewOpen(true);
+    } catch (error) {
+      console.log(error);
+
+      // If completion fails, don't open review
+      setReviewData(null);
+    }
   };
 
+
+ 
   return (
     <div className="min-h-screen bg-[#0B0804] px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-8">
-
         {/* ===================================================== */}
         {/* HEADER */}
         {/* ===================================================== */}
 
         <div className="relative overflow-hidden rounded-3xl border border-[#52291A]/70 bg-[#140B05] p-6 sm:p-8">
-
           {/* Decorative background */}
           <div className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-[#F97316]/10 blur-3xl" />
 
           <div className="pointer-events-none absolute -bottom-24 left-1/3 h-56 w-56 rounded-full bg-[#E59A0B]/10 blur-3xl" />
 
           <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-
             <div>
               <div className="mb-3 flex items-center gap-2">
-
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#F97316]/10">
                   <Handshake className="h-4 w-4 text-[#F97316]" />
                 </div>
@@ -99,7 +132,6 @@ const ActiveSwap = () => {
                 <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[#F97316]">
                   Current Skill Exchange
                 </span>
-
               </div>
 
               <h1 className="text-2xl font-bold tracking-tight text-[#FFF7ED] sm:text-3xl">
@@ -107,33 +139,28 @@ const ActiveSwap = () => {
               </h1>
 
               <p className="mt-2 max-w-2xl text-sm leading-6 text-[#A8A29E]">
-                You are currently exchanging skills with another
-                SkillSwap member. Continue learning, teaching, and
-                collaborating until the exchange is complete.
+                You are currently exchanging skills with another SkillSwap
+                member. Continue learning, teaching, and collaborating until the
+                exchange is complete.
               </p>
             </div>
 
             {!isLoading && !isError && swap && (
               <div className="flex w-fit items-center gap-3 rounded-2xl border border-green-500/20 bg-green-500/5 px-5 py-3">
-
                 <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-green-500/10">
                   <span className="absolute h-3 w-3 animate-ping rounded-full bg-green-400/50" />
                   <span className="relative h-2.5 w-2.5 rounded-full bg-green-400" />
                 </div>
 
                 <div>
-                  <p className="text-sm font-bold text-green-400">
-                    Active
-                  </p>
+                  <p className="text-sm font-bold text-green-400">Active</p>
 
                   <p className="text-[10px] text-[#78716C]">
                     Exchange in progress
                   </p>
                 </div>
-
               </div>
             )}
-
           </div>
         </div>
 
@@ -143,17 +170,14 @@ const ActiveSwap = () => {
 
         {isLoading && (
           <div className="space-y-5">
-
             <Card className="border-[#52291A] bg-[#1C1008]">
               <CardContent className="p-6">
-
                 <div className="flex items-center justify-between">
                   <Skeleton className="h-5 w-32 bg-[#52291A]/40" />
                   <Skeleton className="h-7 w-20 rounded-full bg-[#52291A]/40" />
                 </div>
 
                 <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_auto_1fr]">
-
                   <div className="flex flex-col items-center text-center">
                     <Skeleton className="h-24 w-24 rounded-full bg-[#52291A]/40" />
                     <Skeleton className="mt-4 h-5 w-32 bg-[#52291A]/40" />
@@ -167,19 +191,15 @@ const ActiveSwap = () => {
                     <Skeleton className="mt-4 h-5 w-32 bg-[#52291A]/40" />
                     <Skeleton className="mt-2 h-4 w-24 bg-[#52291A]/40" />
                   </div>
-
                 </div>
               </CardContent>
             </Card>
 
             <div className="grid gap-5 lg:grid-cols-2">
-
               <Skeleton className="h-48 rounded-2xl bg-[#52291A]/40" />
 
               <Skeleton className="h-48 rounded-2xl bg-[#52291A]/40" />
-
             </div>
-
           </div>
         )}
 
@@ -194,7 +214,6 @@ const ActiveSwap = () => {
           >
             <Card className="border-red-500/30 bg-[#1C1008]">
               <CardContent className="flex min-h-72 flex-col items-center justify-center px-6 text-center">
-
                 <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-red-500/10">
                   <RefreshCw className="h-7 w-7 text-red-400" />
                 </div>
@@ -204,14 +223,12 @@ const ActiveSwap = () => {
                 </h2>
 
                 <p className="mt-2 max-w-md text-sm leading-6 text-[#A8A29E]">
-                  Something went wrong while fetching your current
-                  skill exchange.
+                  Something went wrong while fetching your current skill
+                  exchange.
                 </p>
 
                 {error instanceof Error && (
-                  <p className="mt-2 text-xs text-red-400">
-                    {error.message}
-                  </p>
+                  <p className="mt-2 text-xs text-red-400">{error.message}</p>
                 )}
 
                 <Button
@@ -220,7 +237,6 @@ const ActiveSwap = () => {
                 >
                   Try Again
                 </Button>
-
               </CardContent>
             </Card>
           </motion.div>
@@ -237,7 +253,6 @@ const ActiveSwap = () => {
           >
             <Card className="border-[#52291A] bg-[#1C1008]">
               <CardContent className="flex min-h-80 flex-col items-center justify-center px-6 text-center">
-
                 <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-[#F97316]/10">
                   <Handshake className="h-7 w-7 text-[#F97316]" />
                 </div>
@@ -247,21 +262,16 @@ const ActiveSwap = () => {
                 </h2>
 
                 <p className="mt-2 max-w-md text-sm leading-6 text-[#A8A29E]">
-                  You dont currently have an active skill exchange.
-                  Find someone in the community and start a new
-                  skill-sharing journey.
+                  You dont currently have an active skill exchange. Find someone
+                  in the community and start a new skill-sharing journey.
                 </p>
 
-                <Button
-                
-                  className="mt-6 bg-linear-to-r from-[#F97316] to-[#E59A0B] font-semibold text-[#1C1008] hover:opacity-90"
-                >
+                <Button className="mt-6 bg-linear-to-r from-[#F97316] to-[#E59A0B] font-semibold text-[#1C1008] hover:opacity-90">
                   <Link className="flex flex-row gap-1" href="/user/discovery">
                     Discover People
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
-
               </CardContent>
             </Card>
           </motion.div>
@@ -277,19 +287,15 @@ const ActiveSwap = () => {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-5"
           >
-
             {/* ================================================= */}
             {/* PARTICIPANTS */}
             {/* ================================================= */}
 
             <Card className="overflow-hidden border-[#52291A] bg-[#1C1008]">
-
               <div className="h-1 bg-linear-to-r from-[#F97316] via-[#E59A0B] to-[#52291A]" />
 
               <CardContent className="p-6 sm:p-8">
-
                 <div className="mb-8 flex flex-col items-center text-center">
-
                   <Badge className="border-green-500/20 bg-green-500/10 text-green-400">
                     <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-green-400" />
                     Active Swap
@@ -302,19 +308,15 @@ const ActiveSwap = () => {
                   <p className="mt-1 text-sm text-[#78716C]">
                     Exchange skills and grow together.
                   </p>
-
                 </div>
 
                 <div className="grid gap-8 lg:grid-cols-[1fr_auto_1fr] lg:items-center">
-
                   {/* ================================================= */}
                   {/* SENDER */}
                   {/* ================================================= */}
 
                   <div className="rounded-3xl border border-[#F97316]/20 bg-[#F97316]/5 p-6 text-center">
-
                     <div className="relative mx-auto h-24 w-24 overflow-hidden rounded-full border-2 border-[#F97316]/50 bg-[#100905] shadow-lg shadow-[#F97316]/5">
-
                       {swap.senderUser?.avatar_image ? (
                         <Image
                           src={swap.senderUser.avatar_image}
@@ -328,7 +330,6 @@ const ActiveSwap = () => {
                           <UserRound className="h-10 w-10 text-[#52291A]" />
                         </div>
                       )}
-
                     </div>
 
                     <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#F97316]">
@@ -362,11 +363,11 @@ const ActiveSwap = () => {
 
                     {swap.senderUser?._id && (
                       <Button
-                       
                         variant="ghost"
-                        className="mt-3 text-xs text-[#A8A29E] hover:bg-[#F97316]/5 hover:text-[#F97316]"
+                        className="mt-3 text-xs text-[#F97316] hover:bg-[#F97316]/5 hover:text-[#F97316]"
                       >
                         <Link
+                          className="flex gap-2"
                           href={`/user/users/${swap.senderUser._id}`}
                         >
                           View Profile
@@ -374,7 +375,6 @@ const ActiveSwap = () => {
                         </Link>
                       </Button>
                     )}
-
                   </div>
 
                   {/* ================================================= */}
@@ -382,17 +382,13 @@ const ActiveSwap = () => {
                   {/* ================================================= */}
 
                   <div className="flex flex-col items-center gap-3">
-
                     <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[#6B3515] bg-[#1C1008] shadow-lg shadow-black/20">
-
                       <RefreshCw className="h-6 w-6 text-[#F97316]" />
-
                     </div>
 
                     <span className="text-[10px] font-bold uppercase tracking-widest text-[#78716C]">
                       Skill Exchange
                     </span>
-
                   </div>
 
                   {/* ================================================= */}
@@ -400,9 +396,7 @@ const ActiveSwap = () => {
                   {/* ================================================= */}
 
                   <div className="rounded-3xl border border-[#E59A0B]/20 bg-[#E59A0B]/5 p-6 text-center">
-
                     <div className="relative mx-auto h-24 w-24 overflow-hidden rounded-full border-2 border-[#E59A0B]/50 bg-[#100905] shadow-lg shadow-[#E59A0B]/5">
-
                       {swap.receiverUser?.avatar_image ? (
                         <Image
                           src={swap.receiverUser.avatar_image}
@@ -416,7 +410,6 @@ const ActiveSwap = () => {
                           <UserRound className="h-10 w-10 text-[#52291A]" />
                         </div>
                       )}
-
                     </div>
 
                     <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#E59A0B]">
@@ -450,11 +443,11 @@ const ActiveSwap = () => {
 
                     {swap.receiverUser?._id && (
                       <Button
-                      
                         variant="ghost"
-                        className="mt-3 text-xs text-[#A8A29E] hover:bg-[#E59A0B]/5 hover:text-[#E59A0B]"
+                        className="mt-3 text-xs hover:text-[#cc875c] bg-[#282013]/5 hover:bg-[#E59A0B]/5 text-[#E59A0B]"
                       >
                         <Link
+                          className="flex gap-2"
                           href={`/user/users/${swap.receiverUser._id}`}
                         >
                           View Profile
@@ -462,11 +455,8 @@ const ActiveSwap = () => {
                         </Link>
                       </Button>
                     )}
-
                   </div>
-
                 </div>
-
               </CardContent>
             </Card>
 
@@ -475,14 +465,10 @@ const ActiveSwap = () => {
             {/* ===================================================== */}
 
             <div className="grid gap-5 lg:grid-cols-2">
-
               {/* You teach */}
               <Card className="border-[#F97316]/20 bg-[#1C1008]">
-
                 <CardContent className="p-6">
-
                   <div className="mb-5 flex items-center gap-3">
-
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F97316]/10">
                       <GraduationCap className="h-5 w-5 text-[#F97316]" />
                     </div>
@@ -496,55 +482,78 @@ const ActiveSwap = () => {
                         You Teach
                       </h3>
                     </div>
-
                   </div>
 
                   <div className="rounded-2xl border border-[#F97316]/20 bg-[#F97316]/5 p-5">
+                    {profileData?.data[0]._id === swap.receiverUser._id ? (
+                      <>
+                        <div className="flex items-start gap-4">
+                          {swap.learningSkills?.skill_logo ? (
+                            <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-[#52291A] bg-[#100905]">
+                              <Image
+                                src={swap.learningSkills.skill_logo}
+                                alt={swap.learningSkills.name}
+                                fill
+                                sizes="64px"
+                                className="object-contain p-2"
+                              />
+                            </div>
+                          ) : (
+                            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-[#52291A] bg-[#100905]">
+                              <GraduationCap className="h-7 w-7 text-[#F97316]" />
+                            </div>
+                          )}
 
-                    <div className="flex items-start gap-4">
+                          <div className="min-w-0">
+                            <h4 className="text-lg font-bold text-[#FFF7ED]">
+                              {swap.learningSkills?.name}
+                            </h4>
 
-                      {swap.teachingSkills?.skill_logo ? (
-                        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-[#52291A] bg-[#100905]">
-                          <Image
-                            src={swap.teachingSkills.skill_logo}
-                            alt={swap.teachingSkills.name}
-                            fill
-                            sizes="64px"
-                            className="object-contain p-2"
-                          />
+                            <p className="mt-2 text-sm leading-6 text-[#A8A29E]">
+                              {swap.learningSkills?.description}
+                            </p>
+                          </div>
                         </div>
-                      ) : (
-                        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-[#52291A] bg-[#100905]">
-                          <GraduationCap className="h-7 w-7 text-[#F97316]" />
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex items-start gap-4">
+                          {swap.teachingSkills?.skill_logo ? (
+                            <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-[#52291A] bg-[#100905]">
+                              <Image
+                                src={swap.teachingSkills.skill_logo}
+                                alt={swap.teachingSkills.name}
+                                fill
+                                sizes="64px"
+                                className="object-contain p-2"
+                              />
+                            </div>
+                          ) : (
+                            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-[#52291A] bg-[#100905]">
+                              <GraduationCap className="h-7 w-7 text-[#F97316]" />
+                            </div>
+                          )}
+
+                          <div className="min-w-0">
+                            <h4 className="text-lg font-bold text-[#FFF7ED]">
+                              {swap.teachingSkills?.name}
+                            </h4>
+
+                            <p className="mt-2 text-sm leading-6 text-[#A8A29E]">
+                              {swap.teachingSkills?.description}
+                            </p>
+                          </div>
                         </div>
-                      )}
-
-                      <div className="min-w-0">
-
-                        <h4 className="text-lg font-bold text-[#FFF7ED]">
-                          {swap.teachingSkills?.name}
-                        </h4>
-
-                        <p className="mt-2 text-sm leading-6 text-[#A8A29E]">
-                          {swap.teachingSkills?.description}
-                        </p>
-
-                      </div>
-
-                    </div>
-
+                      </>
+                    )}
                   </div>
-
                 </CardContent>
               </Card>
 
               {/* You learn */}
               <Card className="border-[#E59A0B]/20 bg-[#1C1008]">
-
                 <CardContent className="p-6">
-
                   <div className="mb-5 flex items-center gap-3">
-
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#E59A0B]/10">
                       <BookOpen className="h-5 w-5 text-[#E59A0B]" />
                     </div>
@@ -558,48 +567,73 @@ const ActiveSwap = () => {
                         You Learn
                       </h3>
                     </div>
-
                   </div>
 
                   <div className="rounded-2xl border border-[#E59A0B]/20 bg-[#E59A0B]/5 p-5">
+                    {profileData?.data[0]._id === swap.receiverUser._id ? (
+                      <>
+                        <div className="flex items-start gap-4">
+                          {swap.teachingSkills?.skill_logo ? (
+                            <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-[#52291A] bg-[#100905]">
+                              <Image
+                                src={swap.teachingSkills.skill_logo}
+                                alt={swap.teachingSkills.name}
+                                fill
+                                sizes="64px"
+                                className="object-contain p-2"
+                              />
+                            </div>
+                          ) : (
+                            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-[#52291A] bg-[#100905]">
+                              <BookOpen className="h-7 w-7 text-[#E59A0B]" />
+                            </div>
+                          )}
 
-                    <div className="flex items-start gap-4">
+                          <div className="min-w-0">
+                            <h4 className="text-lg font-bold text-[#FFF7ED]">
+                              {swap.teachingSkills?.name}
+                            </h4>
 
-                      {swap.learningSkills?.skill_logo ? (
-                        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-[#52291A] bg-[#100905]">
-                          <Image
-                            src={swap.learningSkills.skill_logo}
-                            alt={swap.learningSkills.name}
-                            fill
-                            sizes="64px"
-                            className="object-contain p-2"
-                          />
+                            <p className="mt-2 text-sm leading-6 text-[#A8A29E]">
+                              {swap.teachingSkills?.description}
+                            </p>
+                          </div>
                         </div>
-                      ) : (
-                        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-[#52291A] bg-[#100905]">
-                          <BookOpen className="h-7 w-7 text-[#E59A0B]" />
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex items-start gap-4">
+                          {swap.learningSkills?.skill_logo ? (
+                            <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-[#52291A] bg-[#100905]">
+                              <Image
+                                src={swap.learningSkills.skill_logo}
+                                alt={swap.learningSkills.name}
+                                fill
+                                sizes="64px"
+                                className="object-contain p-2"
+                              />
+                            </div>
+                          ) : (
+                            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-[#52291A] bg-[#100905]">
+                              <BookOpen className="h-7 w-7 text-[#E59A0B]" />
+                            </div>
+                          )}
+
+                          <div className="min-w-0">
+                            <h4 className="text-lg font-bold text-[#FFF7ED]">
+                              {swap.learningSkills?.name}
+                            </h4>
+
+                            <p className="mt-2 text-sm leading-6 text-[#A8A29E]">
+                              {swap.learningSkills?.description}
+                            </p>
+                          </div>
                         </div>
-                      )}
-
-                      <div className="min-w-0">
-
-                        <h4 className="text-lg font-bold text-[#FFF7ED]">
-                          {swap.learningSkills?.name}
-                        </h4>
-
-                        <p className="mt-2 text-sm leading-6 text-[#A8A29E]">
-                          {swap.learningSkills?.description}
-                        </p>
-
-                      </div>
-
-                    </div>
-
+                      </>
+                    )}
                   </div>
-
                 </CardContent>
               </Card>
-
             </div>
 
             {/* ===================================================== */}
@@ -607,9 +641,7 @@ const ActiveSwap = () => {
             {/* ===================================================== */}
 
             <Card className="border-[#52291A] bg-[#1C1008]">
-
               <CardContent className="p-6">
-
                 <div className="mb-6">
                   <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#F97316]">
                     Exchange Timeline
@@ -621,15 +653,12 @@ const ActiveSwap = () => {
                 </div>
 
                 <div className="relative">
-
                   {/* line */}
                   <div className="absolute left-3 top-3 hidden h-[calc(100%-24px)] w-px bg-[#52291A] sm:block" />
 
                   <div className="space-y-6">
-
                     {/* Started */}
                     <div className="relative flex gap-4">
-
                       <div className="relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[#F97316]/40 bg-[#F97316]/10">
                         <span className="h-2 w-2 rounded-full bg-[#F97316]" />
                       </div>
@@ -644,12 +673,10 @@ const ActiveSwap = () => {
                           {formatDateTime(swap.startDate)}
                         </p>
                       </div>
-
                     </div>
 
                     {/* Current */}
                     <div className="relative flex gap-4">
-
                       <div className="relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-green-500/40 bg-green-500/10">
                         <span className="h-2 w-2 animate-pulse rounded-full bg-green-400" />
                       </div>
@@ -660,17 +687,12 @@ const ActiveSwap = () => {
                         </p>
 
                         <p className="mt-1 text-xs text-[#78716C]">
-                          You and your partner can complete or cancel
-                          this swap.
+                          You and your partner can complete or cancel this swap.
                         </p>
                       </div>
-
                     </div>
-
                   </div>
-
                 </div>
-
               </CardContent>
             </Card>
 
@@ -679,37 +701,30 @@ const ActiveSwap = () => {
             {/* ===================================================== */}
 
             <Card className="border-[#52291A] bg-[#140B05]">
-
               <CardContent className="p-6">
-
                 <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-
                   <div>
-
                     <h3 className="text-base font-bold text-[#FFF7ED]">
                       Manage this swap
                     </h3>
 
                     <p className="mt-1 max-w-xl text-xs leading-5 text-[#78716C]">
-                      Once the skill exchange is finished, mark it as
-                      completed. If the exchange cannot continue, you
-                      can cancel it instead.
+                      Once the skill exchange is finished, mark it as completed.
+                      If the exchange cannot continue, you can cancel it
+                      instead.
                     </p>
-
                   </div>
 
                   <div className="flex flex-col gap-3 sm:flex-row">
-
                     {/* ================================================= */}
                     {/* CANCEL */}
                     {/* ================================================= */}
 
                     <AlertDialog>
-
-                      <AlertDialogTrigger >
+                      <AlertDialogTrigger>
                         <Button
                           variant="outline"
-                          className="border-red-500/30 bg-red-500/5 text-sm text-red-400 hover:border-red-500/50 hover:bg-red-500/10 hover:text-red-300"
+                          className="border-red-500/30 cursor-pointer bg-red-500/5 text-sm text-red-400 hover:border-red-500/50 hover:bg-red-500/10 hover:text-red-300"
                         >
                           <XCircle className="mr-2 h-4 w-4" />
                           Cancel Swap
@@ -717,12 +732,8 @@ const ActiveSwap = () => {
                       </AlertDialogTrigger>
 
                       <AlertDialogContent className="border-[#52291A] bg-[#1C1008] text-[#FFF7ED]">
-
                         <AlertDialogHeader>
-
-                          <AlertDialogTitle>
-                            Cancel this swap?
-                          </AlertDialogTitle>
+                          <AlertDialogTitle>Cancel this swap?</AlertDialogTitle>
 
                           <AlertDialogDescription className="text-[#A8A29E]">
                             This will end the active skill exchange with{" "}
@@ -731,93 +742,92 @@ const ActiveSwap = () => {
                             </span>
                             . The swap will be moved to your history.
                           </AlertDialogDescription>
-
                         </AlertDialogHeader>
 
                         <AlertDialogFooter>
-
-                          <AlertDialogCancel className="border-[#52291A] bg-transparent text-[#A8A29E] hover:bg-[#52291A]/20 hover:text-[#FFF7ED]">
+                          <AlertDialogCancel className="border-[#52291A] cursor-pointer bg-transparent text-[#181614] hover:bg-[#52291A]/20 hover:text-[#FFF7ED]">
                             Keep Swap
                           </AlertDialogCancel>
 
                           <AlertDialogAction
-                            onClick={handleCancelSwap}
-                            className="bg-red-500 text-white hover:bg-red-600"
+                            onClick={() => cancelSwapMutate(swap._id)}
+                            className="bg-red-500  cursor-pointer text-white hover:bg-red-600"
                           >
-                            Cancel Swap
+                            {cancelSwapIsPending ? <Spinner /> : "Cancel Swap"}
                           </AlertDialogAction>
-
                         </AlertDialogFooter>
-
                       </AlertDialogContent>
-
                     </AlertDialog>
 
                     {/* ================================================= */}
                     {/* COMPLETE */}
                     {/* ================================================= */}
 
-                    <AlertDialog>
-
-                      <AlertDialogTrigger >
-                        <Button
-                          className="bg-linear-to-r from-[#F97316] to-[#E59A0B] text-sm font-semibold text-[#1C1008] hover:opacity-90"
-                        >
-                          <CheckCircle2 className="mr-2 h-4 w-4" />
-                          Complete Swap
-                        </Button>
-                      </AlertDialogTrigger>
+                    <AlertDialog
+                      open={completeDialogOpen}
+                      onOpenChange={setCompleteDialogOpen}
+                    >
+                      <Button
+                        onClick={() => setCompleteDialogOpen(true)}
+                        className="bg-linear-to-r cursor-pointer from-[#F97316] to-[#E59A0B] text-sm font-semibold text-[#1C1008] hover:opacity-90"
+                      >
+                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                        Complete Swap
+                      </Button>
 
                       <AlertDialogContent className="border-[#52291A] bg-[#1C1008] text-[#FFF7ED]">
-
                         <AlertDialogHeader>
-
                           <AlertDialogTitle>
                             Complete this swap?
                           </AlertDialogTitle>
 
                           <AlertDialogDescription className="text-[#A8A29E]">
-                            Confirm that you have completed your skill
-                            exchange with{" "}
+                            Confirm that you have completed your skill exchange
+                            with{" "}
                             <span className="font-semibold text-[#FFF7ED]">
                               {swap.receiverUser?.name}
                             </span>
-                            . Once completed, the swap will move to your
-                            history and you can review the exchange.
+                            . Once completed, the swap will move to your history
+                            and you can review the exchange.
                           </AlertDialogDescription>
-
                         </AlertDialogHeader>
 
                         <AlertDialogFooter>
-
-                          <AlertDialogCancel className="border-[#52291A] bg-transparent text-[#A8A29E] hover:bg-[#52291A]/20 hover:text-[#FFF7ED]">
+                          <AlertDialogCancel className="border-[#52291A] cursor-pointer bg-transparent text-[#353331] hover:bg-[#52291A]/20 hover:text-[#FFF7ED]">
                             Not Yet
                           </AlertDialogCancel>
 
                           <AlertDialogAction
-                            onClick={handleCompleteSwap}
-                            className="bg-linear-to-r from-[#F97316] to-[#E59A0B] font-semibold text-[#1C1008] hover:opacity-90"
+                            onClick={(event) => {
+                              event.preventDefault();
+                              handleCompleteSwap();
+                            }}
+                            className="bg-linear-to-r cursor-pointer from-[#F97316] to-[#E59A0B] font-semibold text-[#1C1008] hover:opacity-90"
                           >
-                            Complete Swap
+                            {completeSwapIsPending ? (
+                              <Spinner />
+                            ) : (
+                              "Complete Swap"
+                            )}
                           </AlertDialogAction>
-
                         </AlertDialogFooter>
-
                       </AlertDialogContent>
-
                     </AlertDialog>
-
                   </div>
-
                 </div>
-
               </CardContent>
             </Card>
-
           </motion.div>
         )}
-
       </div>
+      {reviewData && (
+      <ReviewDialog
+        open={reviewOpen}
+        onOpenChange={setReviewOpen}
+        swapId={reviewData.swapId}
+        reviewedUserId={reviewData.reviewedUserId}
+      />
+    )}
     </div>
   );
 };

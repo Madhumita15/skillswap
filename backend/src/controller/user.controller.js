@@ -2,7 +2,7 @@ const {
   getProfileService,
   completeOnBoardingService,
   updateProfileService,
-  getUserByIdService
+  getUserByIdService,
 } = require("../services/user.service");
 
 const httpStatusCode = require("../utils/httpStatusCode");
@@ -23,23 +23,7 @@ class UserController {
     return res.status(httpStatusCode.OK).json({
       success: true,
       message: "Profile fetched successfully",
-      data: {
-        _id: user._id,
-        email: user.email,
-        name: user.name,
-        avatar_image: user.avatar_image,
-        phone: user.phone,
-        bio: user.bio,
-        experience: user.experience,
-        learningSkills: user.learningSkills,
-        teachingSkills: user.teachingSkills,
-        status: user.status,
-        isEmailVerified: user.isEmailVerified,
-        isOnboardingComplete: user.isOnboardingComplete,
-        role: user.role
-
-
-      },
+      data: user,
     });
   }
 
@@ -51,23 +35,15 @@ class UserController {
   async completeOnBoarding(req, res) {
     const id = req.user._id;
 
-    const { name, phone, teachingSkills, learningSkills, experience, bio } =
-      req.body;
-
-    const avatar_image = req.file ? req.file.path : undefined;
-
-    const avatar_public_id = req.file ? req.file.filename : undefined;
+    const { teachingSkills, learningSkills, experience, bio } = req.body;
 
     const user = await completeOnBoardingService({
       id,
-      name,
-      phone,
       teachingSkills,
       learningSkills,
       experience,
       bio,
-      avatar_image,
-      avatar_public_id,
+      file: req.file,
     });
 
     return res.status(httpStatusCode.OK).json({
@@ -85,7 +61,8 @@ class UserController {
   async updateProfile(req, res) {
     const id = req.user._id;
 
-    const { name, phone } = req.body;
+    const { name, phone, experience, bio, teachingSkills, learningSkills } = req.body;
+
 
     const avatar_image = req.file ? req.file.path : undefined;
 
@@ -96,7 +73,11 @@ class UserController {
       name,
       phone,
       avatar_image,
+      learningSkills,
+      teachingSkills,
       avatar_public_id,
+      experience,
+      bio,
     });
 
     return res.status(httpStatusCode.OK).json({
@@ -106,18 +87,14 @@ class UserController {
     });
   }
 
-
-  async getUserById(req, res){
-    const id = req.params.id
-   const user =  await getUserByIdService(id)
-   return res.status(httpStatusCode.OK).json({
-    status: true,
-    message: "User gets successfully!",
-    data: user
-   })
-
-    
-
+  async getUserById(req, res) {
+    const id = req.params.id;
+    const user = await getUserByIdService(id);
+    return res.status(httpStatusCode.OK).json({
+      status: true,
+      message: "User gets successfully!",
+      data: user,
+    });
   }
 }
 

@@ -22,8 +22,8 @@ const reportSchema = new mongoose.Schema(
         "spam",
         "harassment",
         "inappropriate_content",
-        "scam",
-        "other",
+        "fake_profile",
+        "others"
       ],
     },
 
@@ -37,9 +37,8 @@ const reportSchema = new mongoose.Schema(
       type: String,
       enum: [
         "pending",
-        "under_review",
         "resolved",
-        "dismissed",
+        "rejected",
       ],
       default: "pending",
     },
@@ -50,8 +49,9 @@ const reportSchema = new mongoose.Schema(
 );
 
 reportSchema.index({ status: 1 });
-reportSchema.index({ reportedUserId: 1 });
-reportSchema.index({ reporterId: 1 });
+reportSchema.index({reason: 1})
+reportSchema.index({reporterId: 1, reportedUserId: 1}, {unique: true})
+
 
 const Report = mongoose.model("report", reportSchema);
 

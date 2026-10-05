@@ -17,6 +17,7 @@ import {
 import SkillMatching from "@/components/SkillMatching";
 import DiscoverSkills from "@/components/DiscoverSkills";
 import Image from "next/image";
+import { useGetActiveSkillByUser } from "@/hooks/useSkills";
 
 const Home = () => {
   const steps = [
@@ -56,6 +57,10 @@ const Home = () => {
     "Discover people with complementary skills",
     "Build meaningful learning connections",
   ];
+
+  const {data} = useGetActiveSkillByUser()
+  const skills = data?.data || []
+  
 
   return (
     <main className="overflow-hidden bg-[#0B0804] text-[#FFF7ED]">

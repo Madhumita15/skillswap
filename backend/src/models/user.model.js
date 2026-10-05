@@ -36,7 +36,7 @@ const userSchema = new Schema(
       type: String,
       trim: true,
       enum: ["Beginner", "Intermediate", "Advanced", "Expert"],
-      default: "",
+      
     },
 
     bio: {
@@ -47,8 +47,6 @@ const userSchema = new Schema(
 
     avatar_image: {
       type: String,
-      default:
-        "https://plus.unsplash.com/premium_photo-1739786996022-5ed5b56834e2?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YXZhdGFyJTIwY2FydG9vbnxlbnwwfHwwfHx8MA%3D%3D",
     },
 
     avatar_public_id: {
@@ -87,6 +85,14 @@ const userSchema = new Schema(
     timestamps: true,
   },
 );
+
+
+
+userSchema.index({experience: 1})//single indexing
+userSchema.index({name: "text"})//text indexing
+userSchema.index({teachingSkills: 1})//multikey indexing
+userSchema.index({learningSkills: 1})//multikey indexing
+
 
 const userModel = mongoose.model("user", userSchema);
 module.exports = userModel;

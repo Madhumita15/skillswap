@@ -644,7 +644,7 @@ const ExploreSkill = () => {
                   </span>
 
                   <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#F97316]/10 text-[#F97316] transition-all duration-300 group-hover:bg-[#F97316] group-hover:text-[#1C1008]">
-                    {React.cloneElement(step.icon as React.ReactElement, {
+                    {React.cloneElement(step.icon as React.ReactElement<{className?: string}>, {
                       className: "h-5 w-5",
                     })}
                   </div>
@@ -727,7 +727,7 @@ const ExploreSkill = () => {
             </h2>
 
             <p className="mt-6 leading-7 text-[#A8A29E]">
-              SkillSwap is built around two-way learning. You don't simply
+              SkillSwap is built around two-way learning. You dont simply
               search for a teacher. You can share your own experience while
               learning something valuable from another person.
             </p>

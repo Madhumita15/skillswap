@@ -36,5 +36,6 @@ export interface SwapInterface{
     name: string
   };
   completedDate: string,
+  cancelledDate: string,
   startDate: string
 }

@@ -1,11 +1,49 @@
 const User = require("../models/user.model");
 const httpstatusCode = require("../utils/httpStatusCode");
+const mongoose = require("mongoose");
+const Report = require("../models/report.model");
 
-const getAllUserService = async ({ page, limit, userId }) => {
+const getAllUserService = async ({
+  page,
+  limit,
+  userId,
+  name,
+  teachingSkills,
+  learningSkills,
+  experience,
+}) => {
   const skip = (page - 1) * limit;
+
+  let filter = {};
+  if (name) {
+    filter.name = {
+      $regex: name,
+      $options: "i",
+    };
+  }
+
+  if (experience) {
+    filter.experience = experience;
+  }
+
+  if (teachingSkills) {
+    filter.teachingSkills = new mongoose.Types.ObjectId(teachingSkills);
+  }
+
+  if (learningSkills) {
+    filter.learningSkills = new mongoose.Types.ObjectId(learningSkills);
+  }
+  const reports = await Report.find({ reporterId: userId, status: "pending" });
+  const reportedId = reports?.map((report) => report.reportedUserId);
+
   const users = await User.aggregate([
     {
-      $match: { role: { $ne: "admin" }, status: "active", _id: {$ne: userId} },
+      $match: {
+        role: { $ne: "admin" },
+        status: "active",
+        _id: { $ne: userId, $nin: reportedId  },
+        ...filter,
+      },
     },
     {
       $lookup: {
@@ -76,6 +114,8 @@ const getAllUserService = async ({ page, limit, userId }) => {
 };
 
 const getMyMatchService = async (userId) => {
+  const reports =await Report.find({ reporterId: userId, status: "pending" });
+  const reportedId = reports?.map((report) => report.reportedUserId);
   const logedInUserData = await User.findOne(
     {
       _id: userId,
@@ -102,6 +142,7 @@ const getMyMatchService = async (userId) => {
         _id: { $ne: userId },
         status: "active",
         role: { $ne: "admin" },
+       _id: { $ne: userId, $nin: reportedId  },
       },
     },
     {

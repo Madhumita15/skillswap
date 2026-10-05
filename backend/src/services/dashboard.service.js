@@ -1,6 +1,4 @@
-
 const mongoose = require("mongoose");
-
 const User = require("../models/user.model");
 const Skill = require("../models/skill.model");
 const Swap = require("../models/swap.model");
@@ -14,202 +12,77 @@ const httpStatusCode = require("../utils/httpStatusCode");
 // USER DASHBOARD
 // ======================================================
 
-const getUserDashboardService = async ({ userId }) => {
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
-    const error = new Error("Invalid user ID");
-    error.statusCode = httpStatusCode.BAD_REQUEST;
+const getUserDashboardService = async (id) => {
+  const user = await User.findOne(id);
+  if (!user) {
+    const error = new Error("User not found");
+    error.statusCode = httpStatusCode.NOT_FOUND;
     throw error;
   }
-
-  const objectId = new mongoose.Types.ObjectId(userId);
+  const totalLearningSkills = user.learningSkills.length;
+  const totalTeachingSkills = user.teachingSkills.length;
 
   const [
-    userStatistics,
-    requestStatistics,
-    swapStatistics,
-    ratingStatistics,
+    pendingSentRequests,
+    pendingReceivedRequests,
+    totalCompletedSwap,
+    totalActiveSwaps,
+    totalAcceptRequest,
+    totalRejectRequest,
+    totalReports,
   ] = await Promise.all([
-    // ==================================================
-    // TEACHING + LEARNING SKILLS
-    // ==================================================
+    SwapRequest.countDocuments({
+      senderId: user._id,
+      status: "pending",
+    }),
 
-    User.aggregate([
-      {
-        $match: {
-          _id: objectId,
+    SwapRequest.countDocuments({
+      receiverId: user._id,
+      status: "pending",
+    }),
+    Swap.countDocuments({
+      $or: [
+        {
+          receiverId: user._id,
         },
-      },
-
-      {
-        $project: {
-          _id: 0,
-
-          totalTeachingSkills: {
-            $size: {
-              $ifNull: ["$teachingSkills", []],
-            },
-          },
-
-          totalLearningSkills: {
-            $size: {
-              $ifNull: ["$learningSkills", []],
-            },
-          },
+        { senderId: user._id },
+      ],
+      status: "completed",
+    }),
+    Swap.countDocuments({
+      $or: [
+        {
+          receiverId: user._id,
         },
-      },
-    ]),
-
-    // ==================================================
-    // PENDING SWAP REQUESTS
-    // ==================================================
-
-    SwapRequest.aggregate([
-      {
-        $match: {
-          $or: [
-            { senderId: objectId },
-            { receiverId: objectId },
-          ],
-
-          status: "pending",
-        },
-      },
-
-      {
-        $count: "pendingRequests",
-      },
-    ]),
-
-    // ==================================================
-    // ACTIVE + COMPLETED SWAPS
-    // ==================================================
-
-    Swap.aggregate([
-      {
-        $match: {
-          $or: [
-            { senderId: objectId },
-            { receiverId: objectId },
-          ],
-        },
-      },
-
-      {
-        $group: {
-          _id: null,
-
-          activeSwaps: {
-            $sum: {
-              $cond: [
-                { $eq: ["$status", "active"] },
-                1,
-                0,
-              ],
-            },
-          },
-
-          completedSwaps: {
-            $sum: {
-              $cond: [
-                { $eq: ["$status", "completed"] },
-                1,
-                0,
-              ],
-            },
-          },
-
-          cancelledSwaps: {
-            $sum: {
-              $cond: [
-                { $eq: ["$status", "cancelled"] },
-                1,
-                0,
-              ],
-            },
-          },
-        },
-      },
-
-      {
-        $project: {
-          _id: 0,
-          activeSwaps: 1,
-          completedSwaps: 1,
-          cancelledSwaps: 1,
-        },
-      },
-    ]),
-
-    // ==================================================
-    // AVERAGE RATING
-    // ==================================================
-
-    Review.aggregate([
-      {
-        $match: {
-          reviewedUserId: objectId,
-        },
-      },
-
-      {
-        $group: {
-          _id: "$reviewedUserId",
-
-          averageRating: {
-            $avg: "$rating",
-          },
-
-          reviewCount: {
-            $sum: 1,
-          },
-        },
-      },
-
-      {
-        $project: {
-          _id: 0,
-
-          averageRating: {
-            $round: ["$averageRating", 1],
-          },
-
-          reviewCount: 1,
-        },
-      },
-    ]),
+        { senderId: user._id },
+      ],
+      status: "active",
+    }),
+    SwapRequest.countDocuments({
+      receiverId: user._id,
+      status: "accepted",
+    }),
+    SwapRequest.countDocuments({
+      receiverId: user._id,
+      status: "rejected",
+    }),
+    Report.countDocuments({
+      reporterId: user._id,
+    }),
   ]);
 
   return {
-    totalTeachingSkills:
-      userStatistics[0]?.totalTeachingSkills || 0,
-
-    totalLearningSkills:
-      userStatistics[0]?.totalLearningSkills || 0,
-
-    pendingRequests:
-      requestStatistics[0]?.pendingRequests || 0,
-
-    activeSwaps:
-      swapStatistics[0]?.activeSwaps || 0,
-
-    completedSwaps:
-      swapStatistics[0]?.completedSwaps || 0,
-
-    cancelledSwaps:
-      swapStatistics[0]?.cancelledSwaps || 0,
-
-    averageRating:
-      ratingStatistics[0]?.averageRating || 0,
-
-    reviewCount:
-      ratingStatistics[0]?.reviewCount || 0,
+    totalLearningSkills,
+    totalTeachingSkills,
+    pendingSentRequests,
+    pendingReceivedRequests,
+    totalCompletedSwap,
+    totalActiveSwaps,
+    totalAcceptRequest,
+    totalRejectRequest,
+    totalReports,
   };
 };
-
-
-// ======================================================
-// ADMIN DASHBOARD
-// ======================================================
 
 const getAdminDashboardService = async () => {
   const [
@@ -234,51 +107,31 @@ const getAdminDashboardService = async () => {
 
           verifiedUsers: {
             $sum: {
-              $cond: [
-                { $eq: ["$isEmailVerified", true] },
-                1,
-                0,
-              ],
+              $cond: [{ $eq: ["$isEmailVerified", true] }, 1, 0],
             },
           },
 
           blockedUsers: {
             $sum: {
-              $cond: [
-                { $eq: ["$status", "blocked"] },
-                1,
-                0,
-              ],
+              $cond: [{ $eq: ["$status", "blocked"] }, 1, 0],
             },
           },
 
           activeUsers: {
             $sum: {
-              $cond: [
-                { $eq: ["$status", "active"] },
-                1,
-                0,
-              ],
+              $cond: [{ $eq: ["$status", "active"] }, 1, 0],
             },
           },
 
           adminUsers: {
             $sum: {
-              $cond: [
-                { $eq: ["$role", "admin"] },
-                1,
-                0,
-              ],
+              $cond: [{ $eq: ["$role", "admin"] }, 1, 0],
             },
           },
 
           normalUsers: {
             $sum: {
-              $cond: [
-                { $eq: ["$role", "user"] },
-                1,
-                0,
-              ],
+              $cond: [{ $eq: ["$role", "user"] }, 1, 0],
             },
           },
         },
@@ -312,21 +165,13 @@ const getAdminDashboardService = async () => {
 
           activeSkills: {
             $sum: {
-              $cond: [
-                { $eq: ["$status", "active"] },
-                1,
-                0,
-              ],
+              $cond: [{ $eq: ["$status", "active"] }, 1, 0],
             },
           },
 
           inactiveSkills: {
             $sum: {
-              $cond: [
-                { $eq: ["$status", "inactive"] },
-                1,
-                0,
-              ],
+              $cond: [{ $eq: ["$status", "inactive"] }, 1, 0],
             },
           },
         },
@@ -353,51 +198,31 @@ const getAdminDashboardService = async () => {
 
           pendingRequests: {
             $sum: {
-              $cond: [
-                { $eq: ["$status", "pending"] },
-                1,
-                0,
-              ],
+              $cond: [{ $eq: ["$status", "pending"] }, 1, 0],
             },
           },
 
           rejectedRequests: {
             $sum: {
-              $cond: [
-                { $eq: ["$status", "rejected"] },
-                1,
-                0,
-              ],
+              $cond: [{ $eq: ["$status", "rejected"] }, 1, 0],
             },
           },
 
           acceptedRequests: {
             $sum: {
-              $cond: [
-                { $eq: ["$status", "accepted"] },
-                1,
-                0,
-              ],
+              $cond: [{ $eq: ["$status", "accepted"] }, 1, 0],
             },
           },
 
           cancelledRequests: {
             $sum: {
-              $cond: [
-                { $eq: ["$status", "cancelled"] },
-                1,
-                0,
-              ],
+              $cond: [{ $eq: ["$status", "cancelled"] }, 1, 0],
             },
           },
 
           completedRequests: {
             $sum: {
-              $cond: [
-                { $eq: ["$status", "completed"] },
-                1,
-                0,
-              ],
+              $cond: [{ $eq: ["$status", "completed"] }, 1, 0],
             },
           },
         },
@@ -426,31 +251,19 @@ const getAdminDashboardService = async () => {
 
           activeSwaps: {
             $sum: {
-              $cond: [
-                { $eq: ["$status", "active"] },
-                1,
-                0,
-              ],
+              $cond: [{ $eq: ["$status", "active"] }, 1, 0],
             },
           },
 
           completedSwaps: {
             $sum: {
-              $cond: [
-                { $eq: ["$status", "completed"] },
-                1,
-                0,
-              ],
+              $cond: [{ $eq: ["$status", "completed"] }, 1, 0],
             },
           },
 
           cancelledSwaps: {
             $sum: {
-              $cond: [
-                { $eq: ["$status", "cancelled"] },
-                1,
-                0,
-              ],
+              $cond: [{ $eq: ["$status", "cancelled"] }, 1, 0],
             },
           },
 
@@ -486,41 +299,25 @@ const getAdminDashboardService = async () => {
 
           pendingReports: {
             $sum: {
-              $cond: [
-                { $eq: ["$status", "pending"] },
-                1,
-                0,
-              ],
+              $cond: [{ $eq: ["$status", "pending"] }, 1, 0],
             },
           },
 
           underReviewReports: {
             $sum: {
-              $cond: [
-                { $eq: ["$status", "under_review"] },
-                1,
-                0,
-              ],
+              $cond: [{ $eq: ["$status", "under_review"] }, 1, 0],
             },
           },
 
           resolvedReports: {
             $sum: {
-              $cond: [
-                { $eq: ["$status", "resolved"] },
-                1,
-                0,
-              ],
+              $cond: [{ $eq: ["$status", "resolved"] }, 1, 0],
             },
           },
 
           dismissedReports: {
             $sum: {
-              $cond: [
-                { $eq: ["$status", "dismissed"] },
-                1,
-                0,
-              ],
+              $cond: [{ $eq: ["$status", "dismissed"] }, 1, 0],
             },
           },
         },
@@ -541,86 +338,62 @@ const getAdminDashboardService = async () => {
 
   return {
     users: {
-      totalUsers:
-        userStatistics[0]?.totalUsers || 0,
+      totalUsers: userStatistics[0]?.totalUsers || 0,
 
-      verifiedUsers:
-        userStatistics[0]?.verifiedUsers || 0,
+      verifiedUsers: userStatistics[0]?.verifiedUsers || 0,
 
-      blockedUsers:
-        userStatistics[0]?.blockedUsers || 0,
+      blockedUsers: userStatistics[0]?.blockedUsers || 0,
 
-      activeUsers:
-        userStatistics[0]?.activeUsers || 0,
+      activeUsers: userStatistics[0]?.activeUsers || 0,
 
-      adminUsers:
-        userStatistics[0]?.adminUsers || 0,
+      adminUsers: userStatistics[0]?.adminUsers || 0,
 
-      normalUsers:
-        userStatistics[0]?.normalUsers || 0,
+      normalUsers: userStatistics[0]?.normalUsers || 0,
     },
 
     skills: {
-      totalSkills:
-        skillStatistics[0]?.totalSkills || 0,
+      totalSkills: skillStatistics[0]?.totalSkills || 0,
 
-      activeSkills:
-        skillStatistics[0]?.activeSkills || 0,
+      activeSkills: skillStatistics[0]?.activeSkills || 0,
 
-      inactiveSkills:
-        skillStatistics[0]?.inactiveSkills || 0,
+      inactiveSkills: skillStatistics[0]?.inactiveSkills || 0,
     },
 
     requests: {
-      pendingRequests:
-        requestStatistics[0]?.pendingRequests || 0,
+      pendingRequests: requestStatistics[0]?.pendingRequests || 0,
 
-      rejectedRequests:
-        requestStatistics[0]?.rejectedRequests || 0,
+      rejectedRequests: requestStatistics[0]?.rejectedRequests || 0,
 
-      acceptedRequests:
-        requestStatistics[0]?.acceptedRequests || 0,
+      acceptedRequests: requestStatistics[0]?.acceptedRequests || 0,
 
-      cancelledRequests:
-        requestStatistics[0]?.cancelledRequests || 0,
+      cancelledRequests: requestStatistics[0]?.cancelledRequests || 0,
 
-      completedRequests:
-        requestStatistics[0]?.completedRequests || 0,
+      completedRequests: requestStatistics[0]?.completedRequests || 0,
     },
 
     swaps: {
-      totalSwaps:
-        swapStatistics[0]?.totalSwaps || 0,
+      totalSwaps: swapStatistics[0]?.totalSwaps || 0,
 
-      activeSwaps:
-        swapStatistics[0]?.activeSwaps || 0,
+      activeSwaps: swapStatistics[0]?.activeSwaps || 0,
 
-      completedSwaps:
-        swapStatistics[0]?.completedSwaps || 0,
+      completedSwaps: swapStatistics[0]?.completedSwaps || 0,
 
-      cancelledSwaps:
-        swapStatistics[0]?.cancelledSwaps || 0,
+      cancelledSwaps: swapStatistics[0]?.cancelledSwaps || 0,
     },
 
     reports: {
-      totalReports:
-        reportStatistics[0]?.totalReports || 0,
+      totalReports: reportStatistics[0]?.totalReports || 0,
 
-      pendingReports:
-        reportStatistics[0]?.pendingReports || 0,
+      pendingReports: reportStatistics[0]?.pendingReports || 0,
 
-      underReviewReports:
-        reportStatistics[0]?.underReviewReports || 0,
+      underReviewReports: reportStatistics[0]?.underReviewReports || 0,
 
-      resolvedReports:
-        reportStatistics[0]?.resolvedReports || 0,
+      resolvedReports: reportStatistics[0]?.resolvedReports || 0,
 
-      dismissedReports:
-        reportStatistics[0]?.dismissedReports || 0,
+      dismissedReports: reportStatistics[0]?.dismissedReports || 0,
     },
   };
 };
-
 
 module.exports = {
   getUserDashboardService,

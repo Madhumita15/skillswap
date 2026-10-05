@@ -24,3 +24,29 @@ export const getActiveSwap = async()=> {
         
     }
 }
+
+
+
+export const completeSwap = async(id: string)=>{
+    try {
+        const response = await axiosInstance.patch(`${ENDPOINT.swaps.post}/${id}/complete`)
+        return response.data
+        
+    } catch (error) {
+         return getErrorMessage(error)
+        
+    }
+}
+
+
+
+export const cancelSwap = async(id: string)=>{
+    try {
+        const response = await axiosInstance.patch(`${ENDPOINT.swaps.post}/${id}/cancel`)
+        return response.data
+        
+    } catch (error) {
+         return getErrorMessage(error)
+        
+    }
+}

@@ -20,17 +20,6 @@ const uploadImageMiddleware = (req, res, next) => {
   });
 };
 
-// const arrayConvertMiddleware = (req, res, next) => {
-//   if (typeof req.body.teachingSkills === "string") {
-//     req.body.teachingSkills = JSON.parse(req.body.teachingSkills);
-//   }
-
-//   if (typeof req.body.learningSkills === "string") {
-//     req.body.learningSkills = JSON.parse(req.body.learningSkills);
-//   }
-//   next();
-// };
-
 const normalizeSkillArrays = (req, res, next) => {
   if (req.body.teachingSkills) {
     req.body.teachingSkills = Array.isArray(req.body.teachingSkills)

@@ -22,10 +22,7 @@ import DynamicInput from "@/components/DynamicInput";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 
-import {
-  useAppDispatch,
-  useAppSeletor,
-} from "@/services/helper/redux";
+import { useAppDispatch, useAppSeletor } from "@/services/helper/redux";
 
 import { verifyEmailUser } from "@/store/slices/auth.slice";
 import { toast } from "sonner";
@@ -54,24 +51,12 @@ const VerifyEmail = () => {
     console.log("1. FORM DATA:", data);
 
     try {
-      const response = await dispatch(
-        verifyEmailUser(data)
-      ).unwrap();
-
-      console.log("2. RESPONSE FROM VERIFY:", response);
-      console.log("3. RESPONSE SUCCESS:", response?.success);
-      console.log(
-        "4. SUCCESS TYPE:",
-        typeof response?.success
-      );
+      const response = await dispatch(verifyEmailUser(data)).unwrap();
 
       if (response?.success === true) {
-        console.log("5. SUCCESS CONDITION PASSED");
+     
 
-        toast.success(
-          response?.message ||
-            "Email verified successfully!"
-        );
+        toast.success(response?.message || "Email verified successfully!");
 
         const user = response?.data;
 
@@ -80,31 +65,17 @@ const VerifyEmail = () => {
           otp: "",
         });
 
-        /*
-         * Admin users can go directly to the admin dashboard.
-         * Normal users need to complete onboarding first.
-         */
         if (user?.role === "admin") {
-          console.log("REDIRECTING TO ADMIN DASHBOARD...");
           router.push("/admin/dashboard");
-        } else if (user?.isOnboardingComplete) {
-          console.log("REDIRECTING TO USER DASHBOARD...");
+        } else if (user?.role === "user" && user?.isOnboardingComplete) {
           router.push("/user/dashboard");
-        } else {
-          console.log("REDIRECTING TO ONBOARDING...");
+        } else if (user?.role === "user" && !user?.isOnboardingComplete) {
           router.push("/onBoarding");
         }
-      } else {
-        console.log("SUCCESS CONDITION FAILED");
-      }
+      } 
     } catch (err) {
-      console.error("VERIFY EMAIL ERROR:", err);
-
-      toast.error(
-        typeof err === "string"
-          ? err
-          : "Email verification failed."
-      );
+      
+      toast.error(typeof err === "string" ? err : "Email verification failed.");
     }
   };
 
@@ -163,10 +134,7 @@ const VerifyEmail = () => {
               </CardHeader>
 
               <CardContent>
-                <form
-                  onSubmit={handleSubmit(onSubmit)}
-                  className="space-y-6"
-                >
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                   <div className="flex flex-col gap-5">
                     {verifyEmailData.map((input) => (
                       <DynamicInput<VerifyEmailType>
@@ -205,11 +173,7 @@ const VerifyEmail = () => {
                       hover:bg-[#C77D05]
                     "
                   >
-                    {loading.verifyEmail ? (
-                      <Spinner />
-                    ) : (
-                      "Verify"
-                    )}
+                    {loading.verifyEmail ? <Spinner /> : "Verify"}
                   </Button>
                 </form>
               </CardContent>

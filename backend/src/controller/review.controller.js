@@ -1,4 +1,4 @@
-const { createReviewService, getReviewsByUserService, getRatingSummaryService, } = require("../services/review.service");
+const { createReviewService, getRatingSummaryService, getReceivedReviewsByUserService, getReviewsToUserService, } = require("../services/review.service");
  const httpStatusCode = require("../utils/httpStatusCode"); 
  class ReviewController { 
     // ========
@@ -20,15 +20,29 @@ const { createReviewService, getReviewsByUserService, getRatingSummaryService, }
         // GET REVIEWS OF A USER 
         // GET /api/reviews/:userId 
         // ========== 
-        async getReviewsByUser(req, res) { 
-            const { userId } = req.params; 
-            const reviews = await getReviewsByUserService({ userId, }); 
+        async getReceivedReviewsByUser(req, res) { 
+            const  userId = req.user._id; 
+            const reviews = await getReceivedReviewsByUserService({ userId }); 
             return res.status(httpStatusCode.OK).json({ 
                 success: true, 
                 message: "Reviews fetched successfully", 
                 data: reviews, 
             }); 
         } 
+
+
+         async getReviewsToUser(req, res) { 
+            const  userId = req.user._id; 
+            const reviews = await   getReviewsToUserService({ userId }); 
+            return res.status(httpStatusCode.OK).json({ 
+                success: true, 
+                message: "Reviews fetched successfully", 
+                data: reviews, 
+            }); 
+        } 
+
+
+      
                 
         // =========== 
         // GET RATING SUMMARY 

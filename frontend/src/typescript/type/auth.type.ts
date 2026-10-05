@@ -3,7 +3,6 @@ export type RegisterType = {
     email: string,
     password: string,
     phone: string,
-    avatar_image? : File | null | undefined
 }
 
 

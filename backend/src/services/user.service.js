@@ -8,10 +8,61 @@ const mongoose = require('mongoose')
 // GET PROFILE
 // =====================================================
 const getProfileService = async ({ id }) => {
-  const user = await User.findById(id)
-    .select("-password -refreshToken")
-    .populate("teachingSkills")
-    .populate("learningSkills");
+  const user = await User.aggregate([
+    {
+      $match: {
+        _id: id
+      }
+    },
+    {
+      $lookup: {
+        from: "skills",
+        localField: "teachingSkills",
+        foreignField: "_id",
+        as: "teachingSkills"
+
+
+      }
+    },
+    {
+      $lookup: {
+        from: "skills",
+        localField: "learningSkills",
+        foreignField: "_id",
+        as: "learningSkills"
+
+
+      }
+    },
+    {
+      $project: {
+        _id: 1,
+        name: 1,
+        email:1,
+        experience: 1,
+        bio: 1,
+        phone: 1,
+        isEmailVerified: 1,
+        status: 1,
+        isOnboardingComplete: 1,
+        avatar_image: 1,
+        role: 1,
+
+        "learningSkills._id": 1,
+        "learningSkills.name": 1,
+        "learningSkills.description": 1,
+        "learningSkills.skill_logo": 1,
+
+        "teachingSkills._id": 1,
+        "teachingSkills.name": 1,
+        "teachingSkills.description": 1,
+        "teachingSkills.skill_logo": 1
+
+
+
+      }
+    }
+  ])
 
   if (!user) {
     const error = new Error("User not found");
@@ -22,122 +73,14 @@ const getProfileService = async ({ id }) => {
   return user;
 };
 
-// =====================================================
-// COMPLETE ONBOARDING
-// =====================================================
-// const completeOnBoardingService = async ({
-//   id,
-//   teachingSkills,
-//   learningSkills,
-//   experience,
-//   bio,
-//   avatar_image,
-//   avatar_public_id,
-// }) => {
-//   const user = await User.findById(id);
-
-//   if (!user) {
-//     const error = new Error("User not found");
-//     error.statusCode = httpStatusCode.NOT_FOUND;
-//     throw error;
-//   }
-
-//   // Check email verification
-//   if (!user.isEmailVerified) {
-//     const error = new Error(
-//       "Please Verify your Email before completing your OnBoarding",
-//     );
-//     error.statusCode = httpStatusCode.FORBIDDEN;
-//     throw error;
-//   }
-
-//   // Validate teaching skills
-//   if (!Array.isArray(teachingSkills) || teachingSkills.length === 0) {
-//     const error = new Error("Select at least one Teaching Skill");
-//     error.statusCode = httpStatusCode.BAD_REQUEST;
-//     throw error;
-//   }
-
-//   // Validate learning skills
-//   if (!Array.isArray(learningSkills) || learningSkills.length === 0) {
-//     const error = new Error("Select at least one Learning Skill");
-//     error.statusCode = httpStatusCode.BAD_REQUEST;
-//     throw error;
-//   }
-
-//   /// Validate skill IDs
-//   const Skill = require("../models/skill.model");
-//   const allSkillIds = [...teachingSkills, ...learningSkills];
-
-//   // Remove duplicate skill IDs
-//   const uniqueSkillIds = [...new Set(allSkillIds.map(String))];
-
-//   const skills = await Skill.find({
-//     _id: { $in: uniqueSkillIds },
-//     status: "active",
-//   }).select("_id");
-
-//   if (skills.length !== uniqueSkillIds.length) {
-//     const error = new Error(
-//       "One or more selected skills are invalid or inactive",
-//     );
-//     error.statusCode = httpStatusCode.BAD_REQUEST;
-//     throw error;
-//   }
-
-//   // Update user fields
-//   if (teachingSkills) {
-//     user.teachingSkills = teachingSkills;
-//   }
-
-//   if (learningSkills) {
-//     user.learningSkills = learningSkills;
-//   }
-
-//   if (experience !== undefined) {
-//     user.experience = experience;
-//   }
-
-//   if (bio !== undefined) {
-//     user.bio = bio;
-//   }
-
-//   // Profile image
-
-//   if (avatar_image) {
-//     user.avatar_image = avatar_image;
-//     user.avatar_public_id = avatar_public_id || null;
-//   }
-
-//   // Mark onboarding complete
-//   user.isOnboardingComplete = true;
-
-//   // Save user
-//   await user.save();
-
-//   // Return updated user
-//   const updateUser = await User.findById(id)
-//     .select("-password -refreshToken")
-//     .populate("teachingSkills")
-//     .populate("learningSkills");
-
-//   return updateUser;
-//  };
-
-// =====================================================
-// COMPLETE ONBOARDING
-// =====================================================
 
 const completeOnBoardingService = async ({
   id,
-  name,
-  phone,
   teachingSkills,
   learningSkills,
   experience,
   bio,
-  avatar_image,
-  avatar_public_id,
+  file
 }) => {
   const user = await User.findById(id);
 
@@ -160,6 +103,16 @@ const completeOnBoardingService = async ({
     throw error;
   }
 
+
+  if(!file){
+    const error = new Error(
+      "Avatar_image is required",
+    );
+
+    error.statusCode = httpStatusCode.BAD_REQUEST;
+    throw error;
+
+  }
   // -----------------------------------------------------
   // Normalize FormData skill values
   // -----------------------------------------------------
@@ -233,13 +186,7 @@ const completeOnBoardingService = async ({
   user.teachingSkills = teachingSkillIds;
   user.learningSkills = learningSkillIds;
 
-  if (name !== undefined) {
-  user.name = name;
-}
-
-if (phone !== undefined) {
-  user.phone = phone;
-}
+  
 
   if (experience !== undefined) {
     user.experience = experience;
@@ -253,10 +200,10 @@ if (phone !== undefined) {
   // Profile image
   // -----------------------------------------------------
 
-  if (avatar_image) {
-    user.avatar_image = avatar_image;
-    user.avatar_public_id = avatar_public_id || null;
-  }
+      user.avatar_image = file.path
+      user.avatar_public_id = file.filename
+    
+  
 
   // -----------------------------------------------------
   // Mark onboarding complete
@@ -291,6 +238,10 @@ const updateProfileService = async ({
   phone,
   avatar_image,
   avatar_public_id,
+  learningSkills,
+  teachingSkills,
+  bio,
+  experience
 }) => {
   const user = await User.findById(id);
 
@@ -300,39 +251,33 @@ const updateProfileService = async ({
     throw error;
   }
 
-  // Update basic profile information
-  if (name !== undefined) {
-    user.name = name;
-  }
 
-  if (phone !== undefined) {
-    user.phone = phone;
-  }
+  user.name = name
+  user.phone = phone
+  user.bio = bio
+  user.learningSkills = learningSkills
+  user.teachingSkills = teachingSkills
+  user.bio = bio
+  user.experience = experience
+
 
   // Replace profile image
   if (avatar_image) {
     // Delete old Cloudinary image
-    if (user.avatar_public_id) {
-      try {
+    if (user.avatar_image) {
         await cloudinary.uploader.destroy(user.avatar_public_id);
-      } catch (error) {
-        console.log("Old avatar deletion failed:", error.message);
-      }
+     
     }
     // Save new image
     user.avatar_image = avatar_image;
-    user.avatar_public_id = avatar_public_id || "";
+    user.avatar_public_id = avatar_public_id;
   }
   // Save changes
   await user.save();
 
-  // Return updated profile
-  const updatedUser = await User.findById(id)
-    .select("-password -refreshToken")
-    .populate("teachingSkills")
-    .populate("learningSkills");
+  
 
-  return updatedUser;
+  return user;
 };
 
 

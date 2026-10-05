@@ -1,10 +1,8 @@
-
 const mongoose = require("mongoose");
-
 const Report = require("../models/report.model");
 const User = require("../models/user.model");
-
 const httpStatusCode = require("../utils/httpStatusCode");
+const SendEmail = require("../utils/sendEmail");
 
 // ======================================================
 // CREATE REPORT
@@ -16,52 +14,35 @@ const createReportService = async ({
   reason,
   description,
 }) => {
-  // ----------------------------------------------------
-  // Validate ObjectId
-  // ----------------------------------------------------
-
-  if (!mongoose.Types.ObjectId.isValid(reportedUserId)) {
-    const error = new Error("Invalid reported user ID");
-    error.statusCode = httpStatusCode.BAD_REQUEST;
+  const reportedUser = await User.findById(reportedUserId);
+  if (!reportedUser) {
+    const error = new Error("Reported User not found");
+    error.statusCode = httpStatusCode.NOT_FOUND;
     throw error;
   }
 
-  const reportedObjectId = new mongoose.Types.ObjectId(
-    reportedUserId
-  );
-
-  // ----------------------------------------------------
-  // User cannot report themselves
-  // ----------------------------------------------------
-
-  if (reporterId.toString() === reportedUserId.toString()) {
+  if (reportedUserId === reporterId) {
     const error = new Error("You cannot report yourself");
     error.statusCode = httpStatusCode.BAD_REQUEST;
     throw error;
   }
 
-  // ----------------------------------------------------
-  // Check whether reported user exists
-  // ----------------------------------------------------
+  const findReport = await Report.findOne({
+    reporterId: new mongoose.Types.ObjectId(reporterId),
+    reportedUserId: new mongoose.Types.ObjectId(reportedUserId),
+  });
 
-  const reportedUser = await User.findById(reportedObjectId);
-
-  if (!reportedUser) {
-    const error = new Error("Reported user not found");
-    error.statusCode = httpStatusCode.NOT_FOUND;
+  if (findReport) {
+    const error = new Error("You already report to this user");
+    error.statusCode = httpStatusCode.BAD_REQUEST;
     throw error;
   }
 
-  // ----------------------------------------------------
-  // Create report
-  // ----------------------------------------------------
-
   const report = await Report.create({
     reporterId,
-    reportedUserId: reportedObjectId,
+    reportedUserId,
     reason,
     description,
-    status: "pending",
   });
 
   return report;
@@ -71,28 +52,10 @@ const createReportService = async ({
 // GET ALL REPORTS - ADMIN
 // ======================================================
 
-const getReportsService = async ({
-  status,
-  page = 1,
-  limit = 10,
-}) => {
+const getReportsService = async ({ page, limit }) => {
   const skip = (page - 1) * limit;
 
-  const matchStage = {};
-
-  if (status) {
-    matchStage.status = status;
-  }
-
   const reports = await Report.aggregate([
-    {
-      $match: matchStage,
-    },
-
-    // ----------------------------------------------
-    // Reporter information
-    // ----------------------------------------------
-
     {
       $lookup: {
         from: "users",
@@ -102,9 +65,12 @@ const getReportsService = async ({
       },
     },
 
-    // ----------------------------------------------
-    // Reported user information
-    // ----------------------------------------------
+    {
+      $unwind: {
+        path: "$reporter",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
 
     {
       $lookup: {
@@ -115,92 +81,67 @@ const getReportsService = async ({
       },
     },
 
-    // ----------------------------------------------
-    // Convert arrays to objects
-    // ----------------------------------------------
-
-    {
-      $unwind: {
-        path: "$reporter",
-        preserveNullAndEmptyArrays: true,
-      },
-    },
-
     {
       $unwind: {
         path: "$reportedUser",
         preserveNullAndEmptyArrays: true,
       },
     },
-
-    // ----------------------------------------------
-    // Select only required fields
-    // ----------------------------------------------
-
-    {
-      $project: {
-        _id: 1,
-
-        reason: 1,
-        description: 1,
-        status: 1,
-
-        createdAt: 1,
-        updatedAt: 1,
-
-        reporter: {
-          _id: "$reporter._id",
-          name: "$reporter.name",
-          email: "$reporter.email",
-        },
-
-        reportedUser: {
-          _id: "$reportedUser._id",
-          name: "$reportedUser.name",
-          email: "$reportedUser.email",
-          status: "$reportedUser.status",
-        },
-      },
-    },
-
-    // ----------------------------------------------
-    // Newest reports first
-    // ----------------------------------------------
-
     {
       $sort: {
         createdAt: -1,
       },
     },
 
-    // ----------------------------------------------
-    // Pagination
-    // ----------------------------------------------
-
     {
-      $skip: skip,
-    },
+      $facet: {
+        data: [
+          {
+            $skip: skip,
+          },
 
-    {
-      $limit: Number(limit),
+          {
+            $limit: limit,
+          },
+          {
+            $project: {
+              _id: 1,
+              reason: 1,
+              description: 1,
+              status: 1,
+              createdAt: 1,
+              updatedAt: 1,
+              "$reporter._id": 1,
+              "$reporter.name": 1,
+              "$reporter.email": 1,
+              "$reporter.status": 1,
+              "$reporter.avatar_image": 1,
+              "$reporter.phone": 1,
+              "$reportedUser._id": 1,
+              "$reportedUser.name": 1,
+              "$reportedUser.email": 1,
+              "$reportedUser.status": 1,
+              "$reportedUser.avatar_image": 1,
+              "$reportedUser.phone": 1,
+            },
+          },
+        ],
+        total: [
+          {
+            $count: "totalReports",
+          },
+        ],
+      },
     },
   ]);
 
-  // ----------------------------------------------------
-  // Count reports
-  // ----------------------------------------------------
-
-  const totalReports = await Report.countDocuments(matchStage);
+  const totalReports = reports[0].total[0].totalReports;
 
   return {
-    reports,
-
-    pagination: {
-      currentPage: Number(page),
-      limit: Number(limit),
-      totalReports,
-      totalPages: Math.ceil(totalReports / limit),
-    },
+    reports: reports[0].data,
+    currentPage: page,
+    totalReports: totalReports,
+    totalPages: Math.ceil(totalReports / limit),
   };
 };
 
@@ -208,25 +149,20 @@ const getReportsService = async ({
 // GET SINGLE REPORT - ADMIN
 // ======================================================
 
-const getReportByIdService = async (reportId) => {
-  if (!mongoose.Types.ObjectId.isValid(reportId)) {
-    const error = new Error("Invalid report ID");
-    error.statusCode = httpStatusCode.BAD_REQUEST;
+const getReportByIdService = async (id) => {
+  const report = await Report.findById(id);
+  if (!report) {
+    const error = new Error("Report is not found");
+    error.statusCode = httpStatusCode.NOT_FOUND;
     throw error;
   }
-
-  const objectId = new mongoose.Types.ObjectId(reportId);
 
   const reports = await Report.aggregate([
     {
       $match: {
-        _id: objectId,
+        _id: id,
       },
     },
-
-    // ----------------------------------------------
-    // Reporter
-    // ----------------------------------------------
 
     {
       $lookup: {
@@ -267,37 +203,26 @@ const getReportByIdService = async (reportId) => {
     {
       $project: {
         _id: 1,
-
         reason: 1,
         description: 1,
         status: 1,
-
         createdAt: 1,
         updatedAt: 1,
-
-        reporter: {
-          _id: "$reporter._id",
-          name: "$reporter.name",
-          email: "$reporter.email",
-        },
-
-        reportedUser: {
-          _id: "$reportedUser._id",
-          name: "$reportedUser.name",
-          email: "$reportedUser.email",
-          phone: "$reportedUser.phone",
-          status: "$reportedUser.status",
-          role: "$reportedUser.role",
-        },
+        "$reporter._id": 1,
+        "$reporter.name": 1,
+        "$reporter.email": 1,
+        "$reporter.status": 1,
+        "$reporter.avatar_image": 1,
+        "$reporter.phone": 1,
+        "$reportedUser._id": 1,
+        "$reportedUser.name": 1,
+        "$reportedUser.email": 1,
+        "$reportedUser.status": 1,
+        "$reportedUser.avatar_image": 1,
+        "$reportedUser.phone": 1,
       },
     },
   ]);
-
-  if (!reports.length) {
-    const error = new Error("Report not found");
-    error.statusCode = httpStatusCode.NOT_FOUND;
-    throw error;
-  }
 
   return reports[0];
 };
@@ -306,27 +231,29 @@ const getReportByIdService = async (reportId) => {
 // UPDATE REPORT STATUS - ADMIN
 // ======================================================
 
-const updateReportStatusService = async ({
-  reportId,
-  status,
-}) => {
-  if (!mongoose.Types.ObjectId.isValid(reportId)) {
-    const error = new Error("Invalid report ID");
-    error.statusCode = httpStatusCode.BAD_REQUEST;
-    throw error;
-  }
-
+const updateReportStatusService = async ({ reportId, status }) => {
   const report = await Report.findById(reportId);
-
   if (!report) {
     const error = new Error("Report not found");
     error.statusCode = httpStatusCode.NOT_FOUND;
     throw error;
   }
+  const reporterUser = await User.findOne({ _id: report.reporterId });
+  const reportedUser = await User.findOne({ _id: report.reportedUserId });
 
   report.status = status;
 
   await report.save();
+
+  if (status === "resolved") {
+    reportedUser.status = "blocked";
+    await reportedUser.save();
+    await SendEmail.reportedUserMail(reportedUser);
+  }
+
+  if (status === "rejected") {
+    await SendEmail.reporterUserMail(reporterUser);
+  }
 
   return report;
 };
@@ -337,4 +264,3 @@ module.exports = {
   getReportByIdService,
   updateReportStatusService,
 };
-

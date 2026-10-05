@@ -1,4 +1,3 @@
-
 import {
   Card,
   CardContent,
@@ -7,12 +6,55 @@ import {
 } from "@/components/ui/card";
 import Image from "next/image";
 import { Button } from "./ui/button";
-import { BookOpen, ChevronRight, GraduationCap, UserRound } from "lucide-react";
+import { BookOpen, ChevronRight, Flag, GraduationCap, UserRound } from "lucide-react";
 import { MatchedUser, Skill } from "@/typescript/interface/skill.interface";
 import { useRouter } from "next/navigation";
+import SendRequestDialog from "./SendRequestDialog";
+import { useState } from "react";
+import {
+  useGetReceivedRequest,
+  useGetSentRequest,
+} from "@/hooks/useSwapRequest";
+import { useProfile } from "@/hooks/useProfile";
+import { useGetSwapHistory } from "@/hooks/useSwaps";
+import { SwapInterface } from "@/typescript/interface/swap.interface";
+import ReportDialog from "./ReportDialog";
 
 const DiscoveryCard = ({ user }: { user: MatchedUser }) => {
-  const router = useRouter()
+  const [open, setOpen] = useState(false);
+  const router = useRouter();
+  const { data: sendRequestData } = useGetSentRequest();
+  const { data: profileData } = useProfile();
+  const { data: swapHistoryData } = useGetSwapHistory({ page: 0, limit: 0 });
+  const { data: receivedRequestData } = useGetReceivedRequest();
+  const [reportOpen, setReportOpen] = useState(false)
+
+  const relatedRequests = [
+    ...(sendRequestData?.data ?? []),
+    ...(receivedRequestData?.data ?? []),
+  ];
+
+  const userRequests = relatedRequests?.filter(
+    (request) =>
+      (String(request.senderId) === profileData?.data[0]._id &&
+        request.receiverUser._id === user._id) ||
+      (String(request.receiverId) === profileData?.data[0]._id &&
+        request.senderUser._id === user._id),
+  );
+
+  const hasPendingRequest = userRequests.some(
+    (request) => request.status === "pending",
+  );
+
+  const userSwaps = swapHistoryData?.data?.filter(
+    (swap:SwapInterface) =>
+      swap.senderUser._id === profileData?.data[0]._id &&
+      swap.receiverUser._id === user._id,
+  );
+
+  const hasActiveSwap = userSwaps?.some((swap:SwapInterface) => swap.status === "active");
+
+  const requestCheck = hasPendingRequest || hasActiveSwap;
   return (
     <Card
       className="
@@ -46,6 +88,7 @@ const DiscoveryCard = ({ user }: { user: MatchedUser }) => {
       group-hover:shadow-[#F97316]/10
     "
         >
+          
           {user.avatar_image ? (
             <Image
               src={user.avatar_image}
@@ -82,33 +125,60 @@ const DiscoveryCard = ({ user }: { user: MatchedUser }) => {
 
       {/* Content */}
 
-      <CardHeader className="px-5 pb-2 pt-4">
-        <h3
-          className="
-          truncate
-          text-base
-          font-bold
-          text-[#FFF7ED]
-          transition-colors
-          group-hover:text-[#F97316]
-        "
-        >
-          {user.name}
-        </h3>
+     <CardHeader className="relative px-5 pb-2 pt-4">
+  {/* Report button */}
+  <Button
+    variant="ghost"
+    size="icon"
+     onClick={() => setReportOpen(true)}
+    className="
+    cursor-pointer
+      absolute
+      right-3
+      top-3
+      h-8
+      w-8
+      rounded-full
+      text-[#78716C]
+      transition-all
+      duration-200
+      hover:bg-[#2A170D]
+      hover:text-[#F97316]
+    "
+    title="Report user"
+  >
+    <Flag className="h-4 w-4" />
+  </Button>
+    <ReportDialog open={reportOpen} setOpen={setReportOpen} reportedUserId={user._id}/>
 
-        <p
-          className="
-          mt-1
-          line-clamp-2
-          min-h-10
-          text-xs
-          leading-5
-          text-[#A8A29E]
-        "
-        >
-          {user.bio || "Ready to exchange skills and learn together."}
-        </p>
-      </CardHeader>
+
+  <h3
+    className="
+      truncate
+      pr-8
+      text-base
+      font-bold
+      text-[#FFF7ED]
+      transition-colors
+      group-hover:text-[#F97316]
+    "
+  >
+    {user.name}
+  </h3>
+
+  <p
+    className="
+      mt-1
+      line-clamp-2
+      min-h-10
+      text-xs
+      leading-5
+      text-[#A8A29E]
+    "
+  >
+    {user.bio || "Ready to exchange skills and learn together."}
+  </p>
+</CardHeader>
 
       <CardContent className="px-5">
         {/* Teaching */}
@@ -178,7 +248,7 @@ const DiscoveryCard = ({ user }: { user: MatchedUser }) => {
 
       <CardFooter className="border-t border-[#52291A]/40  py-4 flex flex-row gap-1">
         <Button
-        onClick={()=> router.push(`/user/users/${user._id}`)}
+          onClick={() => router.push(`/user/users/${user._id}`)}
           className="
             group/button
             cursor-pointer
@@ -208,6 +278,8 @@ const DiscoveryCard = ({ user }: { user: MatchedUser }) => {
         </Button>
 
         <Button
+          disabled={requestCheck}
+          onClick={() => setOpen(true)}
           className="
             group/button
             cursor-pointer
@@ -224,7 +296,7 @@ const DiscoveryCard = ({ user }: { user: MatchedUser }) => {
             hover:opacity-90
           "
         >
-          Send Request
+          {requestCheck ? "Request Sent" : "Send Request"}
           <ChevronRight
             className="
               ml-1
@@ -235,6 +307,13 @@ const DiscoveryCard = ({ user }: { user: MatchedUser }) => {
             "
           />
         </Button>
+        <SendRequestDialog
+          learningSkills={user.learningSkills}
+          teachingSkills={user.teachingSkills}
+          open={open}
+          setOpen={setOpen}
+          receiverId={user._id}
+        />
       </CardFooter>
     </Card>
   );

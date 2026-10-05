@@ -1,6 +1,6 @@
 "use client";
 
-import { useGetReceivedRequest } from "@/hooks/useSwapRequest";
+import { useAcceptSwapRequest, useGetReceivedRequest, useRejectSwapRequest } from "@/hooks/useSwapRequest";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -21,11 +21,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ReceivedRequestsInterface } from "@/typescript/interface/swapRequest.interface";
+import { Spinner } from "@/components/ui/spinner";
 
 const MyReceivedRequest = () => {
   const { data, isLoading, isError, error } = useGetReceivedRequest();
+  const {mutate: accetpRequesMutate, isPending:acceptIsPending} = useAcceptSwapRequest()
+  const {mutate: rejectRequestMutate, isPending:rejectIsPending} = useRejectSwapRequest()
 
-  console.log("data", data);
+ 
 
   const requests = data?.data || [];
 
@@ -472,23 +475,23 @@ const MyReceivedRequest = () => {
 
                           <Button
                             variant="outline"
-                            className="border-red-500/30 bg-red-500/5 text-xs text-red-400 transition-all hover:border-red-500/50 hover:bg-red-500/10 hover:text-red-300"
+                            className="border-red-500/30 cursor-pointer bg-red-500/5 text-xs text-red-400 transition-all hover:border-red-500/50 hover:bg-red-500/10 hover:text-red-300"
                             onClick={() => {
-                              // reject request API
+                               rejectRequestMutate(request._id)
                             }}
                           >
                             <X className="mr-1.5 h-3.5 w-3.5" />
-                            Reject
+                           {rejectIsPending ? <Spinner /> : "Reject"} 
                           </Button>
 
                           <Button
-                            className="bg-linear-to-r from-[#F97316] to-[#E59A0B] text-xs font-semibold text-[#1C1008] transition-all hover:opacity-90"
+                            className="bg-linear-to-r cursor-pointer from-[#F97316] to-[#E59A0B] text-xs font-semibold text-[#1C1008] transition-all hover:opacity-90"
                             onClick={() => {
-                              // accept request API
+                              accetpRequesMutate(request._id)
                             }}
                           >
                             <Check className="mr-1.5 h-3.5 w-3.5" />
-                            Accept Request
+                          {acceptIsPending ? <Spinner /> : "Accept Request"}  
                           </Button>
 
                         </div>
@@ -499,7 +502,7 @@ const MyReceivedRequest = () => {
                         <Button
                           className="bg-linear-to-r from-[#F97316] to-[#E59A0B] text-xs font-semibold text-[#1C1008] hover:opacity-90"
                         >
-                          <Link href="/user/active-swaps">
+                          <Link className="flex gap-2" href="/user/active-swap">
                             View Active Swap
                             <ArrowRight className="ml-2 h-3.5 w-3.5" />
                           </Link>

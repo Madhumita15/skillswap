@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import {
   ArrowRight,
   Bell,
@@ -19,7 +19,6 @@ import {
   Star,
   UserRoundSearch,
   Users,
-  X,
   Zap,
 } from "lucide-react";
 import Link from "next/link";
@@ -122,7 +121,7 @@ const lifecycle = [
   },
 ];
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: {},
   visible: {
     transition: {
@@ -131,7 +130,7 @@ const containerVariants = {
   },
 };
 
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: {
     opacity: 0,
     y: 40,
@@ -146,7 +145,7 @@ const fadeUp = {
   },
 };
 
-const fromLeft = {
+const fromLeft: Variants = {
   hidden: {
     opacity: 0,
     x: -100,
@@ -161,7 +160,7 @@ const fromLeft = {
   },
 };
 
-const fromRight = {
+const fromRight:Variants = {
   hidden: {
     opacity: 0,
     x: 100,
@@ -176,7 +175,7 @@ const fromRight = {
   },
 };
 
-const scaleIn = {
+const scaleIn: Variants = {
   hidden: {
     opacity: 0,
     scale: 0.8,

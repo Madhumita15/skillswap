@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -9,7 +9,6 @@ import {
   HeartHandshake,
   Lightbulb,
   MessageCircle,
-  Play,
   Search,
   Sparkles,
   Users,
@@ -17,7 +16,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: {
     opacity: 0,
     y: 60,
@@ -32,7 +31,7 @@ const fadeUp = {
   },
 };
 
-const fromLeft = {
+const fromLeft: Variants = {
   hidden: {
     opacity: 0,
     x: -100,
@@ -47,7 +46,7 @@ const fromLeft = {
   },
 };
 
-const fromRight = {
+const fromRight: Variants = {
   hidden: {
     opacity: 0,
     x: 100,
@@ -62,7 +61,7 @@ const fromRight = {
   },
 };
 
-const scaleIn = {
+const scaleIn: Variants = {
   hidden: {
     opacity: 0,
     scale: 0.85,

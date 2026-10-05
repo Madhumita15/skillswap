@@ -73,6 +73,7 @@ const getHistorySwapService = async ({ userId, page, limit }) => {
               status: 1,
               startDate: 1,
               completedDate: 1,
+              cancelledDate: 1,
               "teachingSkills._id": 1,
               "teachingSkills.name": 1,
               "teachingSkills.skill_logo": 1,
@@ -88,8 +89,10 @@ const getHistorySwapService = async ({ userId, page, limit }) => {
               "senderUser.experience": 1,
               "senderUser.bio": 1,
               "senderUser.avatar_image": 1,
+              "senderUser._id": 1,
 
               "receiverUser.name": 1,
+              "receiverUser._id": 1,
               "receiverUser.email": 1,
               "receiverUser.experience": 1,
               "receiverUser.bio": 1,
@@ -183,11 +186,14 @@ const getActiveSwapService = async (userId) => {
         "learningSkills.skill_logo": 1,
         "learningSkills.description": 1,
 
+        "senderUser._id": 1,
         "senderUser.name": 1,
         "senderUser.email": 1,
         "senderUser.experience": 1,
         "senderUser.bio": 1,
         "senderUser.avatar_image": 1,
+
+        "receiverUser._id": 1,
         "receiverUser.name": 1,
         "receiverUser.email": 1,
         "receiverUser.experience": 1,

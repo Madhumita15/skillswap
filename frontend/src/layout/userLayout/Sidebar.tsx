@@ -306,7 +306,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }: SidebarProps) => {
             >
               {data ? (
                 <Image
-                  src={data?.data?.avatar_image}
+                  src={data?.data[0].avatar_image}
                   className="object-cover h-8 w-8 rounded-full"
                   width={20}
                   height={20}

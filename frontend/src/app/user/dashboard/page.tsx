@@ -1,149 +1,315 @@
-import React from "react";
+"use client";
+import {
+  ArrowDownLeft,
+  ArrowUpRight,
+  Award,
+  BookOpen,
+  CheckCircle2,
+  FileWarning,
+  GraduationCap,
+  RefreshCw,
+  XCircle,
+} from "lucide-react";
+import { useGetUserDashboard } from "@/hooks/useDashboard";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import StatCard from "@/components/StatCard";
+import {
+  DashboardData,
+  StatCardProps,
+} from "@/typescript/interface/dashboard.interface";
+import DashboardSkeleton from "@/components/DashboardSkeleton";
+import {
+  useGetReceivedRequest,
+  useGetSentRequest,
+} from "@/hooks/useSwapRequest";
+import PendingRequestTable from "@/components/PendingRequestTable";
+import {
+  ReceivedRequestsInterface,
+  SentRequestsInterface,
+} from "@/typescript/interface/swapRequest.interface";
 
 const UserDashboard = () => {
+  const { data, isLoading, isError, error, refetch } = useGetUserDashboard();
+
+  const {
+    data: receivedRequestData,
+    isLoading: receivedRequestIsLoading,
+    isError: receivedRequestIsError,
+  } = useGetReceivedRequest();
+  const {
+    data: sentRequestData,
+    isLoading: sentRequestIsLoading,
+    isError: sentRequestIsError,
+  } = useGetSentRequest();
+
+  const pendingReceivedRequestData = receivedRequestData?.data.filter(
+    (data: ReceivedRequestsInterface) => data.status === "pending",
+  );
+  const pendingSentRequestData = sentRequestData?.data.filter(
+    (data: SentRequestsInterface) => data.status === "pending",
+  );
+  console.log("pendingReceivedRequestData", receivedRequestData?.data);
+  console.log("pendingSentRequestData", sentRequestData?.data);
+
+  if (isLoading) {
+    return (
+      <main className="min-h-screen bg-background">
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+          {/* Header skeleton */}
+          <div className="mb-8 space-y-2">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-4 w-80 max-w-full" />
+          </div>
+
+          <DashboardSkeleton />
+        </div>
+      </main>
+    );
+  }
+
+  if (isError) {
+    return (
+      <main className="min-h-screen bg-background">
+        <div className="mx-auto flex min-h-[60vh] max-w-7xl items-center justify-center px-4">
+          <Card className="w-full max-w-md border-[#F97316]/20 bg-[#0B0804] text-white">
+            <CardContent className="flex flex-col items-center px-6 py-10 text-center">
+              <div
+                className="
+                  flex
+                  h-14
+                  w-14
+                  items-center
+                  justify-center
+                  rounded-full
+                  bg-red-500/10
+                  text-red-500
+                "
+              >
+                <XCircle className="h-7 w-7" />
+              </div>
+
+              <h2 className="mt-5 text-lg font-semibold">
+                Failed to load dashboard
+              </h2>
+
+              <p className="mt-2 text-sm text-white/50">
+                We couldnt fetch your dashboard information. Please try again.
+              </p>
+
+              {error instanceof Error && (
+                <p className="mt-3 text-xs text-red-400">{error.message}</p>
+              )}
+
+              <Button
+                onClick={() => refetch()}
+                className="
+                  mt-6
+                  gap-2
+                  border-0
+                  bg-gradient-to-r
+                  from-[#F97316]
+                  to-[#E59A0B]
+                  text-white
+                  hover:opacity-90
+                  focus-visible:ring-[#F97316]
+                "
+              >
+                <RefreshCw className="h-4 w-4" />
+                Try Again
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </main>
+    );
+  }
+
+  const dashboard: DashboardData = data?.data;
+
+  const stats: StatCardProps[] = [
+    {
+      title: "Pending Received Requests",
+      value: dashboard?.pendingReceivedRequests ?? 0,
+      description: "Requests waiting for your response",
+      icon: ArrowDownLeft,
+    },
+    {
+      title: "Pending Sent Requests",
+      value: dashboard?.pendingSentRequests ?? 0,
+      description: "Requests waiting for acceptance",
+      icon: ArrowUpRight,
+    },
+    {
+      title: "Accepted Requests",
+      value: dashboard?.totalAcceptRequest ?? 0,
+      description: "Requests successfully accepted",
+      icon: CheckCircle2,
+    },
+    {
+      title: "Completed Swaps",
+      value: dashboard?.totalCompletedSwap ?? 0,
+      description: "Successfully completed skill swaps",
+      icon: Award,
+    },
+    {
+      title: "Learning Skills",
+      value: dashboard?.totalLearningSkills ?? 0,
+      description: "Skills you want to learn",
+      icon: BookOpen,
+    },
+    {
+      title: "Rejected Requests",
+      value: dashboard?.totalRejectRequest ?? 0,
+      description: "Requests that were rejected",
+      icon: XCircle,
+    },
+    {
+      title: "Reports",
+      value: dashboard?.totalReports ?? 0,
+      description: "Reports submitted by you",
+      icon: FileWarning,
+    },
+    {
+      title: "Teaching Skills",
+      value: dashboard?.totalTeachingSkills ?? 0,
+      description: "Skills you can teach others",
+      icon: GraduationCap,
+    },
+  ];
+
   return (
-    <>
-      Lorem ipsum, dolor sit amet consectetur adipisicing elit. Consequuntur,
-      atque eligendi natus officia dolores, aspernatur commodi optio aut vero at
-      nostrum aliquid soluta veniam quaerat quibusdam iste consectetur aperiam
-      fuga quisquam quia placeat corrupti maxime repellendus ducimus. Officiis,
-      ut odit dolore voluptates iusto ad. Aperiam voluptates recusandae at
-      corrupti soluta animi omnis ratione ullam rerum quam fuga optio quibusdam
-      deserunt, quo doloremque, corporis atque veritatis ab modi accusantium
-      earum voluptatum, harum debitis. Neque assumenda et quidem repellendus
-      voluptatem inventore sit nisi officiis asperiores voluptates, quae dolorum
-      cupiditate obcaecati maxime necessitatibus? Odit distinctio,
-      exercitationem minus sint provident quas corrupti quisquam alias atque
-      ducimus rerum cumque similique maxime. Amet provident eum cumque animi?
-      Dolorem inventore aspernatur delectus, eveniet neque consectetur nobis
-      itaque. Culpa, odio iure. Iusto impedit, sunt asperiores ea commodi
-      repellendus cum voluptas rerum illo quam illum quas accusamus consectetur.
-      Impedit aut, adipisci autem, aliquid libero possimus soluta earum iusto
-      dolore, natus similique placeat veniam quaerat fugit eaque molestiae ullam
-      iste repellendus explicabo. Provident ad doloremque impedit quia porro
-      sit? Atque assumenda a ea soluta optio totam. Inventore nulla a, adipisci
-      voluptatibus excepturi similique quas ea pariatur praesentium eius id
-      atque accusamus. Qui, cupiditate sunt dolor vel, minima tempora eligendi
-      doloremque, quae aut est officia provident recusandae consequuntur veniam
-      molestiae deserunt quisquam repellat rerum ipsum architecto facilis
-      inventore impedit perspiciatis! Quibusdam natus dignissimos quasi est
-      provident, qui, nihil, blanditiis praesentium perferendis esse autem
-      tenetur. Sint doloremque odit quisquam laboriosam ducimus eos expedita
-      officia incidunt est saepe facere animi eius aut voluptatum possimus,
-      eveniet accusamus exercitationem ullam voluptate architecto,
-      necessitatibus provident illum vero quibusdam! Magni ipsum fugit laborum
-      sit exercitationem hic, totam, voluptatibus odit veritatis minima nisi
-      itaque, voluptates maxime quo! Debitis odit ad quis blanditiis deserunt
-      vero quam! Repellendus, aperiam velit. Voluptate perspiciatis eos rem nemo
-      explicabo culpa, ipsum inventore ullam ea blanditiis praesentium odio,
-      nesciunt iure cumque eius dolore numquam vitae dicta beatae adipisci
-      assumenda. Inventore, cupiditate minus repellat totam nisi delectus
-      suscipit ipsa sequi quod eaque fugit eligendi quisquam eos aliquam commodi
-      voluptate veritatis reprehenderit tempore aperiam? Sed, reprehenderit! Quo
-      et suscipit illum ut amet fugit quidem nemo laudantium voluptatibus
-      explicabo labore debitis, facilis quis, odit eligendi rerum, ipsum maxime
-      provident! Mollitia placeat tenetur ducimus enim inventore iste deserunt
-      dolore incidunt nisi corrupti rerum possimus sed eveniet molestias velit
-      dignissimos fugiat corporis repudiandae, assumenda accusamus voluptatibus
-      quibusdam alias. Asperiores eaque repudiandae quod. Voluptatibus
-      distinctio ut et ipsam, ab tempora ratione, pariatur, temporibus quam
-      fugit sequi? Rem deserunt sint eius eveniet aut unde itaque doloribus quia
-      neque mollitia. Unde, dicta cum. Facere dolorum ad eaque officia itaque
-      ratione quam expedita quibusdam adipisci sapiente rerum rem, corrupti, ea
-      saepe minima autem suscipit consequatur molestiae delectus nihil nisi
-      iste, et similique. Doloremque, enim? Harum vero odit soluta eveniet magni
-      cum quisquam quidem! Tempore eos architecto mollitia eum iure voluptatibus
-      ipsa sequi hic reiciendis, ut nulla ad quis consectetur. Hic error rerum
-      atque blanditiis quod facilis eveniet molestiae voluptas voluptatum quas
-      ratione ducimus quaerat, minima id nobis et ab voluptatibus dicta ipsum
-      sunt doloribus qui. Aspernatur veritatis praesentium quam enim laborum
-      incidunt deleniti obcaecati, eum architecto deserunt fugit commodi libero
-      eveniet vitae ipsa. Tenetur iure eveniet asperiores repellendus voluptatum
-      quae, error rerum labore possimus facilis inventore a corporis nemo
-      voluptas nulla neque recusandae sapiente magni repellat, numquam itaque.
-      Ut eligendi iure perferendis sapiente, aspernatur, tempora dolore debitis
-      consectetur maxime ducimus dolorum, nostrum similique. Excepturi illum
-      quos dignissimos quam harum cumque sunt fuga porro debitis numquam omnis,
-      quasi minus temporibus nisi earum veniam qui voluptate quo alias, saepe
-      fugit. Dolores quas ab dignissimos iste neque dolorem, debitis praesentium
-      temporibus rerum atque impedit dolore consequatur, ullam et esse dolorum
-      quibusdam ea tempora ut sunt totam inventore ipsum! Non nesciunt autem
-      officia, ipsam reiciendis ea. Praesentium veniam, doloribus corporis
-      beatae facilis natus, dignissimos cumque architecto iure quia enim facere
-      exercitationem accusantium, voluptatem quidem unde doloremque. Aliquid
-      cumque alias quis aspernatur provident tenetur, totam sapiente pariatur
-      quia officia? Necessitatibus at dolor recusandae eius et voluptates quis,
-      provident hic animi blanditiis quae perferendis architecto tenetur ullam
-      quaerat impedit corporis voluptatum velit fugiat molestias suscipit
-      temporibus, expedita optio fugit. At voluptas recusandae natus quidem,
-      eaque error rerum eligendi minus ex inventore sequi magni voluptates,
-      asperiores autem reiciendis. Perspiciatis repellendus placeat neque iure
-      minima non recusandae itaque, id enim sunt praesentium ad nisi fuga
-      distinctio obcaecati rem voluptates odio eius, facere omnis quia. Quod
-      dolore neque numquam, corrupti, sint aperiam unde adipisci fuga ducimus,
-      autem exercitationem recusandae. Similique a consequatur praesentium
-      voluptatem pariatur sint expedita perferendis doloribus laborum fuga vel
-      veritatis repellendus voluptatum cupiditate, reiciendis alias cumque
-      dolorem voluptate quis tenetur facilis exercitationem itaque? Ratione
-      ipsum aliquid aliquam, ut, sed, provident possimus aspernatur iure quam
-      nostrum ducimus quia laboriosam. Vitae culpa tempora illo ullam cupiditate
-      laborum iure nobis autem reiciendis. Ipsum vel minus veritatis doloremque
-      sequi, libero numquam laboriosam tenetur ducimus fuga veniam laudantium
-      iure quibusdam, voluptatibus dicta. Alias quam qui libero quidem
-      reprehenderit, placeat aut! Voluptatum dolor aut odit qui quasi, sed
-      minima quod veniam dolorem placeat corporis nam ut eius praesentium
-      incidunt. Nobis, sed molestias! Voluptate totam sed aliquam aspernatur
-      perspiciatis, perferendis amet error natus nam iusto doloribus quibusdam
-      voluptates. Illum consectetur est doloremque enim explicabo aspernatur
-      corporis repudiandae, facere qui quam commodi nobis rem. Obcaecati maiores
-      nihil distinctio optio hic sint quia corrupti rem ex repellendus deleniti
-      aliquam, provident, animi sit. Ad recusandae earum voluptate libero. Vitae
-      enim laborum corrupti amet consequatur sit saepe est magnam, non
-      voluptatibus quis explicabo ut dolor asperiores hic id! Similique
-      inventore recusandae impedit quo quas nostrum incidunt fuga earum?
-      Asperiores repellat sequi, molestiae vitae in illo rem doloribus suscipit,
-      quis delectus dignissimos. Quis esse voluptatum totam, veniam voluptas
-      debitis dolores qui odio amet, assumenda, soluta quam atque tenetur? Sequi
-      tempore deleniti est nesciunt quaerat necessitatibus unde at, assumenda
-      recusandae dolore minima, provident sint atque voluptates itaque ad quae
-      quis fugiat magni reiciendis repellat labore deserunt ducimus? Omnis enim
-      molestias soluta laborum harum maiores vel iste in aut, voluptate
-      assumenda atque libero magnam laboriosam est asperiores consectetur
-      aliquam aperiam cupiditate perferendis officia. Lorem ipsum dolor sit amet
-      consectetur adipisicing elit. Deserunt necessitatibus beatae provident,
-      quos voluptas ut. Reprehenderit assumenda eligendi tempore fugit dolor
-      recusandae molestiae vero rem atque mollitia, beatae facilis sequi. Minus
-      iure voluptatum inventore nisi eos nihil, praesentium magni recusandae
-      quam, earum dolore fugit, voluptates commodi accusamus! Nobis laborum enim
-      fugit distinctio a perspiciatis labore officiis aspernatur? Eum
-      exercitationem error, autem quasi non assumenda asperiores veritatis quos,
-      sit provident quae neque corrupti eligendi excepturi doloribus dolor
-      obcaecati, vero reprehenderit esse facilis tempore repudiandae deserunt.
-      Illo, odio vero, voluptatibus quae eligendi nam aperiam eius voluptas
-      reprehenderit quo explicabo! Debitis laborum vero dolorum temporibus iure,
-      qui officia tempora sint unde facere. Sint, amet vel asperiores provident,
-      cupiditate labore corrupti quam eligendi tenetur vero quo odio quae ut
-      delectus similique deserunt! Cumque accusantium tempora quam impedit,
-      doloremque illo. Molestiae alias vero consequuntur tenetur unde quod sit
-      qui, similique ipsam deserunt magnam deleniti soluta explicabo molestias
-      recusandae odit incidunt aperiam distinctio quo exercitationem libero
-      repudiandae blanditiis? Optio accusantium aperiam, ad suscipit deleniti
-      obcaecati corporis numquam, quam nobis natus dolorum perspiciatis impedit
-      tenetur saepe! Eaque, at perferendis ut animi ipsam similique voluptas
-      molestiae aspernatur exercitationem voluptate atque dolorum odit quo
-      veritatis ullam laudantium asperiores laboriosam commodi ea! Perspiciatis,
-      dolorum corrupti! Dolorum delectus consectetur omnis nulla quidem
-      doloribus asperiores sapiente enim, eius recusandae rerum iusto dolorem
-      possimus impedit voluptatum quam eaque adipisci sunt similique saepe?
-      Voluptas tempora fugit est architecto non excepturi, minima quae labore
-      dolor enim numquam aut atque! Error doloribus est labore nostrum, amet
-      nulla, facere atque delectus sit iure deleniti facilis? Autem molestias,
-      laudantium harum labore quaerat vero nemo molestiae vel fuga tenetur
-      debitis, perferendis ratione obcaecati qui voluptatem ab iusto ad saepe
-      incidunt nihil expedita sapiente. Quae nihil iusto, et laboriosam fugiat
-      voluptatum obcaecati veniam consequuntur incidunt atque, nisi dignissimos
-      quibusdam reprehenderit!
-    </>
+    <main className="min-h-screen bg-[#0B0804] text-white">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="mb-2 text-sm font-medium text-[#F97316]">
+                SkillSwap
+              </p>
+
+              <h1 className="text-2xl font-bold text-white tracking-tight  sm:text-3xl">
+                Dashboard
+              </h1>
+
+              <p className="mt-1 max-w-xl text-sm text-muted-foreground">
+                Overview of your skills, requests, swaps and activity.
+              </p>
+            </div>
+
+            {/* Small brand accent */}
+            <div
+              className="
+                hidden
+                h-1
+                w-24
+                rounded-full
+                bg-gradient-to-r
+                from-[#F97316]
+                to-[#E59A0B]
+                sm:block
+              "
+            />
+          </div>
+        </div>
+
+        {/* Statistics */}
+        <section>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {stats.map((stat) => (
+              <StatCard key={stat.title} {...stat} />
+            ))}
+          </div>
+        </section>
+
+        {/* Bottom Highlight */}
+        <section className="mt-6">
+          <Card
+            className="
+              overflow-hidden
+              border-[#F97316]/20
+              bg-[#241a0d]
+              text-white
+              shadow-md
+            "
+          >
+            <CardContent className="p-5 sm:p-6 ">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wider text-[#F97316]">
+                    Skill Profile
+                  </p>
+
+                  <h2 className="mt-1 text-lg font-semibold">
+                    Your SkillSwap journey
+                  </h2>
+
+                  <p className="mt-1 text-sm text-white/50">
+                    Keep improving your skills and connect with more learners
+                    and teachers.
+                  </p>
+                </div>
+
+                <div className="flex gap-3">
+                  <div className="rounded-lg border border-[#F97316]/20 bg-[#F97316]/5 px-4 py-3">
+                    <p className="text-xs text-white/40">Teaching</p>
+
+                    <p className="mt-1 text-xl font-bold text-[#F97316]">
+                      {dashboard?.totalTeachingSkills ?? 0}
+                    </p>
+                  </div>
+
+                  <div className="rounded-lg border border-[#E59A0B]/20 bg-[#E59A0B]/5 px-4 py-3">
+                    <p className="text-xs text-white/40">Learning</p>
+
+                    <p className="mt-1 text-xl font-bold text-[#E59A0B]">
+                      {dashboard?.totalLearningSkills ?? 0}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* Pending Requests */}
+        <section className="mt-6">
+          <div className="mb-4">
+            <h2 className="text-lg font-semibold text-white">
+              Pending Requests
+            </h2>
+
+            <p className="mt-1 text-sm text-white/40">
+              Manage incoming and outgoing skill exchange requests.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+            {/* Received Requests */}
+            <PendingRequestTable
+              title="Received Requests"
+              description="People who want to learn from you"
+              requests={pendingReceivedRequestData ?? []}
+              type="received"
+              isLoading={receivedRequestIsLoading}
+              isError={receivedRequestIsError}
+            />
+
+            {/* Sent Requests */}
+            <PendingRequestTable
+              title="Sent Requests"
+              description="People you have requested to learn from"
+              requests={pendingSentRequestData ?? []}
+              type="sent"
+              isLoading={sentRequestIsLoading}
+              isError={sentRequestIsError}
+            />
+          </div>
+        </section>
+      </div>
+    </main>
   );
 };
 

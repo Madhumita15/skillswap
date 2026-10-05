@@ -72,9 +72,12 @@ const createReviewService = async ({ swapId, reviewerId, reviewedUserId, rating,
   .populate( "reviewedUserId", "name email avatar_image" ); 
 }; 
 
- // GET REVIEWS RECEIVED BY USER 
- const getReviewsByUserService = async ({ userId, }) => {
 
+
+
+
+ // GET REVIEWS RECEIVED BY USER 
+ const getReceivedReviewsByUserService = async ({ userId, }) => {
      const reviews = await Review.find({ reviewedUserId: userId, }) 
      .populate( "reviewerId", "name email avatar_image" ) 
      .populate( "reviewedUserId", "name email avatar_image" ) 
@@ -82,6 +85,21 @@ const createReviewService = async ({ swapId, reviewerId, reviewedUserId, rating,
      return reviews; 
 }; 
      
+
+
+
+
+
+ // GET REVIEWS TO GIVE ANOTHER USER 
+ const getReviewsToUserService = async ({ userId, }) => {
+     const reviews = await Review.find({ reviewerId: userId, }) 
+     .populate( "reviewerId", "name email avatar_image" ) 
+     .populate( "reviewedUserId", "name email avatar_image" ) 
+     .sort({ createdAt: -1, }); 
+     return reviews; 
+}; 
+
+
 // GET RATING SUMMARY
  const getRatingSummaryService = async ({ userId, }) => { 
     const result = await Review.aggregate([ 
@@ -111,4 +129,4 @@ const createReviewService = async ({ swapId, reviewerId, reviewedUserId, rating,
     return result[0]; 
 };
 
-module.exports = { createReviewService, getReviewsByUserService, getRatingSummaryService,};
+module.exports = { createReviewService, getReceivedReviewsByUserService, getReviewsToUserService, getRatingSummaryService,};

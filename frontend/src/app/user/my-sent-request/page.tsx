@@ -1,6 +1,6 @@
 "use client";
 
-import { useGetSentRequest } from "@/hooks/useSwapRequest";
+import { useCancelRequest, useGetSentRequest } from "@/hooks/useSwapRequest";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -19,13 +19,21 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SentRequestsInterface } from "@/typescript/interface/swapRequest.interface";
+import { Spinner } from "@/components/ui/spinner";
 
 
 
 const MySentRequest = () => {
   const { data, isLoading, isError, error } = useGetSentRequest();
+  const {mutate:cancelRequest, isPending} = useCancelRequest()
 
   const requests = data?.data || [];
+
+
+  const handleCancelRequest = async(id:string)=>{
+    cancelRequest(id)
+
+  }
 
   const getStatusStyle = (status: string) => {
     switch (status?.toLowerCase()) {
@@ -397,10 +405,12 @@ const MySentRequest = () => {
 
                           {request.status === "pending" && (
                             <Button
+                      
+                            onClick={()=> handleCancelRequest(request._id)}
                               variant="outline"
-                              className="border-red-500/30 bg-red-500/5 text-xs text-red-400 hover:border-red-500/50 hover:bg-red-500/10 hover:text-red-300"
+                              className="border-red-500/30 cursor-pointer bg-red-500/5 text-xs text-red-400 hover:border-red-500/50 hover:bg-red-500/10 hover:text-red-300"
                             >
-                              Cancel Request
+                              {isPending ? <Spinner /> : "Cancel Request"}
                             </Button>
                           )}
 

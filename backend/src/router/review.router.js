@@ -11,7 +11,7 @@ const validation = require('../validations/index')
  // POST /api/reviews 
  // =====================================================
 
- router.post( "/", authMiddleware, validation.validate(createReviewSchema), asyncHandler(reviewController.createReview) ); 
+ router.post( "/", authMiddleware.verifyToken, authMiddleware.roleCheck("user"), validation.validate(createReviewSchema), asyncHandler(reviewController.createReview) ); 
  
  // ===================================================== 
  // GET RATING SUMMARY 
@@ -23,7 +23,8 @@ const validation = require('../validations/index')
  // GET USER REVIEWS 
  // GET /api/reviews/:userId 
  // ===================================================== 
- router.get( "/:userId", asyncHandler(reviewController.getReviewsByUser) ); 
+ router.get( "/received", authMiddleware.verifyToken, authMiddleware.roleCheck("user"), asyncHandler(reviewController.getReceivedReviewsByUser) ); 
+  router.get( "/given", authMiddleware.verifyToken, authMiddleware.roleCheck("user"), asyncHandler(reviewController.getReviewsToUser)); 
 
 
 module.exports = router;

@@ -42,49 +42,6 @@ const Login = () => {
     },
   });
 
-
-//   const onSubmit = async (data: LoginType) => {
-
-//   try {
-//     const response = await axiosInstance.post("/auth/login", {
-//       email: data.email,
-//       password: data.password,
-//     });
-
-//     console.log("LOGIN RESPONSE:", response.data);
-
-//     if (!response.data.success) {
-//       throw new Error(response.data.message || "Login failed");
-//     }
-
-//     const user = response.data.data;
-
-//     toast.success(response.data.message || "Login successful");
-
-//     // Redirect according to onboarding status
-//     if (user.isOnboardingComplete) {
-//       router.push("/user/dashboard");
-//     } else {
-//       router.push("/onBoarding");
-//     }
-//   } catch (error) {
-//     console.error("LOGIN ERROR:", error);
-
-//     if (axios.isAxiosError(error)) {
-//       console.error("STATUS:", error.response?.status);
-//       console.error("SERVER ERROR:", error.response?.data);
-
-//       toast.error(
-//         error.response?.data?.message || "Unable to login",
-//       );
-//     } else {
-//       toast.error(
-//         error instanceof Error ? error.message : "Unable to login",
-//       );
-//     }
-//   }
-// };
-
 const onSubmit = async (data: LoginType) => {
     try {
       const response = await dispatch(loginUser(data)).unwrap();

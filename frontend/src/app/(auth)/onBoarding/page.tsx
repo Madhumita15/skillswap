@@ -16,18 +16,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
-import DynamicInput from "@/components/DynamicInput";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { Skill, OnBoardingFormValues } from "@/typescript/type/user.type";
-import {
-  step1InputData,
-  step4InputData,
-} from "@/services/json/inputsData/user.input";
 import { OnBoardingValidationSchemas } from "@/services/validation/user.validation";
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 4;
 
 const OnBoarding = () => {
   const router = useRouter();
@@ -54,15 +48,11 @@ const OnBoarding = () => {
     resolver: yupResolver(OnBoardingValidationSchemas),
     mode: "onChange",
     defaultValues: {
-      userInfo: {
-        name: "",
-        phone: "",
-      },
       learningSkills: [],
       teachingSkills: [],
       experience: "",
       bio: "",
-      avatarImage: null,
+      avatar_image: null,
     },
   });
 
@@ -160,7 +150,7 @@ const OnBoarding = () => {
       return;
     }
 
-    setValue("avatarImage", file, { shouldValidate: true });
+    setValue("avatar_image", file, { shouldValidate: true });
     setPreviewImage(URL.createObjectURL(file));
   };
 
@@ -168,11 +158,17 @@ const OnBoarding = () => {
   const handleNext = async () => {
     let fieldsToValidate: any[] = [];
 
-    if (currentStep === 1)
-      fieldsToValidate = ["userInfo.name", "userInfo.phone"];
-    if (currentStep === 2) fieldsToValidate = ["learningSkills"];
-    if (currentStep === 3) fieldsToValidate = ["teachingSkills"];
-    if (currentStep === 4) fieldsToValidate = ["experience", "bio"];
+    if (currentStep === 1) {
+      fieldsToValidate = ["learningSkills"];
+    }
+
+    if (currentStep === 2) {
+      fieldsToValidate = ["teachingSkills"];
+    }
+
+    if (currentStep === 3) {
+      fieldsToValidate = ["experience", "bio"];
+    }
 
     const isStepValid = await trigger(fieldsToValidate);
 
@@ -267,19 +263,11 @@ const OnBoarding = () => {
   //   };
 
   const onSubmit = async (data: OnBoardingFormValues) => {
-    console.log("========== ONBOARDING SUBMIT STARTED ==========");
-    console.log("FORM DATA:", data);
-
+    console.log(data)
     try {
       setSubmitting(true);
 
       const bodyData = new FormData();
-
-      bodyData.append("name", data.userInfo.name.trim());
-
-      if (data.userInfo.phone) {
-        bodyData.append("phone", data.userInfo.phone.trim());
-      }
 
       data.teachingSkills.forEach((id) => {
         bodyData.append("teachingSkills", id);
@@ -292,19 +280,15 @@ const OnBoarding = () => {
       bodyData.append("experience", data.experience.trim());
       bodyData.append("bio", data.bio.trim());
 
-      if (data.avatarImage) {
-        bodyData.append("avatar_image", data.avatarImage);
+      if (data.avatar_image) {
+        bodyData.append("avatar_image", data.avatar_image);
       }
-
-      console.log("SENDING ONBOARDING REQUEST...");
 
       const response = await axiosInstance.patch("/onboarding", bodyData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
-
-      console.log("ONBOARDING RESPONSE:", response.data);
 
       if (!response.data.success) {
         throw new Error(
@@ -318,12 +302,7 @@ const OnBoarding = () => {
 
       router.push("/user/dashboard");
     } catch (error) {
-      console.error("========== ONBOARDING ERROR ==========");
-
       if (axios.isAxiosError(error)) {
-        console.error("STATUS:", error.response?.status);
-        console.error("SERVER ERROR:", error.response?.data);
-
         toast.error(
           error.response?.data?.message || "Unable to complete onboarding",
         );
@@ -393,32 +372,8 @@ const OnBoarding = () => {
                   })}
                   className="space-y-6"
                 >
-                  {/* STEP 1: USER INFO */}
-                  {currentStep === 1 && (
-                    <div className="space-y-4">
-                      {step1InputData.map((field) => (
-                        <DynamicInput<OnBoardingFormValues>
-                          key={field.name}
-                          label={field.label}
-                          name={`userInfo.${field.name}` as any}
-                          type={field.type as any}
-                          register={register}
-                          error={
-                            errors.userInfo?.[
-                              field.name as keyof typeof errors.userInfo
-                            ]?.message
-                          }
-                          required={field.required}
-                          loading={submitting}
-                          placeholder={field.placeholder}
-                          Icon={field.Icon}
-                        />
-                      ))}
-                    </div>
-                  )}
-
                   {/* STEP 2: LEARNING SKILLS */}
-                  {currentStep === 2 && (
+                  {currentStep === 1 && (
                     <div>
                       <h2 className="mb-3 text-base font-semibold text-[#FFF7ED]">
                         What do you want to learn?
@@ -461,12 +416,14 @@ const OnBoarding = () => {
                                     : "border-[#6B3515] bg-[#28130C] text-[#A8A29E] hover:border-[#F97316]"
                                 }`}
                               >
-                                <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-md bg-[#482613]">
+                                <div className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-md bg-[#482613]">
                                   {skill.skill_logo ? (
-                                    <img
+                                    <Image
                                       src={skill.skill_logo}
-                                      alt={skill.name}
-                                      className="h-full w-full object-contain"
+                                      alt={`${skill.name} logo`}
+                                      width={20}
+                                      height={20}
+                                      className="h-5! w-5! object-contain"
                                     />
                                   ) : (
                                     <span className="text-xs text-[#A8A29E]">
@@ -490,7 +447,7 @@ const OnBoarding = () => {
                   )}
 
                   {/* STEP 3: TEACHING SKILLS */}
-                  {currentStep === 3 && (
+                  {currentStep === 2 && (
                     <div>
                       <h2 className="mb-3 text-base font-semibold text-[#FFF7ED]">
                         What can you teach?
@@ -533,12 +490,14 @@ const OnBoarding = () => {
                                     : "border-[#6B3515] bg-[#28130C] text-[#A8A29E] hover:border-[#F97316]"
                                 }`}
                               >
-                                <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-md bg-[#482613]">
+                                <div className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-md bg-[#482613]">
                                   {skill.skill_logo ? (
-                                    <img
+                                    <Image
                                       src={skill.skill_logo}
                                       alt={`${skill.name} logo`}
-                                      className="h-full w-full object-contain"
+                                      width={20}
+                                      height={20}
+                                      className="h-5! w-5! object-contain"
                                     />
                                   ) : (
                                     <span className="text-xs text-[#A8A29E]">
@@ -562,30 +521,68 @@ const OnBoarding = () => {
                   )}
 
                   {/* STEP 4: EXPERIENCE & BIO */}
-                  {currentStep === 4 && (
-                    <div className="space-y-4">
-                      {step4InputData.map((field) => (
-                        <DynamicInput<OnBoardingFormValues>
-                          key={field.name}
-                          label={field.label}
-                          name={field.name as any}
-                          type={field.type as any}
-                          register={register}
-                          error={
-                            errors[field.name as keyof typeof errors]
-                              ?.message as string
-                          }
-                          required={field.required}
-                          loading={submitting}
-                          placeholder={field.placeholder}
-                          Icon={field.Icon}
+                  {currentStep === 3 && (
+                    <div className="space-y-6">
+                      {/* Experience */}
+                      <div className="space-y-2">
+                        <label
+                          htmlFor="experience"
+                          className="text-sm font-medium text-[#E7E5E4]"
+                        >
+                          Experience
+                        </label>
+
+                        <select
+                          id="experience"
+                          {...register("experience")}
+                          defaultValue=""
+                          className="w-full rounded-lg border border-[#5B3A29] bg-[#2B1710] px-4 py-3 text-sm text-[#E7E5E4] outline-none focus:border-[#A16207]"
+                        >
+                          <option value="" disabled>
+                            Select your experience
+                          </option>
+
+                          <option value="Beginner">Beginner</option>
+                          <option value="Intermediate">Intermediate</option>
+                          <option value="Advanced">Advanced</option>
+                          <option value="Expert">Expert</option>
+                        </select>
+
+                        {errors.experience && (
+                          <p className="text-sm text-red-400">
+                            {errors.experience.message}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Bio */}
+                      <div className="space-y-2">
+                        <label
+                          htmlFor="bio"
+                          className="text-sm font-medium text-[#E7E5E4]"
+                        >
+                          Bio
+                        </label>
+
+                        <textarea
+                          id="bio"
+                          {...register("bio")}
+                          rows={5}
+                          placeholder="Tell us something about yourself..."
+                          className="w-full resize-none rounded-lg border border-[#5B3A29] bg-[#2B1710] px-4 py-3 text-sm text-[#E7E5E4] outline-none placeholder:text-[#78716C] focus:border-[#A16207]"
                         />
-                      ))}
+
+                        {errors.bio && (
+                          <p className="text-sm text-red-400">
+                            {errors.bio.message}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   )}
 
                   {/* STEP 5: PROFILE PICTURE */}
-                  {currentStep === 5 && (
+                  {currentStep === 4 && (
                     <div className="space-y-6">
                       <div>
                         <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-300">
@@ -637,22 +634,52 @@ const OnBoarding = () => {
                         </div>
 
                         {/* NEW IMAGE SELECT */}
-                        <div className="mt-6">
-                          <label className="mb-2 block text-sm font-medium text-[#FFF7ED]">
-                            Choose a new profile picture
+                        <div className="space-y-2">
+                          <label
+                            htmlFor="avatar_image"
+                            className="text-sm font-medium text-[#FFF7ED]"
+                          >
+                            Profile Image{" "}
+                            <span className="text-red-400">*</span>
                           </label>
 
-                          <Input
+                          <input
+                            id="avatar_image"
                             type="file"
-                            accept="image/*"
-                            disabled={submitting}
+                            accept="image/jpeg,image/png,image/webp"
                             onChange={handleImageChange}
-                            className="h-12 cursor-pointer border-[#52291a] bg-[#28130c] text-slate-100"
+                            className="
+      block w-full
+      cursor-pointer
+      rounded-xl
+      border border-[#52291A]
+      bg-[#1C1008]
+      text-sm text-[#A8A29E]
+      file:mr-4
+      file:cursor-pointer
+      file:border-0
+      file:bg-[#E59A0B]
+      file:px-4
+      file:py-2.5
+      file:text-sm
+      file:font-semibold
+      file:text-[#1C1008]
+      hover:border-[#E59A0B]
+      file:hover:bg-[#F97316]
+      focus:outline-none
+      focus:ring-2
+      focus:ring-[#E59A0B]/30
+    "
                           />
 
-                          <p className="mt-2 text-xs text-[#78716C]">
-                            Leave this empty if you want to keep your current
-                            profile picture. Maximum size: 1 MB.
+                          {errors.avatar_image && (
+                            <p className="text-xs text-red-400">
+                              {errors.avatar_image.message}
+                            </p>
+                          )}
+
+                          <p className="text-xs text-[#78716C]">
+                            JPG, JPEG, PNG or WEBP · Maximum size: 1 MB
                           </p>
                         </div>
                       </div>

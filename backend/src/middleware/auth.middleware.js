@@ -5,7 +5,7 @@ const User = require("../models/user.model");
 class AuthMiddleware {
   static async verifyToken(req, res, next) {
     try {
-      const {accessToken} = req.cookies;
+      const { accessToken } = req.cookies;
       if (!accessToken) {
         return res.status(httpStatusCode.UNAUTHORIZED).json({
           status: false,
@@ -42,12 +42,14 @@ class AuthMiddleware {
 
   static roleCheck(...roles) {
     return async (req, res, next) => {
+      console.log(req.user);
       if (!roles.includes(req.user.role)) {
         return res.status(httpStatusCode.FORBIDDEN).json({
           status: false,
           message: "Access Denied",
         });
       }
+
       next();
     };
   }

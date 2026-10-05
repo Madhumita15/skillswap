@@ -1,4 +1,3 @@
-
 const {
   getUserDashboardService,
   getAdminDashboardService,
@@ -8,16 +7,32 @@ const httpStatusCode = require("../utils/httpStatusCode");
 
 class DashboardController {
   async getUserDashboard(req, res) {
-    const userId = req.user._id;
-
-    const dashboard = await getUserDashboardService({
-      userId,
-    });
-
+    const id = req.user._id;
+    const {
+      totalTeachingSkills,
+      totalLearningSkills,
+      pendingSentRequests,
+      pendingReceivedRequests,
+      totalCompletedSwap,
+      totalActiveSwaps,
+      totalAcceptRequest,
+      totalRejectRequest,
+      totalReports,
+    } = await getUserDashboardService(id);
     return res.status(httpStatusCode.OK).json({
       success: true,
-      message: "User dashboard fetched successfully",
-      data: dashboard,
+      message: "User Dashboard stats fetched successfully!",
+      data: {
+        totalTeachingSkills,
+        totalLearningSkills,
+        pendingSentRequests,
+        pendingReceivedRequests,
+        totalCompletedSwap,
+        totalActiveSwaps,
+        totalAcceptRequest,
+        totalRejectRequest,
+        totalReports,
+      },
     });
   }
 
@@ -33,4 +48,3 @@ class DashboardController {
 }
 
 module.exports = new DashboardController();
-

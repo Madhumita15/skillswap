@@ -1,9 +1,14 @@
 import { axiosInstance } from "@/lib/axiosInstance";
 import { ENDPOINT } from "@/services/helper/endPoint";
 import { getErrorMessage } from "@/services/helper/global.helper";
-import { ForgotPasswordType, ResetPasswordType } from "@/typescript/type/auth.type";
+import {
+  ForgotPasswordType,
+  LoginType,
+  RegisterType,
+  ResetPasswordType,
+  VerifyEmailType,
+} from "@/typescript/type/auth.type";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-
 
 interface AuthState {
   loading: {
@@ -45,7 +50,7 @@ const initialState: AuthState = {
 
 export const loginUser = createAsyncThunk(
   "login/slice",
-  async (data, { rejectWithValue }) => {
+  async (data: LoginType, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.post(`${ENDPOINT.auth.login}`, data);
       return response.data;
@@ -57,18 +62,12 @@ export const loginUser = createAsyncThunk(
 
 export const registerUser = createAsyncThunk(
   "register/slice",
-  async ({data}: {data: FormData}, { rejectWithValue }) => {
+  async (data: RegisterType, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.post(
         `${ENDPOINT.auth.register}`,
         data,
-        {
-         headers: {
-            "Content-Type": "multipart/form-data"
-         }
-        }
       );
-      console.log("response from register user thunk", response.data)
       return response.data;
     } catch (error) {
       return rejectWithValue(getErrorMessage(error));
@@ -78,7 +77,7 @@ export const registerUser = createAsyncThunk(
 
 export const verifyEmailUser = createAsyncThunk(
   "verify-email/slice",
-  async (data, { rejectWithValue }) => {
+  async (data: VerifyEmailType, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.post(
         `${ENDPOINT.auth.verifyEmail}`,
@@ -97,13 +96,13 @@ export const forgotPassword = createAsyncThunk(
     try {
       const response = await axiosInstance.post(
         `${ENDPOINT.auth.forgotPassword}`,
-        data
+        data,
       );
       return response.data;
     } catch (error) {
       return rejectWithValue(getErrorMessage(error));
     }
-  }
+  },
 );
 
 // export const resetPassword = createAsyncThunk(
@@ -135,13 +134,11 @@ export const forgotPassword = createAsyncThunk(
 //   }
 // );
 
-
-
 export const resetPassword = createAsyncThunk(
   "reset-password/slice",
   async (
     { token, password }: ResetPasswordType & { token: string },
-    { rejectWithValue }
+    { rejectWithValue },
   ) => {
     try {
       console.log("TOKEN SENT TO BACKEND:", token);
@@ -152,23 +149,18 @@ export const resetPassword = createAsyncThunk(
         {
           token,
           password,
-        }
+        },
       );
 
       console.log("RESET PASSWORD API RESPONSE:", response.data);
 
       return response.data;
-    } catch (error: any) {
-      console.error(
-        "RESET PASSWORD API ERROR:",
-        error.response?.data || error
-      );
+    } catch (error) {
+      // console.error("RESET PASSWORD API ERROR:", error.response?.data || error);
 
-      return rejectWithValue(
-        error.response?.data?.message || "Something went wrong"
-      );
+      return rejectWithValue(getErrorMessage(error))
     }
-  }
+  },
 );
 export const logout = createAsyncThunk(
   "logout/slice",
@@ -195,11 +187,12 @@ const authSlice = createSlice({
       .addCase(registerUser.fulfilled, (state, action) => {
         state.loading.register = false;
         state.error.register = null;
-        console.log("action from builder register", action.payload)
+        console.log("action from builder register", action.payload);
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.loading.register = false;
-        state.error.register = action.payload as string || "something went wrong";
+        state.error.register =
+          (action.payload as string) || "something went wrong";
       })
 
       .addCase(verifyEmailUser.pending, (state) => {
@@ -214,8 +207,9 @@ const authSlice = createSlice({
       })
       .addCase(verifyEmailUser.rejected, (state, action) => {
         state.loading.verifyEmail = false;
-        state.error.verifyEmail =  action.payload as string || "something went wrong";
-    
+        state.error.verifyEmail =
+          (action.payload as string) || "something went wrong";
+
         console.log("VERIFY REJECTED PAYLOAD:", action.payload);
       })
 
@@ -229,7 +223,8 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading.login = false;
-        state.error.login =  action.payload as string || "something went wrong"
+        state.error.login =
+          (action.payload as string) || "something went wrong";
       })
 
       // Forgot Password
@@ -272,7 +267,8 @@ const authSlice = createSlice({
       })
       .addCase(logout.rejected, (state, action) => {
         state.loading.logout = false;
-        state.error.logout =  action.payload as string || "something went wrong"
+        state.error.logout =
+          (action.payload as string) || "something went wrong";
       });
   },
 });

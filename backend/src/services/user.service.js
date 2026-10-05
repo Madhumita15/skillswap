@@ -280,7 +280,10 @@ const updateProfileService = async ({
   return user;
 };
 
-
+//=====================================================
+// GET SINGLE USER
+// GET /api/user/:id
+//=====================================================
 const getUserByIdService = async(id)=> {
 
   if(!mongoose.Types.ObjectId.isValid(id)){
@@ -347,9 +350,319 @@ const getUserByIdService = async(id)=> {
   
 }
 
+// =====================================================
+// GET ALL USERS - ADMIN
+// GET /api/admin/users?page=1&limit=10
+// =====================================================
+
+const getAllUsersService = async ({
+  page = 1,
+  limit = 8,
+  search = "",
+}) => {
+  const pageNumber = Number(page);
+  const limitNumber = Number(limit);
+
+  const skip = (pageNumber - 1) * limitNumber;
+
+  const matchStage = {
+    role: "user",
+  };
+
+  // -----------------------------------------
+  // SEARCH
+  // -----------------------------------------
+
+  if (search.trim()) {
+    const searchRegex = new RegExp(search.trim(), "i");
+
+    matchStage.$or = [
+      { name: searchRegex },
+      { email: searchRegex },
+    ];
+  }
+
+  // -----------------------------------------
+  // PAGINATED USERS
+  // -----------------------------------------
+
+  const users = await User.aggregate([
+    {
+      $match: matchStage,
+    },
+
+    // -----------------------------------------
+    // TEACHING SKILLS
+    // -----------------------------------------
+
+    {
+      $lookup: {
+        from: "skills",
+        localField: "teachingSkills",
+        foreignField: "_id",
+        as: "teachingSkills",
+      },
+    },
+
+    // -----------------------------------------
+    // LEARNING SKILLS
+    // -----------------------------------------
+
+    {
+      $lookup: {
+        from: "skills",
+        localField: "learningSkills",
+        foreignField: "_id",
+        as: "learningSkills",
+      },
+    },
+
+    // -----------------------------------------
+    // PROJECT
+    // -----------------------------------------
+
+    {
+      $project: {
+        _id: 1,
+        name: 1,
+        email: 1,
+        phone: 1,
+        role: 1,
+        status: 1,
+        avatar_image: 1,
+        experience: 1,
+        bio: 1,
+        isEmailVerified: 1,
+        isOnboardingComplete: 1,
+
+        teachingSkills: {
+          $map: {
+            input: "$teachingSkills",
+            as: "skill",
+            in: {
+              _id: "$$skill._id",
+              name: "$$skill.name",
+            },
+          },
+        },
+
+        learningSkills: {
+          $map: {
+            input: "$learningSkills",
+            as: "skill",
+            in: {
+              _id: "$$skill._id",
+              name: "$$skill.name",
+            },
+          },
+        },
+
+        createdAt: 1,
+        updatedAt: 1,
+      },
+    },
+
+    // -----------------------------------------
+    // SORT
+    // -----------------------------------------
+
+    {
+      $sort: {
+        createdAt: -1,
+      },
+    },
+
+    // -----------------------------------------
+    // PAGINATION
+    // -----------------------------------------
+
+    {
+      $skip: skip,
+    },
+
+    {
+      $limit: limitNumber,
+    },
+  ]);
+
+  // -----------------------------------------
+  // GLOBAL COUNTS
+  // -----------------------------------------
+
+  const totalUsers = await User.countDocuments({
+    role: "user",
+  });
+
+  const activeUsers = await User.countDocuments({
+    role: "user",
+    status: "active",
+  });
+
+  const blockedUsers = await User.countDocuments({
+    role: "user",
+    status: "blocked",
+  });
+
+  // -----------------------------------------
+  // PAGINATION COUNT
+  // -----------------------------------------
+
+  const filteredTotalUsers =
+    await User.countDocuments(matchStage);
+
+  const totalPages = Math.ceil(
+    filteredTotalUsers / limitNumber
+  );
+
+  // -----------------------------------------
+  // RETURN
+  // -----------------------------------------
+
+  return {
+    users,
+
+    pagination: {
+      currentPage: pageNumber,
+      limit: limitNumber,
+      totalUsers: filteredTotalUsers,
+      totalPages,
+      hasNextPage: pageNumber < totalPages,
+      hasPreviousPage: pageNumber > 1,
+    },
+
+    stats: {
+      totalUsers,
+      activeUsers,
+      blockedUsers,
+    },
+  };
+};
+
+
+// =====================================================
+// CHANGE USER STATUS - ADMIN
+// =====================================================
+
+const changeUserStatusService = async ({
+  id,
+  status,
+}) => {
+  // =====================================================
+  // VALIDATE USER ID
+  // =====================================================
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    const error = new Error("Invalid user id");
+    error.statusCode = httpStatusCode.BAD_REQUEST;
+    throw error;
+  }
+
+  // =====================================================
+  // VALIDATE STATUS
+  // =====================================================
+
+  if (!["active", "blocked"].includes(status)) {
+    const error = new Error(
+      "Status must be either active or blocked"
+    );
+
+    error.statusCode = httpStatusCode.BAD_REQUEST;
+    throw error;
+  }
+
+  // =====================================================
+  // UPDATE USER STATUS
+  // =====================================================
+
+  const user = await User.findByIdAndUpdate(
+    id,
+    {
+      $set: {
+        status,
+      },
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+
+  if (!user) {
+    const error = new Error("User not found");
+    error.statusCode = httpStatusCode.NOT_FOUND;
+    throw error;
+  }
+
+  // =====================================================
+  // GET UPDATED USER WITH SKILLS
+  // =====================================================
+
+  const updatedUser = await User.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(id),
+      },
+    },
+
+    {
+      $lookup: {
+        from: "skills",
+        localField: "learningSkills",
+        foreignField: "_id",
+        as: "learningSkills",
+      },
+    },
+
+    {
+      $lookup: {
+        from: "skills",
+        localField: "teachingSkills",
+        foreignField: "_id",
+        as: "teachingSkills",
+      },
+    },
+
+    {
+      $project: {
+        _id: 1,
+        name: 1,
+        email: 1,
+        role: 1,
+        status: 1,
+        bio: 1,
+        experience: 1,
+        phone: 1,
+        avatar_image: 1,
+        isEmailVerified: 1,
+        isOnboardingComplete: 1,
+
+        "teachingSkills._id": 1,
+        "teachingSkills.skill_logo": 1,
+        "teachingSkills.name": 1,
+        "teachingSkills.description": 1,
+
+        "learningSkills._id": 1,
+        "learningSkills.skill_logo": 1,
+        "learningSkills.name": 1,
+        "learningSkills.description": 1,
+      },
+    },
+  ]);
+
+  if (updatedUser.length === 0) {
+    const error = new Error("User not found");
+    error.statusCode = httpStatusCode.NOT_FOUND;
+    throw error;
+  }
+
+  return updatedUser[0];
+};
+
 module.exports = {
   getProfileService,
   completeOnBoardingService,
   getUserByIdService,
   updateProfileService,
+  getAllUsersService,
+  changeUserStatusService,
 };

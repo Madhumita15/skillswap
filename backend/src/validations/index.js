@@ -12,7 +12,7 @@ class Validation {
           req.body.learningSkills = JSON.parse(req.body.learningSkills);
         }
       const { error, value } = schema.validate(req.body, {
-        abortEarly: true,
+        abortEarly: false,
         stripUnknown: false,
       });
 

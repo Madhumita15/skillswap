@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const authRouter = require("./auth.router");
 const skillRouter = require("./skill.router");
+const skillCategoryRouter = require('./skillCategory.router')
 const swapRequestRouter = require("./swapRequest.router");
 const reviewRouter = require("./review.router");
 const usersRouter = require("./user.router");
@@ -12,6 +13,7 @@ const dashboardRoute = require("./dashboard.router");
 
 router.use("/api/auth", authRouter);
 router.use("/api", skillRouter);
+router.use("/api/skill-categories", skillCategoryRouter);
 router.use("/api", swapRequestRouter);
 router.use("/api/reviews", reviewRouter);
 router.use("/api", usersRouter);

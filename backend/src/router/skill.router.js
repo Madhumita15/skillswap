@@ -19,16 +19,31 @@ const uploadImageMiddleware = (req, res, next) => {
   });
 };
 
-router.get("/skills",  SkillController.getActiveSkills);
+/* ============================================================
+   GET ACTIVE SKILLS
+============================================================ */
+
+router.get(
+  "/skills/active",
+  SkillController.getActiveSkills,
+);
+
+/* ============================================================
+   CREATE SKILL
+============================================================ */
 
 router.post(
   "/skills",
   authMiddleware.verifyToken,
   authMiddleware.roleCheck("admin"),
   uploadImageMiddleware,
-  validation.validate(skillSchemaValidation.skiiOperation),
+  validation.validate(skillSchemaValidation.create),
   SkillController.createSkill,
 );
+
+/* ============================================================
+   GET ALL SKILLS
+============================================================ */
 
 router.get(
   "/admin/skills",
@@ -37,16 +52,31 @@ router.get(
   SkillController.getAllSkills,
 );
 
-router.get("/skills/:id", SkillController.getSkillById);
+/* ============================================================
+   GET SKILL BY ID
+============================================================ */
+
+router.get(
+  "/skills/:id",
+  SkillController.getSkillById,
+);
+
+/* ============================================================
+   UPDATE SKILL
+============================================================ */
 
 router.put(
   "/skills/:id",
   authMiddleware.verifyToken,
   authMiddleware.roleCheck("admin"),
   uploadImageMiddleware,
-  validation.validate(skillSchemaValidation.skiiOperation),
+  validation.validate(skillSchemaValidation.update),
   SkillController.updateSkill,
 );
+
+/* ============================================================
+   INACTIVE SKILL
+============================================================ */
 
 router.patch(
   "/skills/:id",

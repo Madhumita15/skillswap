@@ -4,7 +4,10 @@ const authMiddleware = require("../middleware/auth.middleware");
 const dashboardController = require("../controller/dashboard.controller");
 const asyncHandeler = require("../middleware/asyncHandeler.middleware");
 
-// Admin dashboard
+
+
+
+//Admin dashboard
 router.get(
   "/admin/dashboard",
   authMiddleware.verifyToken,

@@ -73,7 +73,7 @@ const OnBoarding = () => {
 
         // const result = await response.json();
 
-        const response = await axiosInstance.get("/skills");
+        const response = await axiosInstance.get("/skills/active");
 
         console.log("SKILLS RESPONSE:", response.data);
 

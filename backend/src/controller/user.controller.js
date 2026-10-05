@@ -3,6 +3,8 @@ const {
   completeOnBoardingService,
   updateProfileService,
   getUserByIdService,
+  getAllUsersService,
+  changeUserStatusService,
 } = require("../services/user.service");
 
 const httpStatusCode = require("../utils/httpStatusCode");
@@ -87,15 +89,81 @@ class UserController {
     });
   }
 
-  async getUserById(req, res) {
-    const id = req.params.id;
-    const user = await getUserByIdService(id);
+
+  async getUserById(req, res){
+    const id = req.params.id
+   const user =  await getUserByIdService(id)
+   return res.status(httpStatusCode.OK).json({
+    status: true,
+    message: "User gets successfully!",
+    data: user
+   })
+
+    
+
+  }
+
+  // =====================================================
+// GET ALL USERS - ADMIN
+// GET /api/admin/users?page=1&limit=10
+// =====================================================
+
+async getAllUsers(req, res) {
+  try {
+    const page = Number.parseInt(req.query.page, 10) || 1;
+    const limit = Number.parseInt(req.query.limit, 8) || 8;
+    const search = String(req.query.search || "").trim();
+
+    const result = await getAllUsersService({
+      page,
+      limit,
+      search,
+    });
+
+    console.log("GET ALL USERS RESULT:", result);
+
     return res.status(httpStatusCode.OK).json({
-      status: true,
-      message: "User gets successfully!",
-      data: user,
+      success: true,
+      message: "Users fetched successfully",
+      data: result.users,
+      pagination: result.pagination,
+      stats: result.stats,
+    });
+  } catch (error) {
+    console.error("GET ALL USERS ERROR:", error);
+
+    return res.status(
+      error.statusCode || httpStatusCode.INTERNAL_SERVER_ERROR
+    ).json({
+      success: false,
+      message: error.message || "Failed to fetch users",
     });
   }
+}
+// =====================================================
+// CHANGE USER STATUS - ADMIN
+// PATCH /api/admin/users/:id/status
+// =====================================================
+
+async changeUserStatus(req, res) {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  const user = await changeUserStatusService({
+    id,
+    status,
+  });
+
+  return res.status(httpStatusCode.OK).json({
+    success: true,
+    message:
+      status === "blocked"
+        ? "User blocked successfully"
+        : "User unblocked successfully",
+    data: user,
+  });
+}
+
 }
 
 module.exports = new UserController();

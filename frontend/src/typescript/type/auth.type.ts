@@ -26,3 +26,14 @@ export interface ResetPasswordType {
   password: string;
 }
 
+export interface AuthUser {
+  _id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  avatar_image?: string;
+  isEmailVerified?: boolean;
+  isOnboardingComplete?: boolean;
+  role?: "admin" | "user";
+  status?: string;
+}

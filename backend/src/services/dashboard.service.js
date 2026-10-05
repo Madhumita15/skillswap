@@ -337,62 +337,44 @@ const getAdminDashboardService = async () => {
   ]);
 
   return {
-    users: {
-      totalUsers: userStatistics[0]?.totalUsers || 0,
+  users: {
+    total: userStatistics[0]?.totalUsers || 0,
+    verified: userStatistics[0]?.verifiedUsers || 0,
+    blocked: userStatistics[0]?.blockedUsers || 0,
+    active: userStatistics[0]?.activeUsers || 0,
+    admins: userStatistics[0]?.adminUsers || 0,
+    normal: userStatistics[0]?.normalUsers || 0,
+  },
 
-      verifiedUsers: userStatistics[0]?.verifiedUsers || 0,
+  skills: {
+    total: skillStatistics[0]?.totalSkills || 0,
+    active: skillStatistics[0]?.activeSkills || 0,
+    inactive: skillStatistics[0]?.inactiveSkills || 0,
+  },
 
-      blockedUsers: userStatistics[0]?.blockedUsers || 0,
+  swapRequests: {
+    pending: requestStatistics[0]?.pendingRequests || 0,
+    rejected: requestStatistics[0]?.rejectedRequests || 0,
+    accepted: requestStatistics[0]?.acceptedRequests || 0,
+    cancelled: requestStatistics[0]?.cancelledRequests || 0,
+    completed: requestStatistics[0]?.completedRequests || 0,
+  },
 
-      activeUsers: userStatistics[0]?.activeUsers || 0,
+  swaps: {
+    total: swapStatistics[0]?.totalSwaps || 0,
+    active: swapStatistics[0]?.activeSwaps || 0,
+    completed: swapStatistics[0]?.completedSwaps || 0,
+    cancelled: swapStatistics[0]?.cancelledSwaps || 0,
+  },
 
-      adminUsers: userStatistics[0]?.adminUsers || 0,
-
-      normalUsers: userStatistics[0]?.normalUsers || 0,
-    },
-
-    skills: {
-      totalSkills: skillStatistics[0]?.totalSkills || 0,
-
-      activeSkills: skillStatistics[0]?.activeSkills || 0,
-
-      inactiveSkills: skillStatistics[0]?.inactiveSkills || 0,
-    },
-
-    requests: {
-      pendingRequests: requestStatistics[0]?.pendingRequests || 0,
-
-      rejectedRequests: requestStatistics[0]?.rejectedRequests || 0,
-
-      acceptedRequests: requestStatistics[0]?.acceptedRequests || 0,
-
-      cancelledRequests: requestStatistics[0]?.cancelledRequests || 0,
-
-      completedRequests: requestStatistics[0]?.completedRequests || 0,
-    },
-
-    swaps: {
-      totalSwaps: swapStatistics[0]?.totalSwaps || 0,
-
-      activeSwaps: swapStatistics[0]?.activeSwaps || 0,
-
-      completedSwaps: swapStatistics[0]?.completedSwaps || 0,
-
-      cancelledSwaps: swapStatistics[0]?.cancelledSwaps || 0,
-    },
-
-    reports: {
-      totalReports: reportStatistics[0]?.totalReports || 0,
-
-      pendingReports: reportStatistics[0]?.pendingReports || 0,
-
-      underReviewReports: reportStatistics[0]?.underReviewReports || 0,
-
-      resolvedReports: reportStatistics[0]?.resolvedReports || 0,
-
-      dismissedReports: reportStatistics[0]?.dismissedReports || 0,
-    },
-  };
+  reports: {
+    total: reportStatistics[0]?.totalReports || 0,
+    pending: reportStatistics[0]?.pendingReports || 0,
+    underReview: reportStatistics[0]?.underReviewReports || 0,
+    resolved: reportStatistics[0]?.resolvedReports || 0,
+    dismissed: reportStatistics[0]?.dismissedReports || 0,
+  },
+};
 };
 
 module.exports = {

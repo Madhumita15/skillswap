@@ -26,9 +26,10 @@ export const ENDPOINT = {
   admin: {
     swapReuest: "/admin/swap-requests",
     swaps: "/admin/swaps",
+        
   },
   skills: {
-    get: "/skills",
+    get: "/skills/active",
   },
   report: {
     post: "/reports",

@@ -1,16 +1,12 @@
 import { axiosInstance } from "@/lib/axiosInstance";
 import { ENDPOINT } from "@/services/helper/endPoint";
 import { getErrorMessage } from "@/services/helper/global.helper";
-import {
-  ForgotPasswordType,
-  LoginType,
-  RegisterType,
-  ResetPasswordType,
-  VerifyEmailType,
-} from "@/typescript/type/auth.type";
+import { AuthUser, ForgotPasswordType, LoginType, RegisterType, ResetPasswordType, VerifyEmailType } from "@/typescript/type/auth.type";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
+
 interface AuthState {
+   user: AuthUser | null;
   loading: {
     login: boolean;
     logout: boolean;
@@ -30,6 +26,7 @@ interface AuthState {
 }
 
 const initialState: AuthState = {
+   user: null,
   loading: {
     login: false,
     logout: false,
@@ -203,6 +200,7 @@ const authSlice = createSlice({
         state.loading.verifyEmail = false;
         state.error.verifyEmail = null;
 
+        state.user = action.payload?.data || null;
         console.log("VERIFY FULFILLED PAYLOAD:", action.payload);
       })
       .addCase(verifyEmailUser.rejected, (state, action) => {
@@ -217,9 +215,11 @@ const authSlice = createSlice({
         state.loading.login = true;
         state.error.login = null;
       })
-      .addCase(loginUser.fulfilled, (state) => {
+      .addCase(loginUser.fulfilled, (state, action) => {
         state.loading.login = false;
         state.error.login = null;
+
+        state.user = action.payload?.data || null;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading.login = false;
@@ -264,6 +264,8 @@ const authSlice = createSlice({
       .addCase(logout.fulfilled, (state) => {
         state.loading.logout = false;
         state.error.logout = null;
+
+        state.user = null;
       })
       .addCase(logout.rejected, (state, action) => {
         state.loading.logout = false;

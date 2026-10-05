@@ -418,7 +418,7 @@ const MySentRequest = () => {
                             <Button className="bg-linear-to-r  from-[#F97316] to-[#E59A0B] text-xs font-semibold text-[#1C1008] hover:opacity-90">
                               <Link
                                 className="flex flex-row gap-1"
-                                href="/user/active-swaps"
+                                href="/user/active-swap"
                               >
                                 View Active Swap
                                 <ArrowRight className="ml-2 h-3.5 w-3.5" />

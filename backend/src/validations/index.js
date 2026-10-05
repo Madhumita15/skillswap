@@ -5,7 +5,7 @@ class Validation {
   static validate(schema) {
     return async (req, res, next) => {
       const { error, value } = schema.validate(req.body, {
-        abortEarly: true,
+        abortEarly: false,
         stripUnknown: false,
       });
 

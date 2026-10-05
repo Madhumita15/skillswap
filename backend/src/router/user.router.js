@@ -63,4 +63,22 @@ router.put(
   asyncHandler(userController.updateProfile),
 );
 
+// =====================================================
+// ADMIN USER MANAGEMENT
+// =====================================================
+
+router.get(
+  "/admin/users",
+  authMiddleware.verifyToken,
+  authMiddleware.roleCheck("admin"),
+  asyncHandler(userController.getAllUsers)
+);
+
+router.patch(
+  "/admin/users/:id/status",
+  authMiddleware.verifyToken,
+  authMiddleware.roleCheck("admin"),
+  asyncHandler(userController.changeUserStatus)
+);
+
 module.exports = router;

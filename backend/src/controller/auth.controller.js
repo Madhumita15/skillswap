@@ -79,7 +79,7 @@ class AuthController {
     });
     return res.status(httpStatusCode.OK).json({
       success: true,
-      message: "Email verified successfully!",
+      message: "Login successful !",
       data: {
         _id: user._id,
         name: user.name,

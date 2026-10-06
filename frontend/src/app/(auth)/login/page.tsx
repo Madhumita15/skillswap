@@ -55,6 +55,7 @@ const onSubmit = async (data: LoginType) => {
 
         if (user?.role === "admin") {
           router.push("/admin/dashboard");
+          console.log("user", user?.role)
         } else if (user?.isOnboardingComplete) {
           router.push("/user/dashboard");
         } else {

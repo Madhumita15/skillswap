@@ -177,8 +177,17 @@ async resetPassword (req, res) {
     const id = req.user._id;
 
     await logoutService(id);
-    res.clearCookie("accessToken")
-    res.clearCookie("refreshToken")
+     res.clearCookie("accessToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+    });
+
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+    });
 
     return res.status(httpStatusCode.OK).json({
       success: true,

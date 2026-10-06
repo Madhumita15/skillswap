@@ -8,7 +8,7 @@ const cors = require("cors");
 const allowedOrigins = [
   process.env.FRONTEND_HOST,
   process.env.FRONTEND_URL,
-  "http://localhost:5173",
+  "http://localhost:3000",
 ].filter(Boolean);
 app.use(
   cors({

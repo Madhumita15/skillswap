@@ -22,4 +22,13 @@ router.use("/api", match);
 router.use("/api", reportRouter);
 router.use("/api", dashboardRoute);
 
+
+router.get("/", (req, res) => {
+  res.status(200).json({
+    status: true,
+    message: "backend is running ",
+  });
+});
+
+
 module.exports = router;

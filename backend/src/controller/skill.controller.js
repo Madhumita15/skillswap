@@ -101,46 +101,7 @@ class SkillController {
     }
   }
 
-  // ============================================================
-  // GET ALL SKILLS
-  // ============================================================
-
-  // async getAllSkills(req, res) {
-  //   try {
-  //     const page = Number(req.query.page) || 1;
-  //     const limit = Number(req.query.limit) || 5;
-  //     const skip = (page - 1) * limit;
-
-  //     const skills = await Skill.find()
-  //       .populate("category", "name description status")
-  //       .sort({
-  //         createdAt: -1,
-  //       })
-  //       .skip(skip)
-  //       .limit(limit);
-
-  //     const totalSkills = await Skill.countDocuments();
-
-  //     return res.status(httpstatusCode.OK).json({
-  //       success: true,
-  //       message: "Skill fetched successfully!",
-  //       data: skills,
-  //       totalSkills: totalSkills,
-  //       totalPages: Math.ceil(totalSkills / limit),
-  //       currentPage: page,
-  //     });
-  //   } catch (error) {
-  //     return res.status(httpstatusCode.SERVER_ERROR).json({
-  //       success: false,
-  //       message: error.message,
-  //     });
-  //   }
-  // }
-
-// ============================================================
-// GET ALL SKILLS
-// ============================================================
-
+  
 async getAllSkills(req, res) {
   try {
     const page = Math.max(
@@ -688,8 +649,16 @@ async inactiveSkill(req, res) {
 
   async getActiveSkills(req, res) {
     try {
+      const category = req.query.category
+      
+      let filter = {}
+      if(category){
+        filter.category = category
+
+      }
+      console.log("category", filter)
       const skills = await Skill.find({
-        status: "active",
+        status: "active", ...filter
       })
         .populate("category", "name description status")
         .sort({

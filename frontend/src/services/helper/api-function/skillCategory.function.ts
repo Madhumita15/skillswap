@@ -5,10 +5,23 @@ import {
   SkillCategoryFormData,
   UpdateSkillCategoryPayload,
 } from "@/typescript/interface/skillCategory.interface";
+import { getErrorMessage } from "../global.helper";
+import { ENDPOINT } from "../endPoint";
 
 // ==========================================================
 // GET ALL SKILL CATEGORIES
 // ==========================================================
+
+
+export const getAllCategoryByUser = async()=>{
+  try{
+    const response = await axiosInstance.get("/skill-categories/user")
+    return response.data
+
+  }catch(error){
+    return getErrorMessage(error)
+  }
+}
 
 export const getAllSkillCategories = async (
   page = 1,

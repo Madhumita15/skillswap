@@ -182,77 +182,9 @@ const Navbar = ({ setMobileOpen }: NavbarProps) => {
           </div>
         </div>
 
-        {/* =====================================================
-            CENTER
-            Search Bar
-        ===================================================== */}
+        
 
-        <div
-          className="
-            hidden
-            h-10
-            w-full
-            max-w-95
-            shrink
-            items-center
-            gap-2
-            rounded-xl
-            border
-            border-[#52291A]
-            bg-[#1C1008]
-            px-3
-            shadow-inner
-            transition-all
-            duration-300
-            focus-within:border-[#F97316]
-            focus-within:bg-[#211309]
-            focus-within:ring-2
-            focus-within:ring-[#F97316]/10
-            md:flex
-          "
-        >
-          <Search
-            className="
-              h-4 w-4
-              shrink-0
-              text-[#78716C]
-              transition-colors
-              duration-300
-            "
-          />
-
-          <input
-            type="text"
-            placeholder="Search skills, people..."
-            className="
-              h-full
-              min-w-0
-              flex-1
-              bg-transparent
-              text-xs
-              text-[#FFF7ED]
-              outline-none
-              placeholder:text-[#6B625C]
-            "
-          />
-
-          {/* Keyboard shortcut */}
-          <span
-            className="
-              hidden
-              rounded-md
-              border border-[#52291A]
-              bg-[#211309]
-              px-1.5
-              py-0.5
-              text-[9px]
-              text-[#78716C]
-              lg:block
-            "
-          >
-            /
-          </span>
-        </div>
+        
 
         {/* =====================================================
             RIGHT SIDE

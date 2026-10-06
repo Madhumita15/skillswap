@@ -46,6 +46,7 @@ const ReviewDialog = ({
     register,
     handleSubmit,
     setValue,
+    reset,
     watch,
     formState: { errors },
   } = useForm<ReviewFormData>({
@@ -118,7 +119,7 @@ const ReviewDialog = ({
               rounded-full
               border
               border-[#F97316]/30
-              bg-gradient-to-br
+              bg-linear-to-br
               from-[#F97316]/20
               to-[#E59A0B]/10
               text-[#F97316]
@@ -281,7 +282,7 @@ const ReviewDialog = ({
               className="
               cursor-pointer
                 border-0
-                bg-gradient-to-r
+                bg-linear-to-r
                 from-[#F97316]
                 to-[#E59A0B]
                 font-semibold

@@ -48,7 +48,7 @@ export const skillValidationSchema = yup.object({
   --------------------------------------------------- */
 
   skill_logo: yup
-    .mixed<File | null>()
+    .mixed<File>()
     .nullable()
     .test(
       "fileSize",

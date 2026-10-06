@@ -94,6 +94,8 @@ export default function AdminUsersPage() {
     search,
   );
 
+  console.log("data", data)
+
   const changeStatusMutation = useChangeUserStatus();
 
   const { data: selectedUserResponse, isLoading: isUserDetailsLoading } =
@@ -122,7 +124,7 @@ export default function AdminUsersPage() {
       return users;
     }
 
-    return users.filter((user) => {
+    return users.filter((user:User) => {
       const teachingSkills = getSkillNames(user.teachingSkills).toLowerCase();
 
       const learningSkills = getSkillNames(user.learningSkills).toLowerCase();
@@ -426,7 +428,7 @@ export default function AdminUsersPage() {
 
               <TableBody>
                 <AnimatePresence mode="popLayout">
-                  {filteredUsers.map((user, index) => {
+                  {filteredUsers.map((user:User, index:number) => {
                     const isBlocked = user.status === "blocked";
 
                     const isChangingStatus =
@@ -826,8 +828,10 @@ function UserDetails({ user }: { user: User }) {
                 shadow-[0_0_25px_rgba(229,154,11,0.10)]
               `}
             >
-              <img
+              <Image
                 src={getProfileImage(user)}
+                height={50}
+                width={50}
                 alt={user.name}
                 className={`h-full w-full object-cover ${
                   isBlocked ? "grayscale" : ""
@@ -1003,10 +1007,12 @@ function DetailItem({
   label,
   value,
   icon,
+  success
 }: {
   label: string;
   value: string;
   icon?: React.ReactNode;
+  success?: boolean
 }) {
   return (
     <div className="rounded-xl border border-[#3D2110] bg-[#140A05] p-4">

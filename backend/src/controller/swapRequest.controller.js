@@ -92,14 +92,17 @@ class SwapRequestController {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 5;
 
-    const {totalSwapRequest, data} = await getAllSwapRequestService({ page, limit });
+    const {totalSwapRequest, data, totalAcceptedRequest, totalRejectedRequest, totalPendingRequest} = await getAllSwapRequestService({ page, limit });
     return res.status(httpStatusCode.OK).json({
       success: true,
       message: "All swap request fetched successfully!",
       data: data,
       currentPage: page,
       totalPages: Math.ceil(totalSwapRequest / limit),
-      totalSwapRequest: totalSwapRequest
+      totalSwapRequest: totalSwapRequest,
+      totalAcceptedRequest: totalAcceptedRequest,
+      totalRejectedRequest:totalRejectedRequest,
+      totalPendingRequest: totalPendingRequest
     });
   }
 }

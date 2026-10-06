@@ -48,6 +48,9 @@ export interface SwapsResponse {
   currentPage: number;
   totalPages: number;
   totalSwapRequest: number;
+  totalActiveSwap: number;
+  totalCancelledSwap: number;
+  totalCompletedSwap: number
 }
 
 export interface SwapResponse {

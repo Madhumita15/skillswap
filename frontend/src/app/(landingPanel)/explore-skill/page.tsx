@@ -7,166 +7,52 @@ import {
   ArrowRight,
   ArrowUpRight,
   BookOpen,
-  Code2,
-  Database,
-  Palette,
   Search,
   Sparkles,
   Users,
-  Video,
-  X,
+
 } from "lucide-react";
 import Image from "next/image";
+import { useGetActiveSkillByUser } from "@/hooks/useSkills";
+import {  useSkillCategoryByUser } from "@/hooks/useSkillCategory";
+import { Skill, SkillCategory } from "@/typescript/interface/skillsAdmin.interface";
 
-interface Skill {
-  id: number;
-  name: string;
-  category: string;
-  description: string;
-  learners: number;
-  teachers: number;
-  level: string;
-  icon: React.ReactNode;
-  image: string;
-  tags: string[];
-}
 
-const skills: Skill[] = [
-  {
-    id: 1,
-    name: "React.js",
-    category: "Development",
-    description:
-      "Build modern, interactive user interfaces and scalable frontend applications with React.",
-    learners: 1240,
-    teachers: 186,
-    level: "Beginner → Advanced",
-    icon: <Code2 className="h-6 w-6" />,
-    image: "/images/skills/react.jpg",
-    tags: ["Frontend", "JavaScript", "UI"],
-  },
-  {
-    id: 2,
-    name: "Node.js",
-    category: "Development",
-    description:
-      "Learn backend development, REST APIs, authentication and scalable server-side applications.",
-    learners: 980,
-    teachers: 143,
-    level: "Beginner → Advanced",
-    icon: <Code2 className="h-6 w-6" />,
-    image: "/images/skills/nodejs.jpg",
-    tags: ["Backend", "API", "JavaScript"],
-  },
-  {
-    id: 3,
-    name: "MongoDB",
-    category: "Database",
-    description:
-      "Understand document databases, aggregation pipelines, indexing and data modelling.",
-    learners: 760,
-    teachers: 112,
-    level: "Beginner → Intermediate",
-    icon: <Database className="h-6 w-6" />,
-    image: "/images/skills/mongodb.jpg",
-    tags: ["Database", "NoSQL", "Backend"],
-  },
-  {
-    id: 4,
-    name: "UI/UX Design",
-    category: "Design",
-    description:
-      "Create intuitive digital experiences through user research, wireframes and interface design.",
-    learners: 860,
-    teachers: 129,
-    level: "Beginner → Advanced",
-    icon: <Palette className="h-6 w-6" />,
-    image: "/images/skills/uiux.jpg",
-    tags: ["Design", "Figma", "UX"],
-  },
-  {
-    id: 5,
-    name: "Graphic Design",
-    category: "Creative",
-    description:
-      "Explore visual communication, branding, composition and modern graphic design techniques.",
-    learners: 690,
-    teachers: 104,
-    level: "Beginner → Advanced",
-    icon: <Palette className="h-6 w-6" />,
-    image: "/images/skills/graphic-design.jpg",
-    tags: ["Creative", "Branding", "Visual"],
-  },
-  {
-    id: 6,
-    name: "Public Speaking",
-    category: "Communication",
-    description:
-      "Build confidence, structure your ideas and communicate clearly in professional situations.",
-    learners: 1100,
-    teachers: 164,
-    level: "Beginner → Advanced",
-    icon: <Video className="h-6 w-6" />,
-    image: "/images/skills/public-speaking.jpg",
-    tags: ["Communication", "Confidence", "Career"],
-  },
-  {
-    id: 7,
-    name: "Python",
-    category: "Development",
-    description:
-      "Learn Python fundamentals, problem solving, automation and application development.",
-    learners: 1380,
-    teachers: 205,
-    level: "Beginner → Advanced",
-    icon: <Code2 className="h-6 w-6" />,
-    image: "/images/skills/python.jpg",
-    tags: ["Programming", "AI", "Backend"],
-  },
-  {
-    id: 8,
-    name: "Photography",
-    category: "Creative",
-    description:
-      "Improve composition, lighting and storytelling to create better photographs.",
-    learners: 540,
-    teachers: 91,
-    level: "Beginner → Intermediate",
-    icon: <Sparkles className="h-6 w-6" />,
-    image: "/images/skills/photography.jpg",
-    tags: ["Creative", "Camera", "Visual"],
-  },
-];
 
-const categories = [
-  "All",
-  "Development",
-  "Database",
-  "Design",
-  "Creative",
-  "Communication",
-];
 
 const ExploreSkill = () => {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const {data:activeSkillData} = useGetActiveSkillByUser()
+  const {data: categorySkillData} = useSkillCategoryByUser()
+  
+  const categories = useMemo(() => {
+  const categoryNames =
+    categorySkillData?.data?.map((category:SkillCategory) => category.name) ?? [];
+
+  return ["All", ...categoryNames];
+}, [categorySkillData]);
+
 
   const filteredSkills = useMemo(() => {
-    return skills.filter((skill) => {
-      const matchesCategory =
-        selectedCategory === "All" || skill.category === selectedCategory;
+  const skills = activeSkillData?.data.slice(0, 9) ?? [];
 
-      const searchValue = search.toLowerCase().trim();
+  const searchValue = search.toLowerCase().trim();
 
-      const matchesSearch =
-        !searchValue ||
-        skill.name.toLowerCase().includes(searchValue) ||
-        skill.category.toLowerCase().includes(searchValue) ||
-        skill.tags.some((tag) => tag.toLowerCase().includes(searchValue));
+  return skills.filter((skill:Skill) => {
+    const matchesCategory =
+      selectedCategory === "All" ||
+      skill.category?.name === selectedCategory;
 
-      return matchesCategory && matchesSearch;
-    });
-  }, [search, selectedCategory]);
+    const matchesSearch =
+      !searchValue ||
+      skill.name.toLowerCase().includes(searchValue) ||
+      skill.description.toLowerCase().includes(searchValue) ||
+      skill.category?.name.toLowerCase().includes(searchValue);
+
+    return matchesCategory && matchesSearch;
+  });
+}, [activeSkillData, search, selectedCategory]);
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#0B0804] text-[#FFF7ED]">
@@ -298,40 +184,8 @@ const ExploreSkill = () => {
             transition={{ duration: 0.6 }}
             className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between"
           >
-            {/* Search */}
-            <div className="relative w-full lg:max-w-xl">
-              <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#A8A29E]" />
-
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search React, design, Python..."
-                className="
-                  h-14 w-full rounded-2xl
-                  border border-[#6B3515]
-                  bg-[#1C1008]
-                  pl-12 pr-12
-                  text-[#FFF7ED]
-                  outline-none
-                  transition-all duration-300
-                  placeholder:text-[#78716C]
-                  focus:border-[#F97316]
-                  focus:ring-2
-                  focus:ring-[#F97316]/20
-                "
-              />
-
-              {search && (
-                <button
-                  type="button"
-                  onClick={() => setSearch("")}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#A8A29E] transition-colors hover:text-[#F97316]"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              )}
-            </div>
+           
+            
 
             {/* Results */}
             <div className="text-sm text-[#A8A29E]">
@@ -344,7 +198,7 @@ const ExploreSkill = () => {
           </motion.div>
 
           {/* Categories */}
-          <div className="mt-7 flex gap-3 overflow-x-auto pb-2">
+          <div className="mt-7 flex gap-3 flex-wrap pb-2">
             {categories.map((category, index) => (
               <motion.button
                 key={category}
@@ -404,12 +258,12 @@ const ExploreSkill = () => {
 
         {filteredSkills.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredSkills.map((skill, index) => {
+            {filteredSkills.map((skill:Skill, index:number) => {
               const fromLeft = index % 2 === 0;
 
               return (
                 <motion.article
-                  key={skill.id}
+                  key={skill._id}
                   initial={{
                     opacity: 0,
                     x: fromLeft ? -70 : 70,
@@ -446,27 +300,26 @@ const ExploreSkill = () => {
                   {/* Image */}
                   <div className="relative aspect-video overflow-hidden bg-[#100905]">
                     {/* Replace with your real image */}
-                    {/* <img
-                      src={skill.image}
+                    <Image
+                      src={skill.skill_logo || "https://static.vecteezy.com/system/resources/thumbnails/005/442/691/small/skills-learning-personal-development-finance-competency-business-concept-photo.jpg"}
                       alt={skill.name}
+                     height={100}
+                     width={100}
                       className="
                         h-full w-full object-cover
                         transition-transform duration-700
                         group-hover:scale-110
                       "
-                    /> */}
+                    />
 
                     <div className="absolute inset-0 bg-linear-to-t from-[#0B0804] via-[#0B0804]/10 to-transparent" />
 
                     {/* Category */}
                     <div className="absolute left-4 top-4 rounded-full border border-[#F97316]/30 bg-[#0B0804]/80 px-3 py-1.5 text-xs font-semibold text-[#E59A0B] backdrop-blur-md">
-                      {skill.category}
+                      {skill.category?.name}
                     </div>
 
-                    {/* Icon */}
-                    <div className="absolute bottom-4 left-4 flex h-11 w-11 items-center justify-center rounded-xl border border-[#F97316]/30 bg-[#1C1008]/90 text-[#F97316] backdrop-blur-md transition-all duration-300 group-hover:scale-110 group-hover:bg-[#F97316] group-hover:text-[#1C1008]">
-                      {skill.icon}
-                    </div>
+                    
                   </div>
 
                   {/* Content */}
@@ -485,56 +338,11 @@ const ExploreSkill = () => {
                       <ArrowUpRight className="mt-1 h-5 w-5 shrink-0 text-[#6B3515] transition-all duration-300 group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-[#F97316]" />
                     </div>
 
-                    {/* Tags */}
-                    <div className="mt-5 flex flex-wrap gap-2">
-                      {skill.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="rounded-lg bg-[#100905] px-2.5 py-1 text-xs text-[#A8A29E]"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
+                   
 
-                    {/* Stats */}
-                    <div className="mt-6 grid grid-cols-2 gap-3 border-t border-[#52291A]/70 pt-5">
-                      <div>
-                        <p className="text-lg font-bold text-[#FFF7ED]">
-                          {skill.learners.toLocaleString()}
-                        </p>
-                        <p className="text-xs text-[#78716C]">Want to learn</p>
-                      </div>
+                   
 
-                      <div>
-                        <p className="text-lg font-bold text-[#FFF7ED]">
-                          {skill.teachers}
-                        </p>
-                        <p className="text-xs text-[#78716C]">Ready to teach</p>
-                      </div>
-                    </div>
-
-                    {/* Action */}
-                    <button
-                      type="button"
-                      className="
-                        mt-6 flex w-full items-center justify-center gap-2
-                        rounded-xl border border-[#6B3515]
-                        bg-[#100905]
-                        py-3
-                        text-sm font-semibold text-[#FFF7ED]
-                        transition-all duration-300
-                        hover:border-[#F97316]
-                        hover:bg-[#F97316]/10
-                        hover:text-[#F97316]
-                        focus:outline-none
-                        focus:ring-2
-                        focus:ring-[#F97316]/40
-                      "
-                    >
-                      Explore {skill.name}
-                      <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-                    </button>
+                    
                   </div>
                 </motion.article>
               );

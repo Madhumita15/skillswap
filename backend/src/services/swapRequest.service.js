@@ -463,15 +463,49 @@ const getAllSwapRequestService = async ({ page, limit }) => {
           },
         ],
         total: [{ $count: "totalSwapRequest" }],
+        totalPendingRequest: [
+          {
+            $match: {status: "pending"}
+          },
+          {
+            $count: "totalPendingRequest"
+          }
+        ],
+
+        totalRejectedRequest: [
+          {
+            $match: {status: "rejected"}
+          },
+          {
+            $count: "totalRejectedRequest"
+          }
+        ],
+
+        totalAcceptedRequest: [
+          {
+            $match: {status: "accepted"}
+          },
+          {
+            $count: "totalAcceptedRequest"
+          }
+        ],
+
       },
     },
   ]);
 
   const totalSwapRequest = swapRequest[0].total[0]?.totalSwapRequest || 0;
+  const totalAcceptedRequest = swapRequest[0].totalAcceptedRequest[0]?.totalAcceptedRequest || 0
+  const totalRejectedRequest = swapRequest[0].totalRejectedRequest[0]?.totalRejectedRequest || 0
+  const totalPendingRequest = swapRequest[0].totalPendingRequest[0]?.totalPendingRequest || 0
 
   return {
     data: swapRequest[0].data,
     totalSwapRequest,
+    totalPendingRequest,
+    totalAcceptedRequest,
+    totalRejectedRequest
+
   };
 };
 

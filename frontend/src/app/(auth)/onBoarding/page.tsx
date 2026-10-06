@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { Path, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { toast } from "sonner";
 import axios from "axios";
@@ -52,7 +52,6 @@ const OnBoarding = () => {
       teachingSkills: [],
       experience: "",
       bio: "",
-      avatar_image: null,
     },
   });
 
@@ -63,19 +62,7 @@ const OnBoarding = () => {
     const fetchSkills = async () => {
       try {
         setLoadingSkills(true);
-        // const response = await fetch(
-        //   `${process.env.NEXT_PUBLIC_API_URL}/skills`,
-        //   {
-        //     method: "GET",
-        //     credentials: "include",
-        //   },
-        // );
-
-        // const result = await response.json();
-
         const response = await axiosInstance.get("/skills/active");
-
-        console.log("SKILLS RESPONSE:", response.data);
 
         if (!response.data.success) {
           throw new Error(response.data.message || "Failed to fetch skills");
@@ -156,7 +143,7 @@ const OnBoarding = () => {
 
   // Step Validation using react-hook-form trigger
   const handleNext = async () => {
-    let fieldsToValidate: any[] = [];
+    let fieldsToValidate: Path<OnBoardingFormValues>[] = [];
 
     if (currentStep === 1) {
       fieldsToValidate = ["learningSkills"];
@@ -181,87 +168,7 @@ const OnBoarding = () => {
     if (currentStep > 1) setCurrentStep((prev) => prev - 1);
   };
 
-  // Final Submit
-  //   const onSubmit = async (data: OnBoardingFormValues) => {
-  //     try {
-  //       setSubmitting(true);
-
-  //       const bodyData = new FormData();
-  //       bodyData.append("name", data.userInfo.fullName.trim());
-  //       if (data.userInfo.phone) {
-  //         bodyData.append("phone", data.userInfo.phone.trim());
-  //       }
-
-  //       data.teachingSkills.forEach((id) =>
-  //         bodyData.append("teachingSkills", id),
-  //       );
-  //       data.learningSkills.forEach((id) =>
-  //         bodyData.append("learningSkills", id),
-  //       );
-
-  // //       bodyData.append(
-  // //   "teachingSkills",
-  // //   JSON.stringify(data.teachingSkills),
-  // // );
-
-  // // bodyData.append(
-  // //   "learningSkills",
-  // //   JSON.stringify(data.learningSkills),
-  // // );
-
-  //       bodyData.append("experience", data.experience.trim());
-  //       bodyData.append("bio", data.bio.trim());
-
-  //       if (data.avatarImage) {
-  //         bodyData.append("avatar_image", data.avatarImage);
-  //       }
-
-  //       // const response = await fetch(
-  //       //   `${process.env.NEXT_PUBLIC_API_URL}/users/onboarding`,
-  //       //   {
-  //       //     method: "PATCH",
-  //       //     credentials: "include",
-  //       //     body: bodyData,
-  //       //   },
-  //       // );
-
-  //       // const result = await response.json();
-
-  //       const response = await axiosInstance.patch(
-  //   "/onboarding",
-  //   bodyData,
-  //   {
-  //     headers: {
-  //       "Content-Type": "multipart/form-data",
-  //     },
-  //   }
-  // );
-  // console.log("ONBOARDING RESPONSE:", response.data);
-  //       if (!response.data.success) {
-  //         throw new Error(response.data.message || "Failed to complete onboarding");
-  //       }
-
-  //       toast.success(response.data.message || "Onboarding completed successfully");
-  //       router.push("/user/dashboard");
-  //     } catch (error) {
-  //       // console.error("Onboarding error:", error);
-
-  //       if (axios.isAxiosError(error)) {
-  //     console.log("ONBOARDING STATUS:", error.response?.status);
-  //     console.log("ONBOARDING SERVER ERROR:", error.response?.data);
-  //   } else {
-  //     console.log("ONBOARDING ERROR:", error);
-  //   }
-  //       // toast.error(
-  //       //   error instanceof Error
-  //       //     ? error.message
-  //       //     : "Unable to complete onboarding",
-  //       // );
-  //     } finally {
-  //       setSubmitting(false);
-  //     }
-  //   };
-
+  
   const onSubmit = async (data: OnBoardingFormValues) => {
     console.log(data)
     try {
@@ -284,11 +191,7 @@ const OnBoarding = () => {
         bodyData.append("avatar_image", data.avatar_image);
       }
 
-      const response = await axiosInstance.patch("/onboarding", bodyData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await axiosInstance.patch("/onboarding", bodyData);
 
       if (!response.data.success) {
         throw new Error(
@@ -389,21 +292,7 @@ const OnBoarding = () => {
                               skill._id,
                             );
                             return (
-                              // <button
-                              //   key={skill._id}
-                              //   type="button"
-                              //   onClick={() =>
-                              //     toggleSkill("learningSkills", skill._id)
-                              //   }
-                              //   className={`rounded-lg border px-3 py-3 text-sm font-medium transition-all ${
-                              //     selected
-                              //       ? "border-[#D99A18] bg-[#D99A18]/15 text-[#FFB347]"
-                              //       : "border-[#6B3515] bg-[#28130C] text-[#A8A29E] hover:border-[#D99A18]"
-                              //   }`}
-                              // >
-                              //   {skill.name}
-                              // </button>
-
+                              
                               <button
                                 key={skill._id}
                                 type="button"

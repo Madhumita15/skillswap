@@ -91,6 +91,7 @@ const getAdminDashboardService = async () => {
     requestStatistics,
     swapStatistics,
     reportStatistics,
+    reviewStatistics
   ] = await Promise.all([
     // ==================================================
     // USER STATISTICS
@@ -334,7 +335,22 @@ const getAdminDashboardService = async () => {
         },
       },
     ]),
+
+    Review.aggregate([
+    {
+      $group: {_id: null, totalReviews: {$sum: 1}, avgReviews: {$avg: "$rating"}}
+    },
+    {
+      $project:{
+        totalReviews: 1,
+        avgReviews: 1
+
+      }
+    }
+  ])
   ]);
+
+  
 
   return {
   users: {
@@ -374,6 +390,14 @@ const getAdminDashboardService = async () => {
     resolved: reportStatistics[0]?.resolvedReports || 0,
     dismissed: reportStatistics[0]?.dismissedReports || 0,
   },
+
+   reviews: {
+    totalReviews: reviewStatistics[0].totalReviews || 0,
+    avgReviews: reviewStatistics[0].avgReviews || 0
+
+  },
+
+   
 };
 };
 

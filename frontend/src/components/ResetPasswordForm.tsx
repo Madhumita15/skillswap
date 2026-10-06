@@ -1,11 +1,10 @@
-
 "use client";
 
-import { ForgotPasswordType } from "@/typescript/type/auth.type";
+import { ResetPasswordType } from "@/typescript/type/auth.type";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { forgotPasswordSchema } from "@/services/validation/auth.validation";
-import { forgotPasswordInputData } from "@/services/json/inputsData/auth.input";
+import { resetPasswordSchema } from "@/services/validation/auth.validation";
+import { resetPasswordInputData } from "@/services/json/inputsData/auth.input";
 import DynamicInput from "@/components/DynamicInput";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -19,13 +18,16 @@ import {
 import Image from "next/image";
 import { toast } from "sonner";
 import { useAppDispatch, useAppSeletor } from "@/services/helper/redux";
-import { forgotPassword } from "@/store/slices/auth.slice";
+import { resetPassword } from "@/store/slices/auth.slice";
 import { Spinner } from "@/components/ui/spinner";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
-const ForgotPassword = () => {
+const ResetPasswordForm = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token");
+
   const { loading, error } = useAppSeletor((state) => state.auth);
 
   const {
@@ -33,25 +35,47 @@ const ForgotPassword = () => {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<ForgotPasswordType>({
-    resolver: yupResolver(forgotPasswordSchema),
+  } = useForm<ResetPasswordType>({
+    resolver: yupResolver(resetPasswordSchema),
     defaultValues: {
-      email: "",
+      password: "",
     },
   });
 
-  const onSubmit = async (data: ForgotPasswordType) => {
-    try {
-      const response = await dispatch(forgotPassword(data));
-      if (response?.payload?.success === true) {
-        toast.success(response?.payload?.message || "Reset link sent successfully!");
-        reset();
-        router.push("/forgot-password-sent");
-      }
-    } catch (err) {
-      console.error("Error sending reset password email:", err);
+  const onSubmit = async (data: ResetPasswordType) => {
+  if (!token) {
+    toast.error("Invalid or missing password reset token.");
+    return;
+  }
+
+  try {
+    const response = await dispatch(
+      resetPassword({
+        token,
+        password: data.password,
+      })
+    ).unwrap();
+
+    console.log("RESET PASSWORD RESPONSE:", response);
+
+    if (response?.success === true) {
+      toast.success(
+        response?.message || "Password reset successfully!"
+      );
+
+      reset();
+      router.push("/login");
     }
-  };
+  } catch (err) {
+    console.error("Error resetting password:", err);
+
+    toast.error(
+      typeof err === "string"
+        ? err
+        : "Invalid or expired password reset token."
+    );
+  }
+};
 
   return (
     <div className="h-screen overflow-hidden bg-[#0B0804] px-4 py-4 md:py-6">
@@ -62,7 +86,7 @@ const ForgotPassword = () => {
           <div className="absolute -bottom-25 -right-25 h-80 w-80 rounded-full bg-[#D99A18]/10 blur-3xl" />
 
           <Image
-            src="/images/watermarked_img_13842391707381786008 (1).png"
+            src="/images/watermarked_img_6558919688263023300 (1).png"
             alt="SkillSwap skill exchange"
             fill
             priority
@@ -76,7 +100,7 @@ const ForgotPassword = () => {
               Learn. Share. <span className="text-[#F97316]">Swap.</span>
             </h1>
             <p className="mt-3 max-w-md text-sm leading-6 text-[#A8A29E] lg:text-base">
-              Recover your account and get back to connecting through skills.
+              Create a new secure password and access your account.
             </p>
           </div>
         </div>
@@ -96,15 +120,15 @@ const ForgotPassword = () => {
               </div>
 
               <CardTitle className="text-center text-2xl font-semibold text-[#FFF7ED] lg:text-3xl">
-                Forgot Password?
+                Reset Your Password
               </CardTitle>
 
               <CardDescription className="mt-2 text-center text-[#A8A29E]">
-                Enter your registered email address to receive password reset instructions.
+                Enter your new password below to update your account details.
               </CardDescription>
 
               <div className="mt-3 text-center text-sm text-[#A8A29E]">
-                Remembered your password?{" "}
+                Back to{" "}
                 <Link
                   href="/login"
                   className="font-medium text-[#F97316] transition-colors hover:text-[#FFB347]"
@@ -117,15 +141,15 @@ const ForgotPassword = () => {
             <CardContent className="px-0">
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                 <div className="space-y-4">
-                  {forgotPasswordInputData.map((input) => (
+                  {resetPasswordInputData.map((input) => (
                     <div key={input.name}>
-                      <DynamicInput<ForgotPasswordType>
+                      <DynamicInput<ResetPasswordType>
                         label={input.label}
                         register={register}
                         name={input.name}
                         placeholder={input.placeholder}
                         type={input.type}
-                        loading={loading.forgotPassword}
+                        loading={loading.resetPassword}
                         error={errors[input.name]?.message}
                         required={input.required}
                         Icon={input.icon}
@@ -134,9 +158,9 @@ const ForgotPassword = () => {
                   ))}
                 </div>
 
-                {error?.forgotPassword && (
+                {error?.resetPassword && (
                   <p className="text-center text-orange-200 text-md">
-                    {error.forgotPassword}
+                    {error.resetPassword}
                   </p>
                 )}
 
@@ -144,7 +168,7 @@ const ForgotPassword = () => {
                   type="submit"
                   className="mt-2 h-12 w-full cursor-pointer bg-[#E59A0B] font-semibold text-white transition-all duration-200 hover:bg-[#C77D05]"
                 >
-                  {loading.forgotPassword ? <Spinner /> : "Send Reset Link"}
+                  {loading.resetPassword ? <Spinner /> : "Reset Password"}
                 </Button>
               </form>
             </CardContent>
@@ -155,4 +179,4 @@ const ForgotPassword = () => {
   );
 };
 
-export default ForgotPassword;
+export default ResetPasswordForm;

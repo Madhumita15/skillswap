@@ -62,3 +62,23 @@ export interface UserResponse {
 export interface ChangeUserStatusPayload {
   status: UserStatus;
 }
+
+
+export interface AllUsersResponse {
+  success: boolean;
+  message: string;
+  data: User[];
+  pagination: {
+    currentPage: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+    limit: number;
+    totalPages: number;
+    totalUsers: number;
+  };
+  stats: {
+    totalUsers: number;
+    activeUsers: number;
+    blockedUsers: number;
+  };
+}

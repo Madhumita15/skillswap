@@ -1,14 +1,17 @@
 import {axiosInstance} from "@/lib/axiosInstance";
+import { AllUsersResponse, User } from "@/typescript/interface/user.interface";
 
 // =====================================================
 // GET ALL USERS
 // =====================================================
 
+
+
 export const getAllUsers = async (
   page: number = 1,
   limit: number = 10,
   search: string = ""
-) => {
+): Promise<AllUsersResponse> => {
   const response = await axiosInstance.get("/admin/users", {
     params: {
       page,

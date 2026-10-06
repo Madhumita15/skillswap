@@ -22,9 +22,9 @@ import { adminMenuItems } from "./adminMenu";
 type AdminSidebarProps = {
   user?: {
     name?: string;
-    email?: string;
-    avatar_image?: string;
-  };
+    email?: string ;
+    avatar_image?: string ;
+  } | null
   onLogout?: () => void;
 };
 

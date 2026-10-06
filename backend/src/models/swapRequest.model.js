@@ -26,7 +26,7 @@ const swapRequestSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "rejected", "accepted", "cancelled", "completed"],
+      enum: ["pending", "rejected", "accepted", "cancelled"],
       default: "pending",
     },
   },

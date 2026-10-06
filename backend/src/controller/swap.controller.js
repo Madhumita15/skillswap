@@ -64,14 +64,17 @@ class SwapController {
       const page = Number(req.query.page) || 1;
       const limit = Number(req.query.limit) || 5;
   
-      const {totalSwap, data} = await getAllSwapService({ page, limit });
+      const {totalSwap, data, totalActiveSwap, totalCancelledSwap, totalCompletedSwap} = await getAllSwapService({ page, limit });
       return res.status(httpStatusCode.OK).json({
         success: true,
         message: "All swaps fetched successfully!",
         data: data,
         currentPage: page,
         totalPages: Math.ceil(totalSwap / limit),
-        totalSwapRequest: totalSwap
+        totalSwapRequest: totalSwap,
+        totalCancelledSwap: totalCancelledSwap,
+        totalCompletedSwap: totalCompletedSwap,
+        totalActiveSwap: totalActiveSwap
       });
     }
 }

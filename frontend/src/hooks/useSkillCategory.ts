@@ -9,6 +9,7 @@ import {
   changeSkillCategoryStatus,
   createSkillCategory,
   deactivateSkillCategory,
+  getAllCategoryByUser,
   getAllSkillCategories,
   getSkillCategoryById,
   updateSkillCategory,
@@ -19,6 +20,15 @@ import {
   SkillCategoryFormData,
   UpdateSkillCategoryPayload,
 } from "@/typescript/interface/skillCategory.interface";
+
+
+
+export const useSkillCategoryByUser = ()=>{
+  return useQuery({
+    queryKey: ["skill-category-user"],
+    queryFn: getAllCategoryByUser
+  })
+}
 
 // ==========================================================
 // QUERY KEYS
@@ -96,6 +106,7 @@ export const useCreateSkillCategory = () => {
       queryClient.invalidateQueries({
         queryKey: skillCategoryKeys.lists(),
       });
+      queryClient.invalidateQueries({queryKey: ["skill-category-user"]})
     },
   });
 };
@@ -126,7 +137,9 @@ export const useUpdateSkillCategory = () => {
         queryKey: skillCategoryKeys.detail(
           variables.id,
         ),
+
       });
+      queryClient.invalidateQueries({queryKey: ["skill-category-user"]})
     },
   });
 };
@@ -161,6 +174,7 @@ export const useChangeSkillCategoryStatus = () => {
           variables.id,
         ),
       });
+      queryClient.invalidateQueries({queryKey: ["skill-category-user"]})
     },
   });
 };
@@ -184,6 +198,7 @@ export const useDeactivateSkillCategory = () => {
       queryClient.invalidateQueries({
         queryKey: skillCategoryKeys.detail(id),
       });
+      queryClient.invalidateQueries({queryKey: ["skill-category-user"]})
     },
   });
 };

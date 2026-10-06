@@ -340,15 +340,46 @@ const getAllSwapService = async ({ page, limit }) => {
           },
         ],
         total: [{ $count: "totalSwap" }],
+        totalActiveSwap: [
+          {
+            $match: {status: "active"}
+          },
+          {
+            $count: "totalActiveSwap"
+          }
+        ],
+         totalCancelledSwap: [
+          {
+            $match: {status: "cancelled"}
+          },
+          {
+            $count: "totalCancelledSwap"
+          }
+        ],
+         totalCompletedSwap: [
+          {
+            $match: {status: "completed"}
+          },
+          {
+            $count: "totalCompletedSwap"
+          }
+        ]
       },
     },
   ]);
 
   const totalSwap = swap[0].total[0]?.totalSwap || 0;
+  const totalCancelledSwap = swap[0].totalCancelledSwap[0]?.totalCancelledSwap || 0;
+  const totalActiveSwap =   swap[0].totalActiveSwap[0]?.totalActiveSwap || 0;
+   const totalCompletedSwap =   swap[0].totalCompletedSwap[0]?.totalCompletedSwap || 0;
 
   return {
     data: swap[0].data,
     totalSwap,
+    totalCompletedSwap,
+    totalActiveSwap,
+    totalCancelledSwap
+
   };
 };
 

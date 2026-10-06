@@ -14,7 +14,7 @@ export interface OnBoardingFormValues {
   teachingSkills: string[];
   experience: string;
   bio: string;
-  avatar_image: File | null;
+  avatar_image: File;
 }
 
 // JSON Payload Interface for Backend API
@@ -64,4 +64,13 @@ export type UpdateProfileInputType = {
   learningSkills: string[]
   avatar_image?: File | null | undefined
 
+}
+
+
+
+export type UpdatedDataType ={
+ swapId: string;
+ reviewedUserId: string;
+ rating: number;
+ comment: string;
 }

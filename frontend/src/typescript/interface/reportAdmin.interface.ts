@@ -4,9 +4,8 @@
 
 export type ReportStatus =
   | "pending"
-  | "under_review"
   | "resolved"
-  | "dismissed";
+  | "rejected";
 
 /* =====================================================
    REPORT REASON
@@ -16,8 +15,8 @@ export type ReportReason =
   | "spam"
   | "harassment"
   | "inappropriate_content"
-  | "scam"
-  | "other";
+  | "fake_profile"
+  | "others";
 
 /* =====================================================
    REPORTER
@@ -79,6 +78,8 @@ export interface ReportPagination {
 export interface ReportsData {
   reports: Report[];
   pagination: ReportPagination;
+  totalReports: number;
+  totalPages: number;
 }
 
 export interface ReportsResponse {

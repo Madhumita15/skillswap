@@ -197,30 +197,6 @@ export default function SwapRequestManagementPage() {
   // CURRENT PAGE COUNTS
   // ========================================================
 
-  const pendingCount =
-    requests.filter(
-      (request) =>
-        request.status === "pending",
-    ).length;
-
-  const acceptedCount =
-    requests.filter(
-      (request) =>
-        request.status === "accepted",
-    ).length;
-
-  const rejectedCount =
-    requests.filter(
-      (request) =>
-        request.status === "rejected",
-    ).length;
-
-  const completedCount =
-    requests.filter(
-      (request) =>
-        request.status === "completed",
-    ).length;
-
   // ========================================================
   // FORMAT DATE
   // ========================================================
@@ -395,7 +371,7 @@ export default function SwapRequestManagementPage() {
 
         <SummaryCard
           title="Pending"
-          value={pendingCount}
+          value={data?.totalPendingRequest ?? 0}
           icon={Clock3}
           iconClass="text-amber-400"
           iconBg="bg-amber-500/10"
@@ -407,7 +383,7 @@ export default function SwapRequestManagementPage() {
 
         <SummaryCard
           title="Accepted"
-          value={acceptedCount}
+          value={data?.totalAcceptedRequest ?? 0}
           icon={CheckCircle2}
           iconClass="text-emerald-400"
           iconBg="bg-emerald-500/10"
@@ -418,8 +394,8 @@ export default function SwapRequestManagementPage() {
         {/* COMPLETED */}
 
         <SummaryCard
-          title="Completed"
-          value={completedCount}
+          title="Rejected"
+          value={data?.totalRejectedRequest ?? 0}
           icon={CheckCircle2}
           iconClass="text-blue-400"
           iconBg="bg-blue-500/10"

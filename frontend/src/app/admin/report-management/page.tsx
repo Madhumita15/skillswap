@@ -8,6 +8,7 @@ import {
 import {
   AnimatePresence,
   motion,
+  Variants,
 } from "framer-motion";
 
 import {
@@ -40,12 +41,13 @@ import type {
   ReportReason,
   ReportStatus,
 } from "@/typescript/interface/reportAdmin.interface";
+import { getErrorMessage } from "@/services/helper/global.helper";
 
 /* =====================================================
    CONSTANTS
 ===================================================== */
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 5;
 
 /* =====================================================
    STATUS OPTIONS
@@ -64,16 +66,12 @@ const statusOptions: {
     label: "Pending",
   },
   {
-    value: "under_review",
-    label: "Under Review",
-  },
-  {
     value: "resolved",
-    label: "Resolved",
+    label: "Resolved", 
   },
   {
-    value: "dismissed",
-    label: "Dismissed",
+    value: "rejected",
+    label: "Rejected",
   },
 ];
 
@@ -86,15 +84,11 @@ const reasonLabels: Record<
   string
 > = {
   spam: "Spam",
-
-  harassment: "Harassment",
-
+  harassment: "Harassment",    
   inappropriate_content:
     "Inappropriate Content",
-
-  scam: "Scam",
-
-  other: "Other",
+  fake_profile: "fake_profile",
+  others: "others",
 };
 
 /* =====================================================
@@ -103,7 +97,6 @@ const reasonLabels: Record<
 
 const containerVariants = {
   hidden: {},
-
   visible: {
     transition: {
       staggerChildren: 0.07,
@@ -111,7 +104,7 @@ const containerVariants = {
   },
 };
 
-const itemVariants = {
+const itemVariants:Variants = {
   hidden: {
     opacity: 0,
     y: 20,
@@ -128,7 +121,7 @@ const itemVariants = {
   },
 };
 
-const modalVariants = {
+const modalVariants:Variants = {
   hidden: {
     opacity: 0,
     scale: 0.96,
@@ -224,14 +217,16 @@ export default function ReportManagementPage() {
   const reports =
     data?.data?.reports ?? [];
 
-  const pagination =
-    data?.data?.pagination;
+  // const pagination =
+  //   data?.data?.totalPages;
 
   const totalReports =
-    pagination?.totalReports ?? 0;
+    data?.data?.totalReports ?? 0;
 
   const totalPages =
-    pagination?.totalPages ?? 1;
+    data?.data?.totalPages ?? 0;
+
+   
 
   const selectedReport =
     reportDetailData?.data ?? null;
@@ -329,23 +324,12 @@ export default function ReportManagementPage() {
         `Report status updated to "${formatStatus(status)}".`,
       );
 
-      /*
-       * Keep the detail modal open.
-       *
-       * TanStack Query invalidates the
-       * detail query and list query.
-       *
-       * This means the report remains
-       * available as a moderation record.
-       */
-
       setTimeout(() => {
         setSuccessMessage("");
       }, 2500);
-    } catch (err: any) {
+    } catch (err) {
       setActionError(
-        err?.response?.data?.message ||
-          "Unable to update report status.",
+        getErrorMessage(err)
       );
     }
   };
@@ -644,7 +628,7 @@ function ReportCard({
       }}
       className="overflow-hidden rounded-2xl border border-[#3D2110] bg-[#140A05] shadow-xl shadow-black/10 transition"
     >
-      <div className="h-1 w-full bg-gradient-to-r from-[#E59A0B] via-[#F5A623] to-transparent opacity-70" />
+      <div className="h-1 w-full bg-linear-to-r from-[#E59A0B] via-[#F5A623] to-transparent opacity-70" />
 
       <div className="p-5">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
@@ -832,13 +816,6 @@ function StatusBadge({
       dot: "bg-amber-400",
     },
 
-    under_review: {
-      label: "Under Review",
-      className:
-        "border-blue-500/20 bg-blue-500/10 text-blue-300",
-      dot: "bg-blue-400",
-    },
-
     resolved: {
       label: "Resolved",
       className:
@@ -846,8 +823,8 @@ function StatusBadge({
       dot: "bg-emerald-400",
     },
 
-    dismissed: {
-      label: "Dismissed",
+    rejected: {
+      label: "Rejected",
       className:
         "border-red-500/20 bg-red-500/10 text-red-300",
       dot: "bg-red-400",
@@ -1208,9 +1185,8 @@ function ReportDetailsModal({
                     {(
                       [
                         "pending",
-                        "under_review",
                         "resolved",
-                        "dismissed",
+                        "rejected",
                       ] as ReportStatus[]
                     ).map(
                       (status) => {
@@ -1445,12 +1421,8 @@ function formatStatus(
     string
   > = {
     pending: "Pending",
-
-    under_review: "Under Review",
-
     resolved: "Resolved",
-
-    dismissed: "Dismissed",
+    rejected: "Rejected",
   };
 
   return labels[status];

@@ -69,4 +69,7 @@ export interface SwapRequestListResponse {
   currentPage: number;
   totalPages: number;
   totalSwapRequest: number;
+  totalAcceptedRequest: number;
+  totalPendingRequest: number;
+  totalRejectedRequest: number;
 }

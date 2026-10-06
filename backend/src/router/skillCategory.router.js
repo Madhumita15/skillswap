@@ -103,6 +103,8 @@ const SkillCategoryValidation = require(
 //   ),
 // );
 
+router.get("/user", asyncHandler(skillCategoryController.skillCategory))
+
 
 router.all(
   ["/", "/:id"],

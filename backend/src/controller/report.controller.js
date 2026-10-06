@@ -6,11 +6,6 @@ const {
   updateReportStatusService,
 } = require("../services/report.service");
 
-const {
-  createReportSchema,
-  updateReportStatusSchema,
-} = require("../validations/reportSchema.validation");
-
 const httpStatusCode = require("../utils/httpStatusCode");
 
 // ======================================================
@@ -45,10 +40,13 @@ const getReports = async (req, res) => {
  
   const page = Number(req.query.page) || 1
   const limit = Number(req.query.limit) || 5
+  const status = req.query.status
+  
 
   const result = await getReportsService({
     page,
     limit,
+    status
   });
 
   return res.status(httpStatusCode.OK).json({
@@ -66,6 +64,7 @@ const getReportById = async (req, res) => {
   const { id } = req.params;
 
   const report = await getReportByIdService(id);
+  console.log("report", report)
 
   return res.status(httpStatusCode.OK).json({
     success: true,

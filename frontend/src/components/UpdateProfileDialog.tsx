@@ -11,7 +11,6 @@ import { Label } from "@/components/ui/label";
 import DynamicInput from "./DynamicInput";
 import { updateProfileInputData } from "@/services/json/inputsData/user.input";
 import {
-  UpdateProfileInputDataType,
   UpdateProfileInputType,
 } from "@/typescript/type/user.type";
 import { useForm, Controller } from "react-hook-form";
@@ -97,8 +96,13 @@ const UpdateProfileDialog: React.FC<UpdateProfileDialogInterface> = ({
     formData.append("phone", data.phone);
     formData.append("bio", data.bio);
     formData.append("experience", data.experience);
-    formData.append("teachingSkills", JSON.stringify(data.teachingSkills));
-    formData.append("learningSkills", JSON.stringify(data.learningSkills));
+    data.teachingSkills.forEach((id) => {
+      formData.append("teachingSkills", id);
+    });
+
+    data.learningSkills.forEach((id) => {
+      formData.append("learningSkills", id);
+    });
 
     if (data.avatar_image) {
       formData.append("avatar_image", data.avatar_image);
@@ -175,7 +179,7 @@ const UpdateProfileDialog: React.FC<UpdateProfileDialogInterface> = ({
                     (input) => input.name === "name" || input.name === "phone",
                   )
                   .map((input) => (
-                    <DynamicInput<UpdateProfileInputDataType>
+                    <DynamicInput<UpdateProfileInputType>
                       key={input.name}
                       placeholder={input.placeholder}
                       name={input.name}

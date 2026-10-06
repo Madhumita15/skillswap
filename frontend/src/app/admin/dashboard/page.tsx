@@ -1,7 +1,7 @@
 
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 
 import {
   AlertTriangle,
@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
-import { useAppSeletor } from "@/services/helper/redux";
 
 const containerVariants = {
   hidden: {},
@@ -27,7 +26,7 @@ const containerVariants = {
   },
 };
 
-const itemVariants = {
+const itemVariants:Variants = {
   hidden: {
     opacity: 0,
     y: 20,
@@ -109,7 +108,7 @@ const StatCard = ({
           top-0
           h-px
           w-0
-          bg-gradient-to-r
+          bg-linear-to-r
           from-[#F59E0B]
           to-[#F97316]
           shadow-[0_0_10px_#F59E0B]
@@ -248,9 +247,7 @@ export default function AdminDashboardPage() {
     error,
   } = useAdminDashboard();
 
-  const user = useAppSeletor(
-    (state) => state.auth.user
-  );
+  
 
   /* ======================================================= */
   /* LOADING */
@@ -311,7 +308,7 @@ export default function AdminDashboardPage() {
             items-center
             justify-center
             p-5
-            lg:ml-[290px]
+            lg:ml-72.5
             lg:p-8
           "
         >
@@ -763,7 +760,7 @@ export default function AdminDashboardPage() {
                         text-[#FFF7ED]
                       "
                     >
-                      {stats?.reviews?.averageRating || 0}
+                      {stats?.reviews?.avgReviews || 0}
                     </motion.span>
 
                     <span className="mb-1 text-sm text-[#78716C]">
@@ -782,7 +779,7 @@ export default function AdminDashboardPage() {
                 </p>
 
                 <p className="mt-1 text-2xl font-semibold text-[#FFF7ED]">
-                  {stats?.reviews?.total || 0}
+                  {stats?.reviews?.totalReviews || 0}
                 </p>
 
               </div>

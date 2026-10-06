@@ -183,7 +183,7 @@ export default function Pagination({
               key={page}
               type="button"
               disabled={disabled}
-              onClick={() => onPageChange(page)}
+              onClick={() => onPageChange(page as number)}
               whileHover={
                 !disabled && !isActive
                   ? {

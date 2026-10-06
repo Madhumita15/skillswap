@@ -4,13 +4,12 @@ import {
   ChangeEvent,
   FormEvent,
   useEffect,
-  useMemo,
   useState,
 } from "react";
 
 import * as yup from "yup";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, Variants } from "framer-motion";
 
 import {
   AlertTriangle,
@@ -38,6 +37,9 @@ import { skillValidationSchema } from "@/services/validation/skills.validation";
 import { useSkillCategories } from "@/hooks/useSkillCategory";
 
 import Pagination from "@/layout/adminLayout/Pagination";
+import Image from "next/image";
+import { SkillCategory } from "@/typescript/interface/skillCategory.interface";
+import { getErrorMessage } from "@/services/helper/global.helper";
 
 /* =====================================================
    CONSTANTS
@@ -59,7 +61,7 @@ const containerVariants = {
   },
 };
 
-const itemVariants = {
+const itemVariants:Variants = {
   hidden: {
     opacity: 0,
     y: 20,
@@ -76,7 +78,7 @@ const itemVariants = {
   },
 };
 
-const modalVariants = {
+const modalVariants:Variants = {
   hidden: {
     opacity: 0,
     scale: 0.95,
@@ -179,7 +181,7 @@ export default function SkillsManagementPage() {
 
   const categories =
     categoryData?.data?.filter(
-      (category) => category.status === "active",
+      (category:SkillCategory) => category.status === "active",
     ) ?? [];
 
 
@@ -447,10 +449,9 @@ export default function SkillsManagementPage() {
 
         setSuccessMessage("");
       }, 700);
-    } catch (err: any) {
+    } catch (err) {
       setFormError(
-        err?.response?.data?.message ||
-          "Something went wrong. Please try again.",
+        getErrorMessage(err)
       );
     }
   };
@@ -482,10 +483,9 @@ export default function SkillsManagementPage() {
       setTimeout(() => {
         setSuccessMessage("");
       }, 2500);
-    } catch (err: any) {
+    } catch (err) {
       setFormError(
-        err?.response?.data?.message ||
-          "Unable to deactivate skill.",
+        getErrorMessage(err)
       );
 
       setTimeout(() => {
@@ -594,7 +594,7 @@ export default function SkillsManagementPage() {
               scale: 0.98,
             }}
             onClick={handleCreate}
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#E59A0B] to-[#F5A623] px-5 text-sm font-semibold text-[#0B0804] shadow-lg shadow-orange-950/20 transition"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-linear-to-r from-[#E59A0B] to-[#F5A623] px-5 text-sm font-semibold text-[#0B0804] shadow-lg shadow-orange-950/20 transition"
           >
             <Plus className="h-4 w-4" />
             Add New Skill
@@ -831,7 +831,7 @@ function SummaryCard({
         </div>
       </div>
 
-      <div className="mt-5 h-px w-full bg-gradient-to-r from-[#E59A0B]/30 via-[#4A2812] to-transparent" />
+      <div className="mt-5 h-px w-full bg-linear-to-r from-[#E59A0B]/30 via-[#4A2812] to-transparent" />
     </motion.div>
   );
 }
@@ -865,7 +865,7 @@ function SkillCard({
       }}
       className="group overflow-hidden rounded-2xl border border-[#3D2110] bg-[#140A05] shadow-xl shadow-black/10 transition"
     >
-      <div className="h-1 w-full bg-gradient-to-r from-[#E59A0B] via-[#F5A623] to-transparent opacity-70" />
+      <div className="h-1 w-full bg-linear-to-r from-[#E59A0B] via-[#F5A623] to-transparent opacity-70" />
 
       <div className="p-5">
         {/* Logo + Status */}
@@ -873,9 +873,11 @@ function SkillCard({
         <div className="flex items-start justify-between">
           <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl border border-[#4A2812] bg-[#0B0804]">
             {skill.skill_logo ? (
-              <img
+              <Image
                 src={skill.skill_logo}
                 alt={skill.name}
+                height={50}
+                width={50}
                 className="h-full w-full object-cover"
               />
             ) : (
@@ -920,7 +922,7 @@ function SkillCard({
 
         {/* Description */}
 
-        <p className="mt-2 min-h-[48px] text-sm leading-6 text-[#A8A29E]">
+        <p className="mt-2 min-h-12 text-sm leading-6 text-[#A8A29E]">
           {skill.description}
         </p>
 
@@ -1247,9 +1249,11 @@ function SkillModal({
 
               <div className="flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#4A2812] bg-[#0B0804]">
                 {preview ? (
-                  <img
+                  <Image
                     src={preview}
                     alt="Skill preview"
+                    height={50}
+                    width={50}
                     className="h-full w-full object-cover"
                   />
                 ) : (
@@ -1307,7 +1311,7 @@ function SkillModal({
               }}
               type="submit"
               disabled={isSubmitting}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#E59A0B] to-[#F5A623] px-6 text-sm font-semibold text-[#0B0804] shadow-lg shadow-orange-950/20 transition disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-linear-to-r from-[#E59A0B] to-[#F5A623] px-6 text-sm font-semibold text-[#0B0804] shadow-lg shadow-orange-950/20 transition disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? (
                 <>
@@ -1385,7 +1389,7 @@ function EmptySkills({
             scale: 0.98,
           }}
           onClick={onCreate}
-          className="mt-6 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#E59A0B] to-[#F5A623] px-5 py-2.5 text-sm font-semibold text-[#0B0804]"
+          className="mt-6 inline-flex items-center gap-2 rounded-xl bg-linear-to-r from-[#E59A0B] to-[#F5A623] px-5 py-2.5 text-sm font-semibold text-[#0B0804]"
         >
           <Plus className="h-4 w-4" />
           Add First Skill

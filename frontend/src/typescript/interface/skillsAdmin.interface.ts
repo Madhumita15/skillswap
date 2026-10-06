@@ -10,7 +10,7 @@ export interface Skill {
   name: string;
   description: string;
 
-  category: SkillCategory | string;
+  category: SkillCategory ;
 
   skill_logo?: string;
   skill_logo_public_id?: string;

@@ -9,17 +9,17 @@ import {
   ChevronRight,
   Clock3,
   Search,
-  UserRound,
   XCircle,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 
 import { useSwaps } from "@/hooks/useSwap";
 import type { Swap, SwapStatus } from "@/typescript/interface/swaps.interface";
+import Image from "next/image";
 
 const ITEMS_PER_PAGE = 6;
 
-const containerVariants = {
+const containerVariants:Variants = {
   hidden: {},
   visible: {
     transition: {
@@ -28,7 +28,7 @@ const containerVariants = {
   },
 };
 
-const itemVariants = {
+const itemVariants:Variants = {
   hidden: {
     opacity: 0,
     y: 20,
@@ -112,6 +112,8 @@ export default function AllSwapsPage() {
   } = useSwaps(page, ITEMS_PER_PAGE);
 
   const swaps = data?.data ?? [];
+ 
+  
 
   const filteredSwaps = useMemo(() => {
     const searchValue = search.trim().toLowerCase();
@@ -160,17 +162,6 @@ export default function AllSwapsPage() {
    * Therefore Active / Completed / Cancelled below represent
    * the swaps visible on the CURRENT PAGE.
    */
-  const activeCount = swaps.filter(
-    (swap) => swap.status === "active",
-  ).length;
-
-  const completedCount = swaps.filter(
-    (swap) => swap.status === "completed",
-  ).length;
-
-  const cancelledCount = swaps.filter(
-    (swap) => swap.status === "cancelled",
-  ).length;
 
   const totalPages = data?.totalPages ?? 1;
 
@@ -248,7 +239,7 @@ export default function AllSwapsPage() {
 
         <StatCard
           title="Active"
-          value={activeCount}
+          value={data?.totalActiveSwap ?? 0}
           icon={<Clock3 size={20} />}
           description="On current page"
           accent="orange"
@@ -256,7 +247,7 @@ export default function AllSwapsPage() {
 
         <StatCard
           title="Completed"
-          value={completedCount}
+          value={data?.totalCompletedSwap ?? 0}
           icon={<CheckCircle2 size={20} />}
           description="On current page"
           accent="green"
@@ -264,7 +255,7 @@ export default function AllSwapsPage() {
 
         <StatCard
           title="Cancelled"
-          value={cancelledCount}
+          value={data?.totalCancelledSwap ?? 0}
           icon={<XCircle size={20} />}
           description="On current page"
           accent="red"
@@ -658,9 +649,11 @@ function UserSection({
 
       <div className="flex items-center gap-3">
         {user?.avatar_image ? (
-          <img
+          <Image
             src={user.avatar_image}
             alt={user.name}
+            height={12}
+            width={12}
             className="h-12 w-12 rounded-full border border-[#4A2812] object-cover"
           />
         ) : (
@@ -710,7 +703,9 @@ function SkillBox({
 
       <div className="flex items-center gap-3">
         {skill?.skill_logo ? (
-          <img
+          <Image
+          height={10}
+          width={10}
             src={skill.skill_logo}
             alt={skill.name}
             className="h-10 w-10 rounded-lg border border-[#4A2812] object-cover"

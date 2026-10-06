@@ -1,14 +1,17 @@
 "use client"
 
 import { createReview, getGivenReviews, getReceivedReviews } from "@/services/helper/api-function/review.function"
+import { UpdatedDataType } from "@/typescript/type/user.type"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
+
+
 
 export const useCreteReview = ()=>{
     const queryClient = useQueryClient()
    return useMutation({
     mutationKey: ["create-review"],
-    mutationFn: (data)=> createReview(data),
+    mutationFn: (data:UpdatedDataType)=> createReview(data),
     onSuccess: (res)=>{
         toast.success(res?.message)
         queryClient.invalidateQueries({queryKey: ["get-received-review"]})

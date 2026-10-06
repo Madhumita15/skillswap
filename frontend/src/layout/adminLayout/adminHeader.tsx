@@ -60,7 +60,7 @@ export default function AdminHeader() {
                 rounded-xl
                 border
                 border-[#6B3515]
-                bg-gradient-to-br
+                bg-linear-to-br
                 from-[#E59A0B]/20
                 to-[#F97316]/5
                 text-[#F59E0B]

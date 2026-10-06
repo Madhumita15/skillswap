@@ -17,6 +17,7 @@ const Navbar = () => {
   const router = useRouter();
   const { data } = useProfile();
   const dispatch = useAppDispatch();
+
   const profile = data?.data[0];
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -35,7 +36,7 @@ const Navbar = () => {
   const handleLogout = async () => {
     try {
       const response = await dispatch(logout()).unwrap();
-      console.log("response", response);
+
       if (response?.success === true) {
         toast.success(response?.message);
         router.push("/login");
@@ -46,11 +47,14 @@ const Navbar = () => {
   };
 
   const isClient = useIsClinet();
+
   if (!isClient) return null;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-[#52291A]/60 bg-[#0B0804]/95 shadow-lg shadow-black/20 backdrop-blur-md">
       <div className="mx-auto flex h-19 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+
+        {/* Logo */}
         <Link
           href="/"
           className="group flex shrink-0 items-center"
@@ -66,6 +70,7 @@ const Navbar = () => {
           />
         </Link>
 
+        {/* Desktop Navigation */}
         <nav className="hidden items-center gap-1 md:flex lg:gap-3">
           {navMenu.map((menu) => {
             const isActive = menu.path === pathname;
@@ -108,64 +113,140 @@ const Navbar = () => {
           })}
         </nav>
 
+        {/* Desktop Right Section */}
         {profile ? (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleLogout}
-            className="
-              h-10 cursor-pointer rounded-lg border-[#6B3515]
-              bg-transparent px-5 font-semibold text-[#FFF7ED]
-              transition-all duration-300
-              hover:-translate-y-0.5
-              hover:border-[#F97316]
-              hover:bg-[#F97316]/10
-              hover:text-[#F97316]
-              hover:shadow-lg hover:shadow-[#F97316]/10
-            "
-          >
-            Logout
-          </Button>
-        ) : (
           <div className="hidden items-center gap-3 md:flex">
+
+            {/* Logout Button */}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleLogout}
+              className="
+                group relative h-10 cursor-pointer overflow-hidden
+                rounded-lg border-[#6B3515]
+                bg-[#1C1008]
+                px-4 font-semibold text-[#FFF7ED]
+                transition-all duration-300
+                hover:-translate-y-0.5
+                hover:border-[#F97316]
+                hover:shadow-lg hover:shadow-[#F97316]/10
+                focus:outline-none
+                focus:ring-2
+                focus:ring-[#F97316]
+                focus:ring-offset-2
+                focus:ring-offset-[#0B0804]
+              "
+            >
+              {/* Left → Center */}
+              <span className="absolute inset-y-0 left-0 w-0 bg-linear-to-r from-[#F97316] to-[#52291A] transition-all duration-500 ease-out group-hover:w-1/2" />
+
+              {/* Right → Center */}
+              <span className="absolute inset-y-0 right-0 w-0 bg-linear-to-l from-[#F97316] to-[#52291A] transition-all duration-500 ease-out group-hover:w-1/2" />
+
+              <span className="relative z-10 transition-colors duration-300 group-hover:text-[#FFF7ED]">
+                Logout
+              </span>
+            </Button>
+
+            {/* User Information */}
+            <div className="flex min-w-0 max-w-42 items-center gap-2">
+              <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full border border-[#6B3515] bg-[#1C1008]">
+                <Image
+                  src={
+                    profile.avatar_image ||
+                    "/images/default-avatar.png"
+                  }
+                  alt={profile.name || "Profile"}
+                  fill
+                  sizes="36px"
+                  className="object-cover"
+                />
+              </div>
+
+              <div className="min-w-0">
+                <p className="max-w-24 truncate text-xs font-semibold text-[#FFF7ED] lg:max-w-28">
+                  {profile.name}
+                </p>
+
+                <p className="max-w-28 truncate text-[10px] text-[#A8A29E] lg:max-w-32">
+                  {profile.email}
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* Desktop Login / Get Started */
+          <div className="hidden items-center gap-3 md:flex">
+
+            {/* Login */}
             <Button
               type="button"
               variant="outline"
               onClick={() => router.push("/login")}
               className="
-              h-10 cursor-pointer rounded-lg border-[#6B3515]
-              bg-transparent px-5 font-semibold text-[#FFF7ED]
-              transition-all duration-300
-              hover:-translate-y-0.5
-              hover:border-[#F97316]
-              hover:bg-[#F97316]/10
-              hover:text-[#F97316]
-              hover:shadow-lg hover:shadow-[#F97316]/10
-            "
+                group relative h-10 cursor-pointer overflow-hidden
+                rounded-lg border-[#6B3515]
+                bg-[#1C1008]
+                px-5 font-semibold text-[#FFF7ED]
+                transition-all duration-300
+                hover:-translate-y-0.5
+                hover:border-[#F97316]
+                hover:shadow-lg hover:shadow-[#F97316]/10
+                focus:outline-none
+                focus:ring-2
+                focus:ring-[#F97316]
+                focus:ring-offset-2
+                focus:ring-offset-[#0B0804]
+              "
             >
-              Login
+              <span className="absolute inset-y-0 left-0 w-0 bg-linear-to-r from-[#F97316] to-[#52291A] transition-all duration-500 ease-out group-hover:w-1/2" />
+
+              <span className="absolute inset-y-0 right-0 w-0 bg-linear-to-l from-[#F97316] to-[#52291A] transition-all duration-500 ease-out group-hover:w-1/2" />
+
+              <span className="relative z-10 transition-colors duration-300">
+                Login
+              </span>
             </Button>
 
+            {/* Get Started */}
             <Button
               type="button"
               onClick={() => router.push("/register")}
               className="
-              h-10 cursor-pointer rounded-lg border-0
-              bg-linear-to-r from-[#F97316] to-[#E59A0B]
-              px-5 font-bold text-[#1C1008]
-              transition-all duration-300
-              hover:-translate-y-0.5
-              hover:from-[#FF8A3D]
-              hover:to-[#F0B323]
-              hover:shadow-lg hover:shadow-[#F97316]/20
-              active:translate-y-0
-            "
+                group relative h-10 cursor-pointer overflow-hidden
+                rounded-lg border-0
+                bg-linear-to-r from-[#F97316] to-[#E59A0B]
+                px-5 font-bold text-[#1C1008]
+                shadow-lg shadow-[#F97316]/10
+                transition-all duration-300
+                hover:-translate-y-0.5
+                hover:shadow-xl hover:shadow-[#F97316]/20
+                focus:outline-none
+                focus:ring-2
+                focus:ring-[#F97316]
+                focus:ring-offset-2
+                focus:ring-offset-[#0B0804]
+              "
             >
-              Get Started
+              <span
+                className="
+                  pointer-events-none absolute inset-y-0 left-0 w-full
+                  -translate-x-full
+                  bg-linear-to-r from-[#52291A] to-[#1A0D04]
+                  transition-transform duration-500 ease-out
+                  group-hover:translate-x-0
+                "
+              />
+
+              <span className="relative z-10 transition-colors duration-300 group-hover:text-[#FFF7ED]">
+                Get Started
+              </span>
             </Button>
           </div>
         )}
 
+        {/* Mobile Menu Button */}
         <button
           type="button"
           aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
@@ -190,14 +271,16 @@ const Navbar = () => {
         </button>
       </div>
 
+      {/* Mobile Menu */}
       <div
         className={`
           overflow-hidden border-t border-[#52291A]/60 bg-[#100905]
           transition-all duration-300 ease-in-out md:hidden
-          ${mobileMenuOpen ? "max-h-125 opacity-100" : "max-h-0 opacity-0"}
+          ${mobileMenuOpen ? "max-h-150 opacity-100" : "max-h-0 opacity-0"}
         `}
       >
         <div className="px-4 pb-5 pt-3 sm:px-6">
+
           {/* Navigation */}
           <nav className="flex flex-col gap-1">
             {navMenu.map((menu) => {
@@ -242,79 +325,142 @@ const Navbar = () => {
             })}
           </nav>
 
-          <div className="mt-4 grid grid-cols-2 gap-3 border-t border-[#52291A]/60 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                setMobileMenuOpen(false);
-                router.push("/login");
-              }}
-              className="
-    group relative h-11 cursor-pointer overflow-hidden
-    border-[#6B3515]
-    bg-[#1C1008]
-    px-5 font-semibold text-[#FFF7ED]
-    transition-all duration-300
-    hover:border-[#F97316]
-    hover:shadow-lg hover:shadow-[#F97316]/10
-    focus:outline-none focus:ring-2
-    focus:ring-[#F97316]
-    focus:ring-offset-2
-    focus:ring-offset-[#0B0804]
-  "
-            >
-              {/* Left → center */}
-              <span className="absolute inset-y-0 left-0 w-0 bg-linear-to-r from-[#F97316] to-[#52291A] transition-all duration-500 ease-out group-hover:w-1/2" />
+          {/* Mobile Auth / Profile */}
+          {profile ? (
+            <div className="mt-4 border-t border-[#52291A]/60 pt-4">
 
-              {/* Right → center */}
-              <span className="absolute inset-y-0 right-0 w-0 bg-linear-to-r from-[#52291A] to-[#F97316] transition-all duration-500 ease-out group-hover:w-1/2" />
+              {/* User Profile */}
+              <div className="mb-3 flex items-center gap-3 rounded-xl bg-[#1C1008] px-4 py-3">
+                <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border border-[#6B3515]">
+                  <Image
+                    src={
+                      profile.avatar_image ||
+                      "/images/default-avatar.png"
+                    }
+                    alt={profile.name || "Profile"}
+                    fill
+                    sizes="40px"
+                    className="object-cover"
+                  />
+                </div>
 
-              {/* Content */}
-              <span className="relative z-10 transition-colors duration-300 group-hover:text-[#FFF7ED]">
-                Login
-              </span>
-            </Button>
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-semibold text-[#FFF7ED]">
+                    {profile.name}
+                  </p>
 
-            <Button
-              type="button"
-              onClick={() => {
-                setMobileMenuOpen(false);
-                router.push("/register");
-              }}
-              className="
-    group relative h-11 cursor-pointer overflow-hidden
-    border-0
-    bg-linear-to-r from-[#F97316] to-[#E59A0B]
-    px-5 font-bold text-[#1C1008]
-    shadow-lg shadow-[#F97316]/10
-    transition-all duration-300
-    hover:-translate-y-0.5
-    hover:shadow-xl hover:shadow-[#F97316]/20
-    focus:outline-none
-    focus:ring-2
-    focus:ring-[#F97316]
-    focus:ring-offset-2
-    focus:ring-offset-[#0B0804]
-  "
-            >
-              {/* Left → Right */}
-              <span
+                  <p className="truncate text-[10px] text-[#A8A29E]">
+                    {profile.email}
+                  </p>
+                </div>
+              </div>
+
+              {/* Mobile Logout */}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleLogout();
+                }}
                 className="
-      pointer-events-none absolute inset-y-0 left-0 w-full
-      -translate-x-full
-      bg-linear-to-r from-[#52291A] to-[#1A0D04]
-      transition-transform duration-500 ease-out
-      group-hover:translate-x-0
-    "
-              />
+                  group relative h-11 w-full cursor-pointer overflow-hidden
+                  rounded-xl border-[#6B3515]
+                  bg-[#1C1008]
+                  font-semibold text-[#FFF7ED]
+                  transition-all duration-300
+                  hover:border-[#F97316]
+                  hover:shadow-lg hover:shadow-[#F97316]/10
+                  focus:outline-none
+                  focus:ring-2
+                  focus:ring-[#F97316]
+                  focus:ring-offset-2
+                  focus:ring-offset-[#0B0804]
+                "
+              >
+                <span className="absolute inset-y-0 left-0 w-0 bg-linear-to-r from-[#F97316] to-[#52291A] transition-all duration-500 ease-out group-hover:w-1/2" />
 
-              {/* Text */}
-              <span className="relative z-10 transition-colors duration-300 group-hover:text-[#FFF7ED]">
-                Get Started
-              </span>
-            </Button>
-          </div>
+                <span className="absolute inset-y-0 right-0 w-0 bg-linear-to-l from-[#F97316] to-[#52291A] transition-all duration-500 ease-out group-hover:w-1/2" />
+
+                <span className="relative z-10">
+                  Logout
+                </span>
+              </Button>
+            </div>
+          ) : (
+            <div className="mt-4 grid grid-cols-2 gap-3 border-t border-[#52291A]/60 pt-4">
+
+              {/* Mobile Login */}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  router.push("/login");
+                }}
+                className="
+                  group relative h-11 cursor-pointer overflow-hidden
+                  rounded-xl border-[#6B3515]
+                  bg-[#1C1008]
+                  px-5 font-semibold text-[#FFF7ED]
+                  transition-all duration-300
+                  hover:border-[#F97316]
+                  hover:shadow-lg hover:shadow-[#F97316]/10
+                  focus:outline-none
+                  focus:ring-2
+                  focus:ring-[#F97316]
+                  focus:ring-offset-2
+                  focus:ring-offset-[#0B0804]
+                "
+              >
+                <span className="absolute inset-y-0 left-0 w-0 bg-linear-to-r from-[#F97316] to-[#52291A] transition-all duration-500 ease-out group-hover:w-1/2" />
+
+                <span className="absolute inset-y-0 right-0 w-0 bg-linear-to-l from-[#F97316] to-[#52291A] transition-all duration-500 ease-out group-hover:w-1/2" />
+
+                <span className="relative z-10">
+                  Login
+                </span>
+              </Button>
+
+              {/* Mobile Get Started */}
+              <Button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  router.push("/register");
+                }}
+                className="
+                  group relative h-11 cursor-pointer overflow-hidden
+                  rounded-xl border-0
+                  bg-linear-to-r from-[#F97316] to-[#E59A0B]
+                  px-5 font-bold text-[#1C1008]
+                  shadow-lg shadow-[#F97316]/10
+                  transition-all duration-300
+                  hover:-translate-y-0.5
+                  hover:shadow-xl hover:shadow-[#F97316]/20
+                  focus:outline-none
+                  focus:ring-2
+                  focus:ring-[#F97316]
+                  focus:ring-offset-2
+                  focus:ring-offset-[#0B0804]
+                "
+              >
+                <span
+                  className="
+                    pointer-events-none absolute inset-y-0 left-0 w-full
+                    -translate-x-full
+                    bg-linear-to-r from-[#52291A] to-[#1A0D04]
+                    transition-transform duration-500 ease-out
+                    group-hover:translate-x-0
+                  "
+                />
+
+                <span className="relative z-10 transition-colors duration-300 group-hover:text-[#FFF7ED]">
+                  Get Started
+                </span>
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </header>

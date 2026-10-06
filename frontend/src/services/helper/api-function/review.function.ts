@@ -1,8 +1,9 @@
 import { axiosInstance } from "@/lib/axiosInstance"
 import { getErrorMessage } from "../global.helper"
 import { ENDPOINT } from "../endPoint"
+import { UpdatedDataType } from "@/typescript/type/user.type"
 
-export const createReview = async(data)=>{
+export const createReview = async(data:UpdatedDataType)=>{
     try {
         const response = await axiosInstance.post(`${ENDPOINT.reviews.create}`, data)
         return response.data

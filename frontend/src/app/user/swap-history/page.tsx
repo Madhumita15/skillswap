@@ -34,6 +34,7 @@ import { SwapInterface } from "@/typescript/interface/swap.interface";
 import { useProfile } from "@/hooks/useProfile";
 import ReviewDialog from "@/components/ReviewDialog";
 import { useGetGivenReview } from "@/hooks/useReview";
+import { ReviewType } from "@/typescript/type/review.type";
 
 const SwapHistory = () => {
   const [page, setPage] = useState(1);
@@ -364,7 +365,7 @@ const SwapHistory = () => {
   console.log("reviewedUserId:", reviewedUserId);
 
               const isReviewGiven = givenReviews?.data.some(
-                (review) =>
+                (review:ReviewType) =>
                   String(review.swapId) === String(swap._id) &&
                   String(review.reviewerId?._id) === String(loggedInUserId) &&
                   String(review.reviewedUserId?._id) === String(reviewedUserId),

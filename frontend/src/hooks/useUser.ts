@@ -14,9 +14,11 @@ import {
 } from "@/services/helper/api-function/user.function";
 
 import {
+  AllUsersResponse,
   ChangeUserStatusPayload,
   User,
 } from "@/typescript/interface/user.interface";
+import { getErrorMessage } from "@/services/helper/global.helper";
 
 // =====================================================
 // QUERY KEYS
@@ -118,11 +120,11 @@ export const useChangeUserStatus = () => {
       // Update currently cached user lists immediately
       // -------------------------------------------------
 
-      queryClient.setQueriesData(
+      queryClient.setQueriesData<AllUsersResponse>(
         {
           queryKey: userKeys.lists(),
         },
-        (oldData: any) => {
+        (oldData) => {
           if (!oldData) {
             return oldData;
           }
@@ -162,16 +164,8 @@ export const useChangeUserStatus = () => {
       });
     },
 
-    onError: (error: any) => {
-      console.error(
-        "STATUS CHANGE ERROR:",
-        error
-      );
-
-      console.error(
-        "SERVER RESPONSE:",
-        error?.response?.data
-      );
+    onError: (error) => {
+      getErrorMessage(error)
     },
   });
 };

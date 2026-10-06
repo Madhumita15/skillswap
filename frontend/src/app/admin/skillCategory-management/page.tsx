@@ -41,6 +41,8 @@ import {
 } from "@/typescript/interface/skillCategory.interface";
 
 import { skillCategoryValidationSchema } from "@/services/validation/skillCategory.validation";
+import { getErrorMessage } from "@/services/helper/global.helper";
+import { ValidationError } from "yup";
 
 // ==========================================================
 // CONSTANTS
@@ -148,9 +150,7 @@ export default function SkillCategoryManagementPage() {
   // DATA
   // ========================================================
 
-  const categories: SkillCategory[] =
-    data?.data || [];
-
+  
   const pagination =
     data?.pagination ?? {
       currentPage: 1,
@@ -164,9 +164,13 @@ export default function SkillCategoryManagementPage() {
   // ========================================================
   // SEARCH
   // ========================================================
-
+const categories: SkillCategory[] = useMemo(
+  () => data?.data || [],
+  [data?.data]
+);
   const filteredCategories =
     useMemo(() => {
+      
       const searchValue =
         search.trim().toLowerCase();
 
@@ -316,48 +320,35 @@ export default function SkillCategoryManagementPage() {
       }
 
       closeModal();
-    } catch (validationOrApiError: any) {
+    } catch (validationOrApiError: unknown) {
       // ====================================================
       // YUP VALIDATION ERROR
       // ====================================================
 
+       if (validationOrApiError instanceof ValidationError) {
+    const errors: Partial<
+      Record<keyof SkillCategoryFormData, string>
+    > = {};
+
+    validationOrApiError.inner.forEach((item) => {
       if (
-        validationOrApiError?.name ===
-        "ValidationError"
+        item.path &&
+        !errors[item.path as keyof SkillCategoryFormData]
       ) {
-        const errors: Partial<
-          Record<
-            keyof SkillCategoryFormData,
-            string
-          >
-        > = {};
-
-        validationOrApiError.inner.forEach(
-          (item: any) => {
-            if (item.path && !errors[item.path as keyof SkillCategoryFormData]) {
-              errors[
-                item.path as keyof SkillCategoryFormData
-              ] = item.message;
-            }
-          },
-        );
-
-        setFormErrors(errors);
-
-        return;
+        errors[item.path as keyof SkillCategoryFormData] =
+          item.message;
       }
+    });
+
+    setFormErrors(errors);
+    return;
+  }
 
       // ====================================================
       // API ERROR
       // ====================================================
 
-      const message =
-        validationOrApiError?.response?.data
-          ?.message ||
-        validationOrApiError?.message ||
-        "Something went wrong";
-
-      toast.error(message);
+      toast.error(getErrorMessage(validationOrApiError));
     }
   };
 
@@ -408,13 +399,8 @@ export default function SkillCategoryManagementPage() {
       );
 
       closeStatusConfirmation();
-    } catch (apiError: any) {
-      const message =
-        apiError?.response?.data?.message ||
-        apiError?.message ||
-        "Unable to change category status";
-
-      toast.error(message);
+    } catch (apiError) {
+      toast.error(getErrorMessage(apiError));
     }
   };
 
@@ -478,7 +464,7 @@ export default function SkillCategoryManagementPage() {
   if (isError) {
     return (
       <div className="min-h-[calc(100vh-80px)] bg-[#0B0804] px-4 py-6 text-white sm:px-6 lg:px-8">
-        <div className="mx-auto flex min-h-[500px] max-w-[1600px] items-center justify-center">
+        <div className="mx-auto flex min-h-125 max-w-[1600px] items-center justify-center">
           <div className="rounded-2xl border border-red-500/20 bg-[#160B07] p-8 text-center">
             <XCircle className="mx-auto mb-4 h-12 w-12 text-red-400" />
 
@@ -487,9 +473,7 @@ export default function SkillCategoryManagementPage() {
             </h2>
 
             <p className="mt-2 text-sm text-slate-400">
-              {(
-                error as any
-              )?.response?.data?.message ||
+              {getErrorMessage(error) ||
                 "Something went wrong while fetching categories."}
             </p>
 
@@ -560,7 +544,7 @@ export default function SkillCategoryManagementPage() {
               scale: 0.98,
             }}
             onClick={openCreateModal}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-orange-950/30 transition hover:from-orange-600 hover:to-amber-600"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-linear-to-r from-orange-500 to-amber-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-orange-950/30 transition hover:from-orange-600 hover:to-amber-600"
           >
             <Plus className="h-4 w-4" />
             Add Category
@@ -869,7 +853,7 @@ export default function SkillCategoryManagementPage() {
           ================================================== */}
 
           {filteredCategories.length === 0 && (
-            <div className="flex min-h-[280px] flex-col items-center justify-center px-5 py-10 text-center">
+            <div className="flex min-h-70 flex-col items-center justify-center px-5 py-10 text-center">
               <div className="mb-4 rounded-2xl bg-orange-500/10 p-4">
                 {search ? (
                   <Search className="h-8 w-8 text-orange-400" />
@@ -1097,7 +1081,7 @@ export default function SkillCategoryManagementPage() {
                       createMutation.isPending ||
                       updateMutation.isPending
                     }
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:from-orange-600 hover:to-amber-600 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-linear-to-r from-orange-500 to-amber-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:from-orange-600 hover:to-amber-600 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {(
                       createMutation.isPending ||
@@ -1133,7 +1117,7 @@ export default function SkillCategoryManagementPage() {
             exit={{
               opacity: 0,
             }}
-            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+            className="fixed inset-0 z-60 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
           >
             <motion.div
               initial={{

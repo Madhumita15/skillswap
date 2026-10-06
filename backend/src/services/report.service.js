@@ -52,10 +52,21 @@ const createReportService = async ({
 // GET ALL REPORTS - ADMIN
 // ======================================================
 
-const getReportsService = async ({ page, limit }) => {
+const getReportsService = async ({ page, limit, status }) => {
   const skip = (page - 1) * limit;
 
+  let filter = {}
+  if(status){
+    filter.status = status
+
+  }
+  console.log(filter)
+
   const reports = await Report.aggregate([
+    {
+      $match: filter
+
+    },
     {
       $lookup: {
         from: "users",
@@ -66,10 +77,7 @@ const getReportsService = async ({ page, limit }) => {
     },
 
     {
-      $unwind: {
-        path: "$reporter",
-        preserveNullAndEmptyArrays: true,
-      },
+      $unwind: "$reporter",
     },
 
     {
@@ -82,10 +90,7 @@ const getReportsService = async ({ page, limit }) => {
     },
 
     {
-      $unwind: {
-        path: "$reportedUser",
-        preserveNullAndEmptyArrays: true,
-      },
+      $unwind: "$reportedUser",
     },
     {
       $sort: {
@@ -111,18 +116,18 @@ const getReportsService = async ({ page, limit }) => {
               status: 1,
               createdAt: 1,
               updatedAt: 1,
-              "$reporter._id": 1,
-              "$reporter.name": 1,
-              "$reporter.email": 1,
-              "$reporter.status": 1,
-              "$reporter.avatar_image": 1,
-              "$reporter.phone": 1,
-              "$reportedUser._id": 1,
-              "$reportedUser.name": 1,
-              "$reportedUser.email": 1,
-              "$reportedUser.status": 1,
-              "$reportedUser.avatar_image": 1,
-              "$reportedUser.phone": 1,
+              "reporter._id": 1,
+              "reporter.name": 1,
+              "reporter.email": 1,
+              "reporter.status": 1,
+              "reporter.avatar_image": 1,
+              "reporter.phone": 1,
+              "reportedUser._id": 1,
+              "reportedUser.name": 1,
+              "reportedUser.email": 1,
+              "reportedUser.status": 1,
+              "reportedUser.avatar_image": 1,
+              "reportedUser.phone": 1,
             },
           },
         ],
@@ -134,6 +139,7 @@ const getReportsService = async ({ page, limit }) => {
       },
     },
   ]);
+
 
   const totalReports = reports[0].total[0].totalReports;
 
@@ -160,7 +166,7 @@ const getReportByIdService = async (id) => {
   const reports = await Report.aggregate([
     {
       $match: {
-        _id: id,
+        _id: new mongoose.Types.ObjectId(id),
       },
     },
 
@@ -171,6 +177,9 @@ const getReportByIdService = async (id) => {
         foreignField: "_id",
         as: "reporter",
       },
+    },
+    {
+      $unwind: "$reporter",
     },
 
     // ----------------------------------------------
@@ -187,17 +196,7 @@ const getReportByIdService = async (id) => {
     },
 
     {
-      $unwind: {
-        path: "$reporter",
-        preserveNullAndEmptyArrays: true,
-      },
-    },
-
-    {
-      $unwind: {
-        path: "$reportedUser",
-        preserveNullAndEmptyArrays: true,
-      },
+      $unwind: "$reportedUser",
     },
 
     {
@@ -208,23 +207,24 @@ const getReportByIdService = async (id) => {
         status: 1,
         createdAt: 1,
         updatedAt: 1,
-        "$reporter._id": 1,
-        "$reporter.name": 1,
-        "$reporter.email": 1,
-        "$reporter.status": 1,
-        "$reporter.avatar_image": 1,
-        "$reporter.phone": 1,
-        "$reportedUser._id": 1,
-        "$reportedUser.name": 1,
-        "$reportedUser.email": 1,
-        "$reportedUser.status": 1,
-        "$reportedUser.avatar_image": 1,
-        "$reportedUser.phone": 1,
+        "reporter._id": 1,
+        "reporter.name": 1,
+        "reporter.email": 1,
+        "reporter.status": 1,
+        "reporter.avatar_image": 1,
+        "reporter.phone": 1,
+        "reportedUser._id": 1,
+        "reportedUser.name": 1,
+        "reportedUser.email": 1,
+        "reportedUser.status": 1,
+        "reportedUser.avatar_image": 1,
+        "reportedUser.phone": 1,
       },
     },
   ]);
 
-  return reports[0];
+  console.log("reports[0]", reports);
+  return reports[0]
 };
 
 // ======================================================

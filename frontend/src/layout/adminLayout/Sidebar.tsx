@@ -16,6 +16,9 @@ import {
 import { useState } from "react";
 
 import { adminMenuItems } from "./adminMenu";
+import { useAppDispatch } from "@/services/helper/redux";
+import { logout } from "@/store/slices/auth.slice";
+import { toast } from "sonner";
 
 
 
@@ -25,30 +28,36 @@ type AdminSidebarProps = {
     email?: string ;
     avatar_image?: string ;
   } | null
-  onLogout?: () => void;
 };
 
 export default function AdminSidebar({
-  user,
-  onLogout,
+  user
 }: AdminSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const dispatch = useAppDispatch()
 
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-  const handleLogout = async () => {
-    if (onLogout) {
-      await onLogout();
+   const handleLogout = async () => {
+    try {
+      const response = await dispatch(logout()).unwrap();
+      console.log("response", response);
+      if (response?.success === true) {
+        toast.success(response?.message);
+        router.push("/login");
+      }
+    } catch (error) {
+      console.log(error);
     }
-
-    router.push("/login");
   };
 
   const closeMobileMenu = () => {
     setIsMobileOpen(false);
   };
 
+
+  
   return (
     <>
       

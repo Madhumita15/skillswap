@@ -12,6 +12,6 @@ router.post("/login", validation.validate(userSchemaValidation.login), asyncHand
 router.post("/forgot-password", validation.validate(userSchemaValidation.forgotPasswordSchema), asyncHandeler(userController.forgotPassword));
 router.post("/reset-password", validation.validate(userSchemaValidation.resetPasswordSchema), asyncHandeler(userController.resetPassword));
 router.post("/logout", authMiddleware.verifyToken,asyncHandeler(userController.logout))
-
+router.post("/refresh-token", asyncHandeler(userController.refreshToken))
 
 module.exports = router

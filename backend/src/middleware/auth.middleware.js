@@ -5,14 +5,15 @@ const User = require("../models/user.model");
 class AuthMiddleware {
   static async verifyToken(req, res, next) {
     try {
-      const { accessToken } = req.cookies;
-      if (!accessToken) {
+      const  accessToken  = req.headers.authorization;
+      if (!accessToken || !accessToken.startsWith('Bearer ')) {
         return res.status(httpStatusCode.UNAUTHORIZED).json({
           status: false,
           message: "Token not provided",
         });
       }
-      const decode = jwt.verify(accessToken, process.env.JWT_ACCESS_SECRET_KEY);
+      const cleanToken = accessToken.split(" ")[1]
+      const decode = jwt.verify(cleanToken, process.env.JWT_ACCESS_SECRET_KEY);
 
       const user = await User.findById(decode._id);
       if (!user) {

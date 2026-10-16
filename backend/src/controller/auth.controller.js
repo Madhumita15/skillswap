@@ -27,23 +27,11 @@ class AuthController {
       otp,
     });
 
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-      maxAge: 15 * 60 * 60 * 1000,
-    });
-
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-    });
-
     return res.status(httpStatusCode.OK).json({
       success: true,
       message: "Email verified successfully!",
+      accessToken: accessToken,
+      refreshToken: refreshToken,
       data: {
         _id: user._id,
         name: user.name,
@@ -53,7 +41,6 @@ class AuthController {
         avatar_image: user.avatar_image,
         isEmailVerified: user.isEmailVerified,
         isOnboardingComplete: user.isOnboardingComplete,
-        accessToken: user.accessToken,
       },
     });
   }
@@ -64,22 +51,11 @@ class AuthController {
       email,
       password,
     });
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-      maxAge: 15 * 60 * 60 * 1000,
-    });
-
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-    });
     return res.status(httpStatusCode.OK).json({
       success: true,
       message: "Login successful !",
+      refreshToken: refreshToken,
+      accessToken: accessToken,
       data: {
         _id: user._id,
         name: user.name,
@@ -93,101 +69,54 @@ class AuthController {
     });
   }
 
-
-async refreshToken(req, res) {
-  
+  async refreshToken(req, res) {
     const refreshToken = req.cookies?.refreshToken;
 
-    const {
-      newAccessToken,
-      newRefreshToken,
-      user,
-    } = await refreshTokenService({
-      refreshToken,
-    });
-
-    // Set new access token cookie
-    res.cookie("accessToken", newAccessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite:
-        process.env.NODE_ENV === "production"
-          ? "none"
-          : "strict",
-      maxAge: 15 * 60 * 60 * 1000,
-    });
-
-    // Set new refresh token cookie
-    res.cookie("refreshToken", newRefreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite:
-        process.env.NODE_ENV === "production"
-          ? "none"
-          : "strict",
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-    });
+    const { newAccessToken, newRefreshToken, user } = await refreshTokenService(
+      {
+        refreshToken,
+      },
+    );
 
     return res.status(httpStatusCode.OK).json({
       success: true,
       message: "Token refreshed successfully",
-      data: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        avatar_image: user.avatar_image,
-        isEmailVerified: user.isEmailVerified,
-        isOnboardingComplete: user.isOnboardingComplete,
-        role: user.role,
-        status: user.status,
-      },
-    });
-  } 
-
-  async forgotPassword (req, res) {
-  const result = await forgotPasswordService(req.body.email);
-  return res.status(httpStatusCode.OK).json(result);
-};
-
-async resetPassword (req, res) {
-  const { token, password } = req.body;
-
-  console.log("RESET PASSWORD BODY:", req.body);
-
-  if (!token) {
-    return res.status(httpStatusCode.BAD_REQUEST).json({
-      success: false,
-      message: "Reset token is required .",
+      accessToken: newAccessToken
     });
   }
 
-  if (!password) {
-    return res.status(httpStatusCode.BAD_REQUEST).json({
-      success: false,
-      message: "Password is required.",
-    });
+  async forgotPassword(req, res) {
+    const result = await forgotPasswordService(req.body.email);
+    return res.status(httpStatusCode.OK).json(result);
   }
 
-  const result = await resetPasswordService(token, password);
-  return res.status(httpStatusCode.OK).json(result);
-};
+  async resetPassword(req, res) {
+    const { token, password } = req.body;
+
+    console.log("RESET PASSWORD BODY:", req.body);
+
+    if (!token) {
+      return res.status(httpStatusCode.BAD_REQUEST).json({
+        success: false,
+        message: "Reset token is required .",
+      });
+    }
+
+    if (!password) {
+      return res.status(httpStatusCode.BAD_REQUEST).json({
+        success: false,
+        message: "Password is required.",
+      });
+    }
+
+    const result = await resetPasswordService(token, password);
+    return res.status(httpStatusCode.OK).json(result);
+  }
 
   async logout(req, res) {
     const id = req.user._id;
 
     await logoutService(id);
-     res.clearCookie("accessToken", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-    });
-
-    res.clearCookie("refreshToken", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-    });
 
     return res.status(httpStatusCode.OK).json({
       success: true,

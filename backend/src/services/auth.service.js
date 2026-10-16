@@ -204,7 +204,7 @@ const refreshTokenService = async ({ refreshToken }) => {
     },
     process.env.JWT_ACCESS_SECRET_KEY,
     {
-      expiresIn: "1d",
+      expiresIn: "15m",
     }
   );
 

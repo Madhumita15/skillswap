@@ -2,7 +2,6 @@ const express = require("express");
 const app = express();
 const router = require("./router/index");
 const errorHandler = require("./middleware/errorHandeler.middleware");
-const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
 const allowedOrigins = [
@@ -19,12 +18,11 @@ app.use(
         callback(new Error("Not allowed by CORS"));
       }
     },
-    credentials: true,
   }),
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
+
 
 app.use(router);
 

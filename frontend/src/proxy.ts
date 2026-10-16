@@ -1,14 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { jwtVerify } from "jose";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
-  console.log("pathname:", pathname);
-
   const token = request.cookies.get("accessToken")?.value;
-
-  console.log("accessToken:", token);
+  const role = request.cookies.get("role")?.value;
 
   // ==========================================
   // 1. NORMAL PUBLIC ROUTES
@@ -50,29 +45,8 @@ export async function proxy(request: NextRequest) {
   // 3. TOKEN EXISTS → VERIFY JWT
   // ==========================================
 
-  const secret = process.env.JWT_ACCESS_SECRET_KEY;
 
-  if (!secret) {
-    throw new Error("JWT_ACCESS_SECRET_KEY is not defined");
-  }
-
-  const encodedSecret = new TextEncoder().encode(secret);
-
-  let payload;
-
-  try {
-    const result = await jwtVerify(token, encodedSecret);
-
-    payload = result.payload;
-  } catch (error) {
-    console.log("Invalid token:", error);
-
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
-
-  const role = payload.role;
-
-  console.log("role:", role);
+ 
 
   // ==========================================
   // 4. LOGGED-IN USER/ADMIN

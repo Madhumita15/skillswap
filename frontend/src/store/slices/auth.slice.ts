@@ -1,12 +1,19 @@
 import { axiosInstance } from "@/lib/axiosInstance";
 import { ENDPOINT } from "@/services/helper/endPoint";
 import { getErrorMessage } from "@/services/helper/global.helper";
-import { AuthUser, ForgotPasswordType, LoginType, RegisterType, ResetPasswordType, VerifyEmailType } from "@/typescript/type/auth.type";
+import {
+  AuthUser,
+  ForgotPasswordType,
+  LoginType,
+  RegisterType,
+  ResetPasswordType,
+  VerifyEmailType,
+} from "@/typescript/type/auth.type";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-
+import { deleteCookie, setCookie } from "cookies-next";
 
 interface AuthState {
-   user: AuthUser | null;
+  user: AuthUser | null;
   loading: {
     login: boolean;
     logout: boolean;
@@ -26,7 +33,7 @@ interface AuthState {
 }
 
 const initialState: AuthState = {
-   user: null,
+  user: null,
   loading: {
     login: false,
     logout: false,
@@ -155,7 +162,7 @@ export const resetPassword = createAsyncThunk(
     } catch (error) {
       // console.error("RESET PASSWORD API ERROR:", error.response?.data || error);
 
-      return rejectWithValue(getErrorMessage(error))
+      return rejectWithValue(getErrorMessage(error));
     }
   },
 );
@@ -199,8 +206,12 @@ const authSlice = createSlice({
       .addCase(verifyEmailUser.fulfilled, (state, action) => {
         state.loading.verifyEmail = false;
         state.error.verifyEmail = null;
-
         state.user = action.payload?.data || null;
+        
+        setCookie("refreshToken", action.payload?.refreshToken);
+        setCookie("accessToken", action.payload?.accessToken);
+         setCookie("role", action.payload?.data?.role);
+
         console.log("VERIFY FULFILLED PAYLOAD:", action.payload);
       })
       .addCase(verifyEmailUser.rejected, (state, action) => {
@@ -218,6 +229,9 @@ const authSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading.login = false;
         state.error.login = null;
+        setCookie("role", action.payload?.data?.role);
+        setCookie("refreshToken", action.payload?.refreshToken);
+        setCookie("accessToken", action.payload?.accessToken);
 
         state.user = action.payload?.data || null;
       })
@@ -264,8 +278,10 @@ const authSlice = createSlice({
       .addCase(logout.fulfilled, (state) => {
         state.loading.logout = false;
         state.error.logout = null;
-
         state.user = null;
+        deleteCookie("accessToken")
+        deleteCookie("refreshToken")
+        deleteCookie("role")
       })
       .addCase(logout.rejected, (state, action) => {
         state.loading.logout = false;

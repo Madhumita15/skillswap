@@ -25,10 +25,19 @@ axiosInstance.interceptors.request.use(
 )
 
 
-const forceLogout = () => {
+const forceLogout = (redirect = true) => {
   deleteCookie("accessToken");
   deleteCookie("refreshToken")
-  window.location.href = "/login";
+   // Redirect only when the current page is protected
+  const pathname = window.location.pathname;
+  const isProtectedPage =
+    pathname.startsWith("/user") ||
+    pathname.startsWith("/admin");
+
+  if (redirect && isProtectedPage) {
+    window.location.replace("/login");
+  }
+  
 };
 
 axiosInstance.interceptors.response.use(
